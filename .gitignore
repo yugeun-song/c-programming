@@ -1,0 +1,55 @@
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.obj
+
+# Linker output
+*.lib
+*.a
+
+# Executables (Final binaries are in /bin, but others might be generated)
+*.exe
+*.out
+*.app
+
+# Debug / Crash dumps
+*.pdb
+*.idb
+*.ilk
+*.dmp
+*.stackdump
+
+# ==============================================================================
+# Build Directories (Crucial for CMake)
+# ==============================================================================
+build/
+out/
+bin/*
+!bin/**/.gitkeep
+
+# ==============================================================================
+# IDE Specific
+# ==============================================================================
+# Visual Studio / MSVC
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.user
+*.vcxproj.filters
+*.aps
+CMakeSettings.json
+
+# Visual Studio Code
+.vscode/
+
+# Neovim / Vim (Swap files)
+*.swp
+*.swo
+
+# ==============================================================================
+# OS Specific
+# ==============================================================================
+.DS_Store
+Thumbs.db

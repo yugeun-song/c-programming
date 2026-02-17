@@ -1,0 +1,26 @@
+# Enforce LF line endings for all text files
+* text=auto eol=lf
+
+# Explicitly declare text files
+*.c         text eol=lf
+*.h         text eol=lf
+*.cpp       text eol=lf
+*.hpp       text eol=lf
+*.txt       text eol=lf
+*.md        text eol=lf
+
+# Build scripts
+Makefile    text eol=lf
+CMakeLists.txt text eol=lf
+
+# Binary files - Treat as binary, do not touch line endings
+*.exe       binary
+*.dll       binary
+*.so        binary
+*.o         binary
+*.obj       binary
+*.lib       binary
+*.a         binary
+*.pdb       binary
+*.idb       binary
+*.bin       binary
