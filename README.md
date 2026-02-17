@@ -40,18 +40,18 @@ To maintain a clean environment, use the provided setup scripts.
 ### Linux (General Distributions)
 Requires `cmake` and a C compiler (e.g., `gcc` or `clang`).
 
-\`\`\`bash
+```bash
 chmod +x setup_linux.sh
 ./setup_linux.sh
-\`\`\`
+```
 
 ### Windows (Visual Studio 2026 / MSVC)
 Requires Visual Studio with C++ CMake tools installed.
 
-\`\`\`powershell
+```powershell
 # Run in PowerShell
 ./setup_windows.ps1
-\`\`\`
+```
 
 ## Branch Strategy
 
@@ -67,10 +67,10 @@ The repository follows a lightweight branch naming convention for organized deve
 
 After a successful build, execute the binaries from the `bin/` directory:
 
-\`\`\`bash
+```bash
 # Example execution on Linux
 ./bin/math/fibonacci
 
 # Example execution on Windows
 .\bin\math\fibonacci.exe
-\`\`\`
+```
