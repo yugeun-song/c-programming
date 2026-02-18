@@ -1,65 +1,83 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(c-programming C)
 
-# Compiler-specific flags
+# 1. Compiler Options
 if(MSVC)
     add_compile_options(/utf-8 /W4)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    message(STATUS ">> Platform: Windows (MSVC)")
 else()
     add_compile_options(-Wall -Wextra -g -pedantic)
+    message(STATUS ">> Platform: Linux/Unix (GCC/Clang)")
 endif()
 
-# Global output directory defaults (overridden per target below)
+# 2. Global Output Directory Settings
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_SOURCE_DIR}/bin)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_SOURCE_DIR}/bin)
 
-# Function to generate executables mirroring source structure
+# 3. Function to create targets from directory
 function(create_targets_from_dir dir_name)
-    if(NOT IS_DIRECTORY ${CMAKE_SOURCE_DIR}/${dir_name})
+    set(target_dir "${CMAKE_SOURCE_DIR}/${dir_name}")
+
+    if(NOT IS_DIRECTORY ${target_dir})
+        message(STATUS "   [Skip] Directory not found: ${dir_name}")
         return()
     endif()
 
+    # Create output directory explicitly
     file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${dir_name}")
-    file(GLOB sources "${dir_name}/*.c")
+    
+    # Scan source files (CONFIGURE_DEPENDS enables auto-detection)
+    file(GLOB sources CONFIGURE_DEPENDS "${dir_name}/*.c")
+
+    list(LENGTH sources source_count)
+    if(source_count EQUAL 0)
+        message(STATUS "   [Skip] No .c files in: ${dir_name}")
+        return()
+    endif()
+
+    message(STATUS ">> Scanning ${dir_name}...")
 
     foreach(src ${sources})
-        # Extract pure filename (e.g., 'test' from 'math/test.c')
         get_filename_component(filename ${src} NAME_WE)
-        
-        # Internal Target Name: Must be unique globally (e.g., 'math_test')
         set(unique_target "${dir_name}_${filename}")
 
-        add_executable(${unique_target} ${src})
+        if(NOT TARGET ${unique_target})
+            add_executable(${unique_target} ${src})
+            message(STATUS "      + Target created: ${filename} (bin/${dir_name}/${filename})")
 
-        # Properties to achieve 1:1 mapping:
-        # 1. OUTPUT_NAME: Forces the binary to be 'test.exe', not 'math_test.exe'
-        # 2. RUNTIME_OUTPUT_DIRECTORY: Places it in 'bin/math/'
-        set_target_properties(${unique_target} PROPERTIES 
-            OUTPUT_NAME "${filename}"
-            FOLDER "${dir_name}"
-            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
-            RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
-            RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
-        )
-        
-        if(MSVC)
+            # Configure output paths for binaries
             set_target_properties(${unique_target} PROPERTIES 
-                PDB_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
-                PDB_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
+                OUTPUT_NAME "${filename}"
+                FOLDER "${dir_name}"
+                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
+                RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
+                RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
             )
+            
+            # Configure PDB paths for MSVC debugging
+            if(MSVC)
+                set_target_properties(${unique_target} PROPERTIES 
+                    PDB_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
+                    PDB_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
+                )
+            endif()
         endif()
     endforeach()
 endfunction()
 
-# Register module directories
+# 4. Module Registration
+# Universal Modules
 create_targets_from_dir("math")
 create_targets_from_dir("pointer")
 create_targets_from_dir("std")
 create_targets_from_dir("type")
 
+# Platform-Specific Modules
 if(MSVC)
     create_targets_from_dir("msvc")
+    # create_targets_from_dir("gcc") 
 else()
     create_targets_from_dir("gcc")
 endif()
