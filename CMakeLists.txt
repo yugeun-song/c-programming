@@ -77,7 +77,6 @@ create_targets_from_dir("type")
 # Platform-Specific Modules
 if(MSVC)
     create_targets_from_dir("msvc")
-    # create_targets_from_dir("gcc") 
 else()
     create_targets_from_dir("gcc")
 endif()
