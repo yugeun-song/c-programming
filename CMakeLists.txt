@@ -7,7 +7,7 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     message(STATUS ">> Platform: Windows (MSVC)")
 else()
-    add_compile_options(-Wall -Wextra -g -pedantic)
+    add_compile_options(-Wall -Wextra -pedantic -g3 -O0 -fno-omit-frame-pointer)
     message(STATUS ">> Platform: Linux/Unix (GCC/Clang)")
 endif()
 
@@ -27,7 +27,7 @@ function(create_targets_from_dir dir_name)
 
     # Create output directory explicitly
     file(MAKE_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${dir_name}")
-    
+
     # Scan source files (CONFIGURE_DEPENDS enables auto-detection)
     file(GLOB sources CONFIGURE_DEPENDS "${dir_name}/*.c")
 
@@ -48,17 +48,17 @@ function(create_targets_from_dir dir_name)
             message(STATUS "      + Target created: ${filename} (bin/${dir_name}/${filename})")
 
             # Configure output paths for binaries
-            set_target_properties(${unique_target} PROPERTIES 
+            set_target_properties(${unique_target} PROPERTIES
                 OUTPUT_NAME "${filename}"
                 FOLDER "${dir_name}"
                 RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
                 RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
                 RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
             )
-            
+
             # Configure PDB paths for MSVC debugging
             if(MSVC)
-                set_target_properties(${unique_target} PROPERTIES 
+                set_target_properties(${unique_target} PROPERTIES
                     PDB_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
                     PDB_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/bin/${dir_name}"
                 )
