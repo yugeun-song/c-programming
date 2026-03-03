@@ -70,6 +70,7 @@ endfunction()
 # 4. Module Registration
 # Universal Modules
 create_targets_from_dir("math")
+create_targets_from_dir("memory")
 create_targets_from_dir("pointer")
 create_targets_from_dir("std")
 create_targets_from_dir("type")
