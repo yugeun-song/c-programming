@@ -37,17 +37,17 @@ int main(void)
 #if defined(_WIN32) || defined(_WIN64)
     #define TARGET_OS_NAME "Windows"
 #elif defined(__linux__)
-    #define OS_NAME "Linux"
+    #define TARGET_OS_NAME "Linux"
 #elif defined(__APPLE__) && defined(__MACH__)
-    #define OS_NAME "macOS"
+    #define TARGET_OS_NAME "macOS"
 #elif defined(__FreeBSD__)
-    #define OS_NAME "FreeBSD"
+    #define TARGET_OS_NAME "FreeBSD"
 #elif defined(__NetBSD__)
-    #define OS_NAME "NetBSD"
+    #define TARGET_OS_NAME "NetBSD"
 #elif defined(__OpenBSD__)
-    #define OS_NAME "OpenBSD"
+    #define TARGET_OS_NAME "OpenBSD"
 #elif defined(__DragonFly__)
-    #define OS_NAME "DragonFly BSD"
+    #define TARGET_OS_NAME "DragonFly BSD"
 #else
     #error "Unsupported OS!"
 #endif
@@ -66,34 +66,34 @@ int main(void)
 #endif
 
     printf("%-20s (%%d,   %2zu bytes)   MIN: %-22d   MAX: %-20d\n"
-        "%-20s (%%hhu, %2zu bytes)   MIN: %-22hhu   MAX: %-20hhu\n\n",
-        "char", sizeof(c_min), (int)c_min, (int)c_max,
-        "unsigned char", sizeof(uc_max), (unsigned char)0, uc_max);
+           "%-20s (%%hhu, %2zu bytes)   MIN: %-22hhu   MAX: %-20hhu\n\n",
+           "char", sizeof(c_min), (int)c_min, (int)c_max,
+           "unsigned char", sizeof(uc_max), (unsigned char)0, uc_max);
 
     printf("%-20s (%%hd,  %2zu bytes)   MIN: %-22hd   MAX: %-20hd\n"
-        "%-20s (%%hu,  %2zu bytes)   MIN: %-22hu   MAX: %-20hu\n\n",
-        "short", sizeof(s_min), (short)s_min, (short)s_max,
-        "unsigned short", sizeof(us_max), (unsigned short)0, us_max);
+           "%-20s (%%hu,  %2zu bytes)   MIN: %-22hu   MAX: %-20hu\n\n",
+           "short", sizeof(s_min), (short)s_min, (short)s_max,
+           "unsigned short", sizeof(us_max), (unsigned short)0, us_max);
 
     printf("%-20s (%%d,   %2zu bytes)   MIN: %-22d   MAX: %-20d\n"
-        "%-20s (%%u,   %2zu bytes)   MIN: %-22u   MAX: %-20u\n\n",
-        "int", sizeof(i_min), i_min, i_max,
-        "unsigned int", sizeof(ui_max), 0U, ui_max);
+           "%-20s (%%u,   %2zu bytes)   MIN: %-22u   MAX: %-20u\n\n",
+           "int", sizeof(i_min), i_min, i_max,
+           "unsigned int", sizeof(ui_max), 0U, ui_max);
 
     printf("%-20s (%%ld,  %2zu bytes)   MIN: %-22ld   MAX: %-20ld\n"
-        "%-20s (%%lu,  %2zu bytes)   MIN: %-22lu   MAX: %-20lu\n\n",
-        "long", sizeof(l_min), l_min, l_max,
-        "unsigned long", sizeof(ul_max), 0UL, ul_max);
+           "%-20s (%%lu,  %2zu bytes)   MIN: %-22lu   MAX: %-20lu\n\n",
+           "long", sizeof(l_min), l_min, l_max,
+           "unsigned long", sizeof(ul_max), 0UL, ul_max);
 
     printf("%-20s (%%lld, %2zu bytes)   MIN: %-22lld   MAX: %-20lld\n"
-        "%-20s (%%llu, %2zu bytes)   MIN: %-22llu   MAX: %-20llu\n\n",
-        "long long", sizeof(ll_min), ll_min, ll_max,
-        "unsigned long long", sizeof(ull_max), 0ULL, ull_max);
+           "%-20s (%%llu, %2zu bytes)   MIN: %-22llu   MAX: %-20llu\n\n",
+           "long long", sizeof(ll_min), ll_min, ll_max,
+           "unsigned long long", sizeof(ull_max), 0ULL, ull_max);
 
     printf("%-20s (%%f,   %2zu bytes)   VAL: %-20f\n"
-        "%-20s (%%lf,  %2zu bytes)   VAL: %-20lf\n",
-        "float", sizeof(f), f,
-        "double", sizeof(d), d);
+           "%-20s (%%lf,  %2zu bytes)   VAL: %-20lf\n",
+           "float", sizeof(f), f,
+           "double", sizeof(d), d);
 
 #if defined(_WIN32) || defined(_WIN64)
     printf("%-20s (%%f,   %2zu bytes)   VAL: %-20f\n\n", "long double", sizeof(ld), (double)ld);
@@ -102,9 +102,9 @@ int main(void)
 #endif
 
     printf("%-20s (%%s,   %2zu bytes)   VAL: %s\n"
-        "%-20s (%%p,   %2zu bytes)   ADR: %p\n",
-        "char*", sizeof(str), str,
-        "void*", sizeof(void*), (void*)&c_min);
+           "%-20s (%%p,   %2zu bytes)   ADR: %p\n",
+           "char*", sizeof(str), str,
+           "void*", sizeof(void*), (void*)&c_min);
 
 #if defined(_WIN64)
     printf("%-20s (%%llu, %2zu bytes)   VAL: %llu\n", "size_t", sizeof(sz), (unsigned long long)sz);
