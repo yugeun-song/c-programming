@@ -7,10 +7,12 @@ C source focusing on memory-level behavior, cross-platform robustness, performan
 - **Cross-Platform Build System**: CMake-based configuration ensuring consistent artifact generation across Linux (GCC/Clang) and Windows (MSVC).
 - **1:1 Source-to-Binary Mirroring**: Executables are automatically named after their source files and strictly organized in `bin/<module>/`, mirroring the source directory structure.
 - **Strict Coding Standards**:
+    - **Formatting**: LLVM-based `.clang-format` — right-aligned pointers (`char *p`), Allman function braces, K&R control flow, 80-column limit.
     - **Encoding**: UTF-8 without BOM.
     - **Line Endings**: LF (Line Feed) enforced via `.gitattributes`.
     - **Indentation**: 4-space indentation for source code, 4-width hard tabs for Makefiles via `.editorconfig`.
-- **Environment Isolation**: Build artifacts (`.o`, `.obj`, `.pdb`) and binaries (`.exe`, ELF) are strictly contained within `build/` and `bin/` directories.
+- **Debug-Oriented Compilation** (GCC/Clang): `-ggdb3 -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables` for full GDB macro support, accurate backtraces, and reliable perf/uftrace profiling.
+- **Environment Isolation**: Build artifacts (`.o`, `.obj`, `.pdb`) and binaries (`.exe`, ELF) are strictly contained within `build/` and `bin/`. Debugging tool outputs (GDB, Valgrind, strace, ltrace, uftrace) are excluded via `.gitignore`.
 - **IDE Integration**: Native support for Visual Studio 2022+ "Open Folder" workflow without requiring `.sln` or `.vcxproj` files.
 
 ## Project Structure
@@ -21,6 +23,7 @@ The repository ignores system-specific configuration files. All compiled binarie
 Standard C code compatible with all platforms. Platform-specific logic is handled via `#ifdef` preprocessor directives.
 
 - `math/`: Mathematical algorithms and numerical logic.
+- `memory/`: Structure padding, alignment rules, and byte-level memory layout visualization.
 - `pointer/`: Memory management, pointer arithmetic, and raw memory manipulation.
 - `std/`: Experiments with the C Standard Library (libc).
 - `type/`: Data type sizes, alignment, and structure memory layout.
@@ -39,13 +42,13 @@ Use the provided scripts to initialize the `build/` directory and compile all ta
 
 #### Linux (GCC / Clang)
 ```bash
-chmod +x setup_linux.sh
-./setup_linux.sh
+chmod +x build.sh
+./build.sh
 ```
 
 #### Windows (PowerShell / MSVC)
 ```powershell
-./setup_windows.ps1
+./build.ps1
 ```
 
 ---
