@@ -7,24 +7,27 @@
 
 #include <sysexits.h>
 
-#define likely(x)       __builtin_expect(!!(x), 1)
-#define unlikely(x)     __builtin_expect(!!(x), 0)
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
 
 /* 16KB data to ensure L1 Data Cache hits (typically 32KB) */
-#define ARR_SIZE    4096U
+#define ARR_SIZE 4096U
 #define OUTER_LOOPS 200000U
 
 /* Instruction Cache Displacement & Optimization Barriers */
 #if defined(__aarch64__)
-    /* AArch64: 32 NOPs = 128 bytes. memory clobber to prevent CSEL/CINC */
-    #define HEAVY_COLD_PATH() __asm__ volatile (".rept 32\n\t" "nop\n\t" ".endr")
-    #define PREVENT_OPTIMIZE() __asm__ volatile ("" : : : "memory")
+/* AArch64: 32 NOPs = 128 bytes. memory clobber to prevent CSEL/CINC */
+#define HEAVY_COLD_PATH()                                                      \
+    __asm__ volatile(".rept 32\n\t"                                            \
+                     "nop\n\t"                                                 \
+                     ".endr")
+#define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
 #elif defined(__x86_64__)
-    /* x86_64: 128 NOPs = 128 bytes */
-    #define HEAVY_COLD_PATH() __asm__ volatile (".fill 128, 1, 0x90")
-    #define PREVENT_OPTIMIZE()
+/* x86_64: 128 NOPs = 128 bytes */
+#define HEAVY_COLD_PATH() __asm__ volatile(".fill 128, 1, 0x90")
+#define PREVENT_OPTIMIZE()
 #else
-    #error "Unsupported architecture. This benchmark requires x86_64 or AArch64."
+#error "Unsupported architecture. This benchmark requires x86_64 or AArch64."
 #endif
 
 static inline double calc_diff(struct timespec start, struct timespec end)

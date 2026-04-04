@@ -7,7 +7,7 @@ if(MSVC)
     add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
     message(STATUS ">> Platform: Windows (MSVC)")
 else()
-    add_compile_options(-Wall -Wextra -pedantic -g3 -O0 -fno-omit-frame-pointer)
+    add_compile_options(-Wall -Wextra -pedantic -ggdb3 -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables)
     message(STATUS ">> Platform: Linux/Unix (GCC/Clang)")
 endif()
 
