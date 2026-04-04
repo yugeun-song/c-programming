@@ -11,9 +11,8 @@
 #define ANSI_COLOR_CYAN "\x1b[36m"
 #define ANSI_COLOR_RESET "\x1b[0m"
 
-static const char *COLORS[] = {ANSI_COLOR_RED,  ANSI_COLOR_GREEN,
-                               ANSI_COLOR_BLUE, ANSI_COLOR_MAGENTA,
-                               ANSI_COLOR_CYAN, ANSI_COLOR_YELLOW};
+static const char *COLORS[] = {ANSI_COLOR_RED,     ANSI_COLOR_GREEN, ANSI_COLOR_BLUE,
+                               ANSI_COLOR_MAGENTA, ANSI_COLOR_CYAN,  ANSI_COLOR_YELLOW};
 
 struct member_info {
     size_t offset;
@@ -69,9 +68,7 @@ struct union_in_struct {
     } b;
 };
 
-static inline void print_mem_info(void *ptr, size_t size,
-                                  const struct member_info *members,
-                                  size_t num_members)
+static inline void print_mem_info(void *ptr, size_t size, const struct member_info *members, size_t num_members)
 {
     size_t num_colors = sizeof(COLORS) / sizeof(COLORS[0]);
     size_t i;
@@ -87,8 +84,7 @@ static inline void print_mem_info(void *ptr, size_t size,
         color_idx = -1;
 
         for (j = 0; j < num_members; ++j) {
-            if (i >= members[j].offset &&
-                i < members[j].offset + members[j].size) {
+            if (i >= members[j].offset && i < members[j].offset + members[j].size) {
                 color_idx = (int)(j % num_colors);
                 break;
             }
@@ -168,51 +164,41 @@ int main(void)
     union_struct.a = 0xAA;
     union_struct.b.u1 = 0x11223344;
 
-    struct member_info mi_inter[] = {
-        {offsetof(struct internal_padding, a), sizeof(inter_pad_struct.a)},
-        {offsetof(struct internal_padding, b), sizeof(inter_pad_struct.b)}};
+    struct member_info mi_inter[] = {{offsetof(struct internal_padding, a), sizeof(inter_pad_struct.a)},
+                                     {offsetof(struct internal_padding, b), sizeof(inter_pad_struct.b)}};
 
-    struct member_info mi_trail[] = {
-        {offsetof(struct trailing_padding, a), sizeof(trail_pad_struct.a)},
-        {offsetof(struct trailing_padding, b), sizeof(trail_pad_struct.b)}};
+    struct member_info mi_trail[] = {{offsetof(struct trailing_padding, a), sizeof(trail_pad_struct.a)},
+                                     {offsetof(struct trailing_padding, b), sizeof(trail_pad_struct.b)}};
 
     struct member_info mi_well[] = {
         {offsetof(struct well_optimized_order, a), sizeof(well_order_struct.a)},
         {offsetof(struct well_optimized_order, b), sizeof(well_order_struct.b)},
-        {offsetof(struct well_optimized_order, c),
-         sizeof(well_order_struct.c)}};
+        {offsetof(struct well_optimized_order, c), sizeof(well_order_struct.c)}};
 
-    struct member_info mi_bad[] = {
-        {offsetof(struct bad_optimized_order, a), sizeof(bad_order_struct.a)},
-        {offsetof(struct bad_optimized_order, b), sizeof(bad_order_struct.b)},
-        {offsetof(struct bad_optimized_order, c), sizeof(bad_order_struct.c)}};
+    struct member_info mi_bad[] = {{offsetof(struct bad_optimized_order, a), sizeof(bad_order_struct.a)},
+                                   {offsetof(struct bad_optimized_order, b), sizeof(bad_order_struct.b)},
+                                   {offsetof(struct bad_optimized_order, c), sizeof(bad_order_struct.c)}};
 
     struct member_info mi_nested_type[] = {
         {offsetof(struct nested_type_member, a), sizeof(nested_type_struct.a)},
-        {offsetof(struct nested_type_member, b) +
-             offsetof(struct internal_padding, a),
+        {offsetof(struct nested_type_member, b) + offsetof(struct internal_padding, a),
          sizeof(nested_type_struct.b.a)},
-        {offsetof(struct nested_type_member, b) +
-             offsetof(struct internal_padding, b),
+        {offsetof(struct nested_type_member, b) + offsetof(struct internal_padding, b),
          sizeof(nested_type_struct.b.b)}};
 
     struct member_info mi_nested_anon[] = {
-        {offsetof(struct nested_anonymous_member, a),
-         sizeof(nested_anon_struct.a)},
-        {offsetof(struct nested_anonymous_member, b.b1),
-         sizeof(nested_anon_struct.b.b1)},
-        {offsetof(struct nested_anonymous_member, b.b2),
-         sizeof(nested_anon_struct.b.b2)}};
+        {offsetof(struct nested_anonymous_member, a), sizeof(nested_anon_struct.a)},
+        {offsetof(struct nested_anonymous_member, b.b1), sizeof(nested_anon_struct.b.b1)},
+        {offsetof(struct nested_anonymous_member, b.b2), sizeof(nested_anon_struct.b.b2)}};
 
     struct member_info mi_array[] = {
         {offsetof(struct array_member_logic, a), sizeof(array_logic_struct.a)},
         {offsetof(struct array_member_logic, b), sizeof(array_logic_struct.b)},
         {offsetof(struct array_member_logic, c), sizeof(array_logic_struct.c)}};
 
-    struct member_info mi_union[] = {
-        {offsetof(struct union_in_struct, a), sizeof(union_struct.a)},
-        {offsetof(struct union_in_struct, b.u1), sizeof(union_struct.b.u1)},
-        {offsetof(struct union_in_struct, b.u2), sizeof(union_struct.b.u2)}};
+    struct member_info mi_union[] = {{offsetof(struct union_in_struct, a), sizeof(union_struct.a)},
+                                     {offsetof(struct union_in_struct, b.u1), sizeof(union_struct.b.u1)},
+                                     {offsetof(struct union_in_struct, b.u2), sizeof(union_struct.b.u2)}};
 
     printf("-------------------------------------------------------------------"
            "------------\n"
@@ -249,18 +235,15 @@ int main(void)
            "    uint32_t " ANSI_COLOR_GREEN "b" ANSI_COLOR_RESET ";\n"
            "    uint16_t " ANSI_COLOR_BLUE "c" ANSI_COLOR_RESET ";\n"
            "};\n");
-    print_mem_info(&bad_order_struct, sizeof(bad_order_struct), mi_bad,
-                   sizeof(mi_bad) / sizeof(mi_bad[0]));
+    print_mem_info(&bad_order_struct, sizeof(bad_order_struct), mi_bad, sizeof(mi_bad) / sizeof(mi_bad[0]));
 
     printf("-------------------------------------------------------------------"
            "------------\n"
            "struct nested_type_member {\n"
            "    uint8_t " ANSI_COLOR_RED "a" ANSI_COLOR_RESET ";\n"
-           "    struct internal_padding " ANSI_COLOR_GREEN "b" ANSI_COLOR_RESET
-           ";\n"
+           "    struct internal_padding " ANSI_COLOR_GREEN "b" ANSI_COLOR_RESET ";\n"
            "};\n");
-    print_mem_info(&nested_type_struct, sizeof(nested_type_struct),
-                   mi_nested_type,
+    print_mem_info(&nested_type_struct, sizeof(nested_type_struct), mi_nested_type,
                    sizeof(mi_nested_type) / sizeof(mi_nested_type[0]));
 
     printf("-------------------------------------------------------------------"
@@ -272,8 +255,7 @@ int main(void)
            "        uint8_t " ANSI_COLOR_BLUE "b2" ANSI_COLOR_RESET ";\n"
            "    } b;\n"
            "};\n");
-    print_mem_info(&nested_anon_struct, sizeof(nested_anon_struct),
-                   mi_nested_anon,
+    print_mem_info(&nested_anon_struct, sizeof(nested_anon_struct), mi_nested_anon,
                    sizeof(mi_nested_anon) / sizeof(mi_nested_anon[0]));
 
     printf("-------------------------------------------------------------------"
@@ -295,8 +277,7 @@ int main(void)
            "        uint8_t " ANSI_COLOR_BLUE "u2" ANSI_COLOR_RESET "[8];\n"
            "    } b;\n"
            "};\n");
-    print_mem_info(&union_struct, sizeof(union_struct), mi_union,
-                   sizeof(mi_union) / sizeof(mi_union[0]));
+    print_mem_info(&union_struct, sizeof(union_struct), mi_union, sizeof(mi_union) / sizeof(mi_union[0]));
     printf("-------------------------------------------------------------------"
            "------------\n");
 

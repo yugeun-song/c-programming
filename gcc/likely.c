@@ -17,9 +17,9 @@
 /* Instruction Cache Displacement & Optimization Barriers */
 #if defined(__aarch64__)
 /* AArch64: 32 NOPs = 128 bytes. memory clobber to prevent CSEL/CINC */
-#define HEAVY_COLD_PATH()                                                      \
-    __asm__ volatile(".rept 32\n\t"                                            \
-                     "nop\n\t"                                                 \
+#define HEAVY_COLD_PATH()                                                                          \
+    __asm__ volatile(".rept 32\n\t"                                                                \
+                     "nop\n\t"                                                                     \
                      ".endr")
 #define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
 #elif defined(__x86_64__)
@@ -32,8 +32,7 @@
 
 static inline double calc_diff(struct timespec start, struct timespec end)
 {
-    return (double)(end.tv_sec - start.tv_sec) +
-           (double)(end.tv_nsec - start.tv_nsec) / 1e9;
+    return (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec) / 1e9;
 }
 
 int main(void)
@@ -47,8 +46,7 @@ int main(void)
 
     data = (int32_t *)malloc(ARR_SIZE * sizeof(int32_t));
     if (data == NULL) {
-        fprintf(stderr, "[ERROR] %s:%d - Memory allocation failed: %s\n",
-                __FILE__, __LINE__, strerror(errno));
+        fprintf(stderr, "[ERROR] %s:%d - Memory allocation failed: %s\n", __FILE__, __LINE__, strerror(errno));
         return EX_OSERR;
     }
 
