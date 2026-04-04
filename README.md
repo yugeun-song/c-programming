@@ -7,7 +7,7 @@ C source focusing on memory-level behavior, cross-platform robustness, performan
 - **Cross-Platform Build System**: CMake-based configuration ensuring consistent artifact generation across Linux (GCC/Clang) and Windows (MSVC).
 - **1:1 Source-to-Binary Mirroring**: Executables are automatically named after their source files and strictly organized in `bin/<module>/`, mirroring the source directory structure.
 - **Strict Coding Standards**:
-    - **Formatting**: LLVM-based `.clang-format` — right-aligned pointers (`char *p`), Allman function braces, K&R control flow, 80-column limit.
+    - **Formatting**: LLVM-based `.clang-format` — right-aligned pointers (`char *p`), Allman function braces, K&R control flow, 100-column soft limit.
     - **Encoding**: UTF-8 without BOM.
     - **Line Endings**: LF (Line Feed) enforced via `.gitattributes`.
     - **Indentation**: 4-space indentation for source code, 4-width hard tabs for Makefiles via `.editorconfig`.
