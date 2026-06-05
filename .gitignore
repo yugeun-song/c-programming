@@ -28,6 +28,7 @@ build/
 out/
 bin/*
 !bin/**/.gitkeep
+asm/
 
 # ==============================================================================
 # IDE Specific
@@ -82,6 +83,7 @@ ltrace.out
 ltrace.log
 *.ltrace
 uftrace.data/
+gmon.out
 
 # ==============================================================================
 # LSP / Editor Artifacts
