@@ -26,8 +26,17 @@
 /* x86_64: 128 NOPs = 128 bytes */
 #define HEAVY_COLD_PATH() __asm__ volatile(".fill 128, 1, 0x90")
 #define PREVENT_OPTIMIZE()
+#elif defined(__riscv) && (__riscv_xlen == 64)
+#define HEAVY_COLD_PATH()                                                                          \
+    __asm__ volatile(".option push\n\t"                                                            \
+                     ".option norvc\n\t"                                                           \
+                     ".rept 32\n\t"                                                                \
+                     "nop\n\t"                                                                     \
+                     ".endr\n\t"                                                                   \
+                     ".option pop")
+#define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
 #else
-#error "Unsupported architecture. This benchmark requires x86_64 or AArch64."
+#error "Unsupported architecture. This benchmark requires x86_64, AArch64, or RISC-V (RV64)."
 #endif
 
 static inline double calc_diff(struct timespec start, struct timespec end)
@@ -59,6 +68,8 @@ int main(void)
     printf("Target: ARM64 (AArch64)\n");
 #elif defined(__x86_64__)
     printf("Target: x86_64\n");
+#elif defined(__riscv) && (__riscv_xlen == 64)
+    printf("Target: RISC-V (RV64)\n");
 #endif
     printf("--------------------------------------------------------\n");
 

@@ -61,8 +61,10 @@ int main(void)
     printf("Current Architecture : x86 (32-bit)\n\n");
 #elif defined(__arm__) || defined(_M_ARM)
     printf("Current Architecture : ARM (32-bit)\n\n");
+#elif defined(__riscv) && (__riscv_xlen == 64)
+    printf("Current Architecture : RISC-V RV64 (64-bit)\n\n");
 #else
-#error "Unsupported architecture! This program only supports x86, x86_64(amd64), 32bit ARM, and ARM64."
+#error "Unsupported architecture! This program only supports x86, x86_64(amd64), 32bit ARM, ARM64, and RISC-V (RV64)."
 #endif
 
     printf("%-20s (%%d,   %2zu bytes)   MIN: %-22d   MAX: %-20d\n"
@@ -103,7 +105,7 @@ int main(void)
 
 #if defined(_WIN64)
     printf("%-20s (%%llu, %2zu bytes)   VAL: %llu\n", "size_t", sizeof(sz), (unsigned long long)sz);
-#elif defined(__x86_64__) || defined(__aarch64__)
+#elif defined(__x86_64__) || defined(__aarch64__) || (defined(__riscv) && __riscv_xlen == 64)
     printf("%-20s (%%lu,  %2zu bytes)   VAL: %lu\n", "size_t", sizeof(sz), (unsigned long)sz);
 #else
     printf("%-20s (%%u,   %2zu bytes)   VAL: %u\n", "size_t", sizeof(sz), (unsigned int)sz);
