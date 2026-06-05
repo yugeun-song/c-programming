@@ -11,13 +11,15 @@ C source focusing on memory-level behavior, cross-platform robustness, performan
     - **Encoding**: UTF-8 without BOM.
     - **Line Endings**: LF (Line Feed) enforced via `.gitattributes`.
     - **Indentation**: 4-space indentation for source code, 4-width hard tabs for Makefiles via `.editorconfig`.
-- **Debug-Oriented Compilation** (GCC/Clang): `-ggdb3 -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables` for full GDB macro support, accurate backtraces, and reliable perf/uftrace profiling.
-- **Environment Isolation**: Build artifacts (`.o`, `.obj`, `.pdb`) and binaries (`.exe`, ELF) are strictly contained within `build/` and `bin/`. Debugging tool outputs (GDB, Valgrind, strace, ltrace, uftrace) are excluded via `.gitignore`.
+- **Dual Binary Builds** (GCC/Clang): Each source produces two executables in `bin/<module>/`: `<name>` (trace build) and `<name>_opt` (performance build, `-O2`). MSVC builds remain single-variant.
+- **Debug-Oriented Compilation** (GCC/Clang, trace build): `-ggdb3 -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -pg` for full GDB macro support, accurate backtraces, gprof/uftrace function tracing, and reliable perf profiling.
+- **Assembly Listing Generation** (GCC/Clang): Every build also lowers each source to assembly listings (`-S`) for x86_64, AArch64, and RISC-V across seven optimization levels (`-O0` to `-Og`), stored under `asm/`. Missing cross compilers are logged at configure time and skipped without failing the build.
+- **Environment Isolation**: Build artifacts (`.o`, `.obj`, `.pdb`), binaries (`.exe`, ELF), and generated assembly listings (`.s`) are strictly contained within `build/`, `bin/`, and `asm/`. Debugging tool outputs (GDB, Valgrind, strace, ltrace, uftrace) are excluded via `.gitignore`.
 - **IDE Integration**: Native support for Visual Studio 2022+ "Open Folder" workflow without requiring `.sln` or `.vcxproj` files.
 
 ## Project Structure
 
-The repository ignores system-specific configuration files. All compiled binaries are output to the root-level `bin/` directory, organized by module.
+The repository ignores system-specific configuration files. All compiled binaries are output to the root-level `bin/` directory, organized by module. Generated assembly listings are output to the root-level `asm/` directory, mirroring the same module structure.
 
 ### 1. Universal Modules
 Standard C code compatible with all platforms. Platform-specific logic is handled via `#ifdef` preprocessor directives.
@@ -33,6 +35,10 @@ Isolated at the build system level. These directories are excluded from the buil
 
 - `gcc/`: Linux-exclusive implementations (POSIX API, System Calls, Inline Assembly for GCC). **[Ignored on Windows]**
 - `msvc/`: Windows-exclusive implementations (Win32 API, MSVC Intrinsics). **[Ignored on Linux]**
+
+### Adding a New Program
+
+Source files are listed explicitly in `CMakeLists.txt` (`UNIVERSAL_SOURCES`, `GCC_SOURCES`, `MSVC_SOURCES`). To add a program, create the `.c` file under its module directory and append its path to the matching list.
 
 ## Build Instructions
 
@@ -85,13 +91,33 @@ For manual execution without helper scripts, use the CMake script mode. This ens
 cmake -P build.cmake
 ```
 
+## Assembly Listings
+
+Each build (GCC/Clang environments only; skipped under MSVC) additionally generates assembly listings for every target source via `-S`, organized as `asm/<module>/<source>/<compiler>/<arch>/<level>.s`.
+
+- **Compilers**: `gcc` only for now. The `<compiler>` path segment reserves room for additional families (e.g. `clang`) without relocating existing output. The exact compiler version that produced a listing is embedded in its `.ident` directive.
+- **Architectures**: `x86_64` (native), `aarch64`, `riscv64`. Cross targets require the corresponding cross compiler (`aarch64-linux-gnu-gcc`, `riscv64-linux-gnu-gcc`). If a compiler is missing, that architecture is skipped and reported at configure time; the rest of the build proceeds.
+- **Optimization Levels**: `-O0`, `-O1`, `-O2`, `-O3`, `-Os`, `-Ofast`, `-Og` — one listing per level.
+- **Flag Isolation**: Listings are compiled with the optimization flag only, isolated from the debug-oriented flags used for binaries, so the output reflects the optimizer's default behavior at each level.
+- **Incompatible Sources**: If a source cannot be compiled for an architecture (e.g. `gcc/likely.c` requires x86_64/AArch64), a `<level>.log` containing the compiler error is written instead of the listing and the build continues.
+- **Version Control**: The `asm/` directory is generated output and is excluded via `.gitignore`.
+
+```bash
+# Compare optimization levels for the same source and architecture
+diff asm/gcc/likely/gcc/x86_64/O0.s asm/gcc/likely/gcc/x86_64/O2.s
+
+# Compare architectures at the same optimization level
+diff asm/std/hello_world/gcc/x86_64/O2.s asm/std/hello_world/gcc/aarch64/O2.s
+```
+
 ## Execution
 
 Compiled binaries are located in the `bin/` directory, structured by module name.
 
 ```bash
-# Linux
+# Linux (trace build / optimized build)
 ./bin/somefolder/filename
+./bin/somefolder/filename_opt
 
 # Windows
 .\bin\somefolder\filename.exe
