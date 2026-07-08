@@ -22,6 +22,7 @@ set(UNIVERSAL_SOURCES
 
 set(GCC_SOURCES
     gcc/likely.c
+    gcc/statement_expression.c
 )
 
 set(MSVC_SOURCES

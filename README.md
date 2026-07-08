@@ -33,7 +33,7 @@ Standard C code compatible with all platforms. Platform-specific logic is handle
 ### 2. Platform-Specific Modules
 Isolated at the build system level. These directories are excluded from the build target list on incompatible OSs.
 
-- `gcc/`: Linux-exclusive implementations (POSIX API, System Calls, Inline Assembly for GCC). **[Ignored on Windows]**
+- `gcc/`: Linux-exclusive implementations (POSIX API, System Calls, Inline Assembly, and GCC language extensions such as statement expressions). **[Ignored on Windows]**
 - `msvc/`: Windows-exclusive implementations (Win32 API, MSVC Intrinsics). **[Ignored on Linux]**
 
 ### Adding a New Program
