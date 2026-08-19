@@ -14,7 +14,6 @@ Directories name the topic, not the platform.
 | `std/` | C standard library experiments |
 | `type/` | type widths, ranges, format specifiers |
 | `gcc/` | extensions GCC introduced |
-| `clang/` | extensions specific to clang |
 | `glibc/` | glibc implementation behavior |
 | `msvc/` | MSVC extensions and Win32 |
 
