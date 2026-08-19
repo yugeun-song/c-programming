@@ -4,10 +4,16 @@ cmake_minimum_required(VERSION 3.10)
 get_filename_component(ROOT_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
 set(BUILD_DIR "${ROOT_DIR}/build")
 
+if(NOT DEFINED CONFIG)
+    set(CONFIG Debug)
+elseif(NOT CONFIG MATCHES "^(Debug|Release)$")
+    message(FATAL_ERROR "CONFIG must be Debug or Release, got '${CONFIG}'.")
+endif()
+
 message(STATUS "-------------------------------------------------")
 message(STATUS "Build Script Started")
 message(STATUS "Root:  ${ROOT_DIR}")
-message(STATUS "Build: ${BUILD_DIR}")
+message(STATUS "Build: ${BUILD_DIR} (${CONFIG})")
 message(STATUS "-------------------------------------------------")
 
 message(STATUS "[Step 1] Configuring...")
@@ -37,7 +43,7 @@ if(WIN32)
         set(current_gen "Visual Studio ${major} ${year}")
 
         execute_process(
-            COMMAND ${CMAKE_COMMAND} -G "${current_gen}" -A x64 -S ${ROOT_DIR} -B ${BUILD_DIR}
+            COMMAND ${CMAKE_COMMAND} -G "${current_gen}" -A x64 -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${CONFIG}
             RESULT_VARIABLE result
             OUTPUT_QUIET
             ERROR_QUIET
@@ -57,7 +63,7 @@ else()
     # On Linux/Unix: Use Unix Makefiles
     message(STATUS ">> Linux/Unix detected: Using Unix Makefiles...")
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -G "Unix Makefiles" -S ${ROOT_DIR} -B ${BUILD_DIR}
+        COMMAND ${CMAKE_COMMAND} -G "Unix Makefiles" -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${CONFIG}
         RESULT_VARIABLE result
     )
 endif()
@@ -69,9 +75,9 @@ endif()
 message(STATUS "\n[Step 2] Building...")
 set(BUILD_CMD ${CMAKE_COMMAND} --build ${BUILD_DIR})
 
-# Force Debug configuration on Multi-Config generators
+# Multi-Config generators need the configuration at build time
 if(WIN32)
-    list(APPEND BUILD_CMD --config Debug)
+    list(APPEND BUILD_CMD --config ${CONFIG})
 endif()
 
 execute_process(
