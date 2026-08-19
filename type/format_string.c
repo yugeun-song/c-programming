@@ -1,9 +1,11 @@
-#include <stdio.h>
+#include <limits.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #define UNSIGNED_MAX(type) ((type) - 1)
-#define SIGNED_MIN(type, utype) ((type)((utype)1 << (sizeof(type) * 8 - 1)))
-#define SIGNED_MAX(type, utype) ((type) ~((utype)1 << (sizeof(type) * 8 - 1)))
+#define SIGNED_MIN(type, utype) ((type)((utype)1 << (sizeof(type) * CHAR_BIT - 1)))
+#define SIGNED_MAX(type, utype) ((type) ~((utype)1 << (sizeof(type) * CHAR_BIT - 1)))
 
 int main(void)
 {
@@ -49,7 +51,7 @@ int main(void)
 #elif defined(__DragonFly__)
 #define TARGET_OS_NAME "DragonFly BSD"
 #else
-#error "Unsupported OS!"
+#define TARGET_OS_NAME "unknown"
 #endif
     printf("Current OS           : %s\n", TARGET_OS_NAME);
 
@@ -57,14 +59,10 @@ int main(void)
     printf("Current Architecture : x64 (64-bit)\n\n");
 #elif defined(__aarch64__) || defined(_M_ARM64)
     printf("Current Architecture : ARM64 (64-bit)\n\n");
-#elif defined(__i386__) || defined(_M_IX86)
-    printf("Current Architecture : x86 (32-bit)\n\n");
-#elif defined(__arm__) || defined(_M_ARM)
-    printf("Current Architecture : ARM (32-bit)\n\n");
 #elif defined(__riscv) && (__riscv_xlen == 64)
     printf("Current Architecture : RISC-V RV64 (64-bit)\n\n");
 #else
-#error "Unsupported architecture! This program only supports x86, x86_64(amd64), 32bit ARM, ARM64, and RISC-V (RV64)."
+    printf("Current Architecture : unknown\n\n");
 #endif
 
     printf("%-20s (%%d,   %2zu bytes)   MIN: %-22d   MAX: %-20d\n"
@@ -93,7 +91,7 @@ int main(void)
            "%-20s (%%lf,  %2zu bytes)   VAL: %-20lf\n",
            "float", sizeof(f), f, "double", sizeof(d), d);
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_MSC_VER) || (defined(__MINGW32__) && !defined(__USE_MINGW_ANSI_STDIO))
     printf("%-20s (%%f,   %2zu bytes)   VAL: %-20f\n\n", "long double", sizeof(ld), (double)ld);
 #else
     printf("%-20s (%%Lf,  %2zu bytes)   VAL: %-20Lf\n\n", "long double", sizeof(ld), ld);
@@ -103,12 +101,12 @@ int main(void)
            "%-20s (%%p,   %2zu bytes)   ADR: %p\n",
            "char*", sizeof(str), str, "void*", sizeof(void *), (void *)&c_min);
 
-#if defined(_WIN64)
-    printf("%-20s (%%llu, %2zu bytes)   VAL: %llu\n", "size_t", sizeof(sz), (unsigned long long)sz);
-#elif defined(__x86_64__) || defined(__aarch64__) || (defined(__riscv) && __riscv_xlen == 64)
+#if SIZE_MAX == ULONG_MAX
     printf("%-20s (%%lu,  %2zu bytes)   VAL: %lu\n", "size_t", sizeof(sz), (unsigned long)sz);
+#elif SIZE_MAX == ULLONG_MAX
+    printf("%-20s (%%llu, %2zu bytes)   VAL: %llu\n", "size_t", sizeof(sz), (unsigned long long)sz);
 #else
-    printf("%-20s (%%u,   %2zu bytes)   VAL: %u\n", "size_t", sizeof(sz), (unsigned int)sz);
+    printf("%-20s (%%zu,  %2zu bytes)   VAL: %zu\n", "size_t", sizeof(sz), sz);
 #endif
 
     return 0;
