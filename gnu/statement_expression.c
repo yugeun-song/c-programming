@@ -17,7 +17,8 @@ int some_foo(void)
         volatile int some_result = 1;                                                              \
         volatile int some_value2 = 4096 + (int)(some_value1 & 1ULL);                               \
     some_useless_label:                                                                            \
-        if (some_value2-- <= 0) {                                                                  \
+        --some_value2;                                                                             \
+        if (some_value2 < 0) {                                                                     \
             goto another_useless_label;                                                            \
         }                                                                                          \
         switch (some_result) {                                                                     \

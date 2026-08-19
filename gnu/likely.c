@@ -1,11 +1,11 @@
+#define _POSIX_C_SOURCE 199309L
+
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#include <sysexits.h>
 
 #define likely(x) __builtin_expect(!!(x), 1)
 #define unlikely(x) __builtin_expect(!!(x), 0)
@@ -22,10 +22,12 @@
                      "nop\n\t"                                                                     \
                      ".endr")
 #define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
+#define TARGET_ARCH_NAME "ARM64 (AArch64)"
 #elif defined(__x86_64__)
 /* x86_64: 128 NOPs = 128 bytes */
 #define HEAVY_COLD_PATH() __asm__ volatile(".fill 128, 1, 0x90")
 #define PREVENT_OPTIMIZE()
+#define TARGET_ARCH_NAME "x86_64"
 #elif defined(__riscv) && (__riscv_xlen == 64)
 #define HEAVY_COLD_PATH()                                                                          \
     __asm__ volatile(".option push\n\t"                                                            \
@@ -35,6 +37,7 @@
                      ".endr\n\t"                                                                   \
                      ".option pop")
 #define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
+#define TARGET_ARCH_NAME "RISC-V (RV64)"
 #else
 #error "Unsupported architecture. This benchmark requires x86_64, AArch64, or RISC-V (RV64)."
 #endif
@@ -56,7 +59,7 @@ int main(void)
     data = (int32_t *)malloc(ARR_SIZE * sizeof(int32_t));
     if (data == NULL) {
         fprintf(stderr, "[ERROR] %s:%d - Memory allocation failed: %s\n", __FILE__, __LINE__, strerror(errno));
-        return EX_OSERR;
+        return EXIT_FAILURE;
     }
 
     for (i = 0; i < ARR_SIZE; ++i) {
@@ -64,13 +67,7 @@ int main(void)
     }
 
     printf("Benchmark: 'likely' vs 'Default' (L1 Hit Scenario)\n");
-#if defined(__aarch64__)
-    printf("Target: ARM64 (AArch64)\n");
-#elif defined(__x86_64__)
-    printf("Target: x86_64\n");
-#elif defined(__riscv) && (__riscv_xlen == 64)
-    printf("Target: RISC-V (RV64)\n");
-#endif
+    printf("Target: %s\n", TARGET_ARCH_NAME);
     printf("--------------------------------------------------------\n");
 
     /* Test 1: Default Behavior */
