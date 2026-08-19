@@ -72,6 +72,10 @@ endif()
 
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" TARGET_OS)
 
+if(TARGET_OS STREQUAL "windows" AND NOT TARGET_ARCH STREQUAL "x86_64")
+    message(FATAL_ERROR "Unsupported combination: windows on ${TARGET_ARCH}. Windows builds target x86_64 only.")
+endif()
+
 string(TOLOWER "${CMAKE_C_COMPILER_ID}" TARGET_CC)
 if(TARGET_CC STREQUAL "gnu")
     set(TARGET_CC gcc)

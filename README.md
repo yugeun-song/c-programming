@@ -24,7 +24,7 @@ GCC and Clang emit two binaries per source: `<name>`, built with `-ggdb3 -O0 -fn
 
 ## Portability
 
-Supported platforms are Linux and Windows on x86_64, aarch64 and riscv64. CMake checks the target OS and asks the compiler which architecture it is building for, failing configuration on anything else, so no per-file platform checks are needed.
+Supported targets are Linux on x86_64, aarch64 and riscv64, and Windows on x86_64. CMake checks the target OS, asks the compiler which architecture it is building for, and fails configuration on any other combination, so no per-file platform checks are needed.
 
 Baseline is C99 with compiler extensions off. gcc and clang get `-std=c99`; MSVC has no `/std:c99` switch, so CMake emits no flag and its default mode covers it. Anything past C99 is opted into explicitly: GNU extensions through `__extension__` and `__builtin_*`, POSIX and glibc through feature-test macros.
 
