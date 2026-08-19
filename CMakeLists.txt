@@ -34,20 +34,23 @@ endif()
 include(CheckCSourceCompiles)
 include(CheckSymbolExists)
 
-check_c_source_compiles("
-#if !defined(__GNUC__)
-#error not the GNU dialect
+function(probe_dialect name predicate)
+    check_c_source_compiles("
+#if !(${predicate})
+#error dialect mismatch
 #endif
 int main(void) { return 0; }
-" HAVE_GNU_DIALECT)
+" DIALECT_IS_${name})
+    if(DIALECT_IS_${name})
+        set(C_DIALECTS ${C_DIALECTS} ${name} PARENT_SCOPE)
+    endif()
+endfunction()
 
-if(HAVE_GNU_DIALECT)
-    set(C_DIALECT gnu)
-elseif(MSVC)
-    set(C_DIALECT msvc)
-else()
-    set(C_DIALECT unknown)
-endif()
+set(C_DIALECTS "")
+probe_dialect(gnu "defined(__GNUC__)")
+probe_dialect(gcc "defined(__GNUC__) && !defined(__clang__)")
+probe_dialect(clang "defined(__clang__)")
+probe_dialect(msvc "defined(_MSC_VER)")
 
 function(probe_arch name predicate)
     check_c_source_compiles("
@@ -101,7 +104,8 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     endif()
 endif()
 
-message(STATUS ">> Target: ${TARGET_ARCH}-${TARGET_OS}-${TARGET_CC} | dialect: ${C_DIALECT} | glibc on Linux: ${HAVE_GLIBC_LINUX}")
+string(REPLACE ";" "," dialects_shown "${C_DIALECTS}")
+message(STATUS ">> Target: ${TARGET_ARCH}-${TARGET_OS}-${TARGET_CC} | dialects: ${dialects_shown} | glibc on Linux: ${HAVE_GLIBC_LINUX}")
 
 # 3. Source Table
 set(STUDY_SOURCES "")
@@ -109,7 +113,7 @@ set(STUDY_SOURCES "")
 function(study_source rel_path)
     cmake_parse_arguments(ARG "" "DIALECT" "WHEN" ${ARGN})
 
-    if(ARG_DIALECT AND NOT ARG_DIALECT STREQUAL "${C_DIALECT}")
+    if(ARG_DIALECT AND NOT ARG_DIALECT IN_LIST C_DIALECTS)
         message(STATUS "      - skipped: ${rel_path} (needs ${ARG_DIALECT} dialect)")
         return()
     endif()
@@ -127,9 +131,9 @@ endfunction()
 study_source(memory/struct_padding.c)
 study_source(std/hello_world.c)
 study_source(type/format_string.c)
-study_source(memory/glibc_heap_fragmentation.c WHEN HAVE_GLIBC_LINUX)
-study_source(gnu/statement_expression.c DIALECT gnu)
-study_source(gnu/likely.c DIALECT gnu WHEN HAVE_CLOCK_GETTIME)
+study_source(glibc/heap_fragmentation.c WHEN HAVE_GLIBC_LINUX)
+study_source(gcc/statement_expression.c DIALECT gnu)
+study_source(gcc/likely.c DIALECT gnu WHEN HAVE_CLOCK_GETTIME)
 
 # 4. Target Generation
 foreach(rel_path IN LISTS STUDY_SOURCES)

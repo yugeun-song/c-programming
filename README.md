@@ -9,14 +9,16 @@ Directories name the topic, not the platform.
 | directory | holds |
 |---|---|
 | `math/` | numerical algorithms |
-| `memory/` | padding, alignment, heap behavior |
+| `memory/` | padding, alignment, and object layout |
 | `pointer/` | pointer arithmetic and raw memory |
 | `std/` | C standard library experiments |
 | `type/` | type widths, ranges, format specifiers |
-| `gnu/` | GNU C dialect, compiled by both gcc and clang |
-| `msvc/` | MSVC dialect |
+| `gcc/` | extensions GCC introduced |
+| `clang/` | extensions specific to clang |
+| `glibc/` | glibc implementation behavior |
+| `msvc/` | MSVC extensions and Win32 |
 
-Directories with no source yet are created when their first file lands.
+A toolchain directory names whose extension it is, not who can compile it. Clang implements many GCC extensions, so most of `gcc/` builds under clang too; what a source actually requires is recorded by its `DIALECT` tag. Directories with no source yet are created when their first file lands.
 
 Binaries mirror the tree into `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, so every combination coexists instead of overwriting the last one. Configuring without a build type gives Debug.
 
@@ -32,13 +34,22 @@ Three classes of dependency, each gated where it can actually be decided.
 
 | axis | build system | source |
 |---|---|---|
-| dialect | `DIALECT gnu` / `msvc` selects the file | none |
+| dialect | `DIALECT` tag matched against the probed dialect set | none |
 | libc | `check_symbol_exists(__GLIBC__ features.h)` | none |
 | OS | `CMAKE_SYSTEM_NAME` and feature probes | `_POSIX_C_SOURCE`, `_DEFAULT_SOURCE` on line 1 |
 | architecture | `check_c_source_compiles` per architecture, fatal if none match | `__x86_64__` / `__aarch64__` / `__riscv` dispatch, `#else` `#error` only where no code exists |
 
+A compiler belongs to every dialect it satisfies, so clang answers to both `gnu` and `clang`, and clang-cl to both `clang` and `msvc`.
+
+| dialect | predicate |
+|---|---|
+| `gnu` | `__GNUC__` |
+| `gcc` | `__GNUC__` and not `__clang__` |
+| `clang` | `__clang__` |
+| `msvc` | `_MSC_VER` |
+
 - The build system decides which files compile. The source decides how it adapts.
-- A source carries a preprocessor guard only where it already branches on its own and one branch has no code to run, as in `gnu/likely.c` selecting an inline asm body. A guard that only restates a build-system gate is not written.
+- A source carries a preprocessor guard only where it already branches on its own and one branch has no code to run, as in `gcc/likely.c` selecting an inline asm body. A guard that only restates a build-system gate is not written.
 - `#error` means "cannot be correct here", never "unrecognized platform". A branch that only picks a printed label falls back to `unknown` instead.
 - Compiling one file by hand outside CMake is the caller's responsibility. The sources do not defend against it.
 - Probe the compiler, never match on `CMAKE_SYSTEM_PROCESSOR`.
@@ -50,8 +61,8 @@ Drop the `.c` under its topic directory and add one line to the table in `CMakeL
 
 ```cmake
 study_source(memory/foo.c)                                   # portable
-study_source(memory/bar.c WHEN HAVE_GLIBC_LINUX)             # environment
-study_source(gnu/baz.c DIALECT gnu WHEN HAVE_CLOCK_GETTIME)  # dialect and feature
+study_source(glibc/bar.c WHEN HAVE_GLIBC_LINUX)              # environment
+study_source(gcc/baz.c DIALECT gnu WHEN HAVE_CLOCK_GETTIME)  # dialect and feature
 ```
 
 Probe results are cached, so use a separate build directory per toolchain.
