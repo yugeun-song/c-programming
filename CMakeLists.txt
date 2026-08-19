@@ -70,17 +70,19 @@ if(TARGET_ARCH STREQUAL "unknown")
     message(FATAL_ERROR "Unsupported target architecture. This project targets x86_64, aarch64 and riscv64.")
 endif()
 
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" TARGET_OS)
+
 string(TOLOWER "${CMAKE_C_COMPILER_ID}" TARGET_CC)
 if(TARGET_CC STREQUAL "gnu")
     set(TARGET_CC gcc)
 endif()
 
-set(BUILD_TAG "${TARGET_ARCH}-${TARGET_CC}-$<LOWER_CASE:$<CONFIG>>")
+set(BUILD_TAG "${TARGET_ARCH}-${TARGET_OS}-${TARGET_CC}-$<LOWER_CASE:$<CONFIG>>")
 if(IS_MULTI_CONFIG)
-    set(BUILD_TAG_SHOWN "${TARGET_ARCH}-${TARGET_CC}-<config>")
+    set(BUILD_TAG_SHOWN "${TARGET_ARCH}-${TARGET_OS}-${TARGET_CC}-<config>")
 else()
     string(TOLOWER "${CMAKE_BUILD_TYPE}" build_type_lower)
-    set(BUILD_TAG_SHOWN "${TARGET_ARCH}-${TARGET_CC}-${build_type_lower}")
+    set(BUILD_TAG_SHOWN "${TARGET_ARCH}-${TARGET_OS}-${TARGET_CC}-${build_type_lower}")
 endif()
 
 set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=199309L)
@@ -95,7 +97,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     endif()
 endif()
 
-message(STATUS ">> Target: ${TARGET_ARCH}-${TARGET_CC} | dialect: ${C_DIALECT} | glibc on Linux: ${HAVE_GLIBC_LINUX}")
+message(STATUS ">> Target: ${TARGET_ARCH}-${TARGET_OS}-${TARGET_CC} | dialect: ${C_DIALECT} | glibc on Linux: ${HAVE_GLIBC_LINUX}")
 
 # 3. Source Table
 set(STUDY_SOURCES "")

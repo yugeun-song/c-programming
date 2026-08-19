@@ -18,7 +18,7 @@ Directories name the topic, not the platform.
 
 Directories with no source yet are created when their first file lands.
 
-Binaries mirror the tree into `bin/<arch>-<compiler>-<config>/<dir>/`, so every combination coexists instead of overwriting the last one. Configuring without a build type gives Debug.
+Binaries mirror the tree into `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, so every combination coexists instead of overwriting the last one. Configuring without a build type gives Debug.
 
 GCC and Clang emit two binaries per source: `<name>`, built with `-ggdb3 -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -pg` for GDB, gprof, uftrace and perf, and `<name>_opt` at `-O2`. MSVC emits one, with its `.pdb` beside it.
 
@@ -63,7 +63,7 @@ Probe results are cached, so use a separate build directory per toolchain.
 ./build.ps1 [-Clean] [-Configuration ..]  # Windows, MSVC
 cmake [-DCONFIG=Release] -P build.cmake   # either, picks the generator itself
 
-./bin/<arch>-<compiler>-<config>/<dir>/<name>
+./bin/<arch>-<os>-<compiler>-<config>/<dir>/<name>
 ```
 
 Visual Studio 2022+: "Open a local folder" on the repository root, pick a target from **Select Startup Item**, then F5. Breakpoints, Memory View and `.pdb` symbols work without a `.sln`.
