@@ -19,9 +19,23 @@ Directories name the topic, not the platform.
 
 A toolchain directory names whose extension it is, not who can compile it. Clang implements many GCC extensions, so most of `gcc/` builds under clang too; what a source actually requires is recorded by its `DIALECT` tag. Directories with no source yet are created when their first file lands.
 
-Binaries mirror the tree into `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, so every combination coexists instead of overwriting the last one. Configuring without a build type gives Debug.
+Binaries mirror the tree into `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, one per source, so every combination coexists instead of overwriting the last one. MSVC puts the `.pdb` beside it. Configuring without a build type gives Debug.
 
-GCC and Clang emit two binaries per source: `<name>`, built with `-ggdb3 -O0 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -pg` for GDB, gprof, uftrace and perf, and `<name>_opt` at `-O2`. MSVC emits one, with its `.pdb` beside it.
+## Build types
+
+Every flag is probed with `check_c_compiler_flag` and dropped when the compiler rejects it, so gcc, clang and the cross toolchains each get what they actually accept.
+
+Debug keeps the machine code readable as C and every tool fully informed: `-O0 -ggdb3 -fno-builtin -fno-inline -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -fno-stack-protector -fno-eliminate-unused-debug-types`, plus `-fkeep-inline-functions -fkeep-static-functions -grecord-gcc-switches` on gcc and `-fdebug-macro` on clang. `-fno-builtin` is what stops gcc folding `printf("...\n")` into `puts` at `-O0`; `-ggdb3` and `-fdebug-macro` are what make `info macro` work.
+
+Release ships what distributions ship: `-O2 -g -D_FORTIFY_SOURCE=3 -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -Wformat -Werror=format-security`, with `-fcf-protection=full` on x86_64 and `-mbranch-protection=standard` on aarch64, linked `-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,--as-needed`.
+
+`-pg` is not in Debug. It contaminates perf profiles, injects instructions mid-prologue on aarch64 and riscv64, and writes `gmon.out` into the working directory. uftrace needs no instrumentation flag: `uftrace record -P . <binary>` traces a plain Debug build. gprof does need it, so it lives behind an option.
+
+| option | effect |
+|---|---|
+| `-DENABLE_GPROF=ON` | adds `-pg` to compile and link |
+| `-DSANITIZE=address,undefined` | enables those sanitizers |
+| `-DENABLE_LTO=ON` | link-time optimization in Release |
 
 ## Portability
 
