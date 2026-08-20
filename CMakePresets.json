@@ -10,7 +10,9 @@
         "value": "x64",
         "strategy": "external"
       },
-      "cacheVariables": { "CMAKE_BUILD_TYPE": "Debug" },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      },
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -24,6 +26,21 @@
       "binaryDir": "${sourceDir}/out/build/${presetName}",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-release",
+      "displayName": "Linux Release",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_C_COMPILER": "gcc"
       },
       "condition": {
