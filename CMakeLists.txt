@@ -262,6 +262,7 @@ endfunction()
 
 study_source(memory/struct_padding.c)
 study_source(std/hello_world.c)
+study_source(tricks/comma_operator.c)
 study_source(type/format_string.c)
 study_source(glibc/heap_fragmentation.c WHEN HAVE_GLIBC_LINUX)
 study_source(gcc/statement_expression.c DIALECT gnu)
