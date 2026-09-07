@@ -18,7 +18,7 @@ message(STATUS "-------------------------------------------------")
 
 message(STATUS "[Step 1] Configuring...")
 
-# Clean previous build cache to prevent generator conflicts (especially between Ninja/MSVC)
+# This script forces a generator, so a cache left by a different one has to go first
 if(EXISTS "${BUILD_DIR}/CMakeCache.txt")
     message(STATUS ">> Cleaning stale build cache...")
     file(REMOVE_RECURSE "${BUILD_DIR}")
@@ -27,9 +27,9 @@ endif()
 # Determine the generator based on OS
 if(WIN32)
     # Force Visual Studio to prevent CMake from accidentally picking MinGW/Ninja
-    message(STATUS ">> Windows detected: Probing for Visual Studio (2026 and newer)...")
+    message(STATUS ">> Windows detected: Probing for Visual Studio (2026 down to 2019)...")
     
-    # VS 2026 (v18), VS 2022 (v17), etc.
+    # Newest first: VS 2026 (v18), VS 2022 (v17), VS 2019 (v16)
     set(vs_years 2026 2022 2019)
     set(vs_majors 18 17 16)
     
@@ -57,7 +57,7 @@ if(WIN32)
     endforeach()
     
     if(NOT found_generator)
-        message(FATAL_ERROR "MSVC not found! Please ensure Visual Studio 2026 or later is installed.")
+        message(FATAL_ERROR "MSVC not found! Please install Visual Studio 2019 or later.")
     endif()
 else()
     # On Linux/Unix: Use Unix Makefiles
