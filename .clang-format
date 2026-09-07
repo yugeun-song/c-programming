@@ -16,6 +16,7 @@ BraceWrapping:
     BeforeCatch: false
     IndentBraces: false
 InsertBraces: true
+Cpp11BracedListStyle: false
 AllowShortBlocksOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
