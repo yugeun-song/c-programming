@@ -4,13 +4,33 @@ $BuildDir = Join-Path $PSScriptRoot "build"
 $BuildType = "Debug"
 $Clean = $false
 
+function Get-Usage {
+    @"
+usage: $(Split-Path -Leaf $PSCommandPath) [clean] [debug|release]
+
+Configure build/ and build every target into bin/.
+
+  clean       delete build/ first
+  debug       Debug configuration (default)
+  release     Release configuration
+  -h, --help  print this help
+
+Arguments are case-insensitive and may appear in any order.
+"@
+}
+
 foreach ($arg in $args) {
     switch ("$arg") {
         "clean"   { $Clean = $true }
         "debug"   { $BuildType = "Debug" }
         "release" { $BuildType = "Release" }
+        { $_ -in "-h", "--help" } {
+            Get-Usage
+            exit 0
+        }
         default {
-            [Console]::Error.WriteLine("usage: $(Split-Path -Leaf $PSCommandPath) [clean] [debug|release]")
+            [Console]::Error.WriteLine((Get-Usage))
+            [Console]::Error.WriteLine("unknown argument: $arg")
             exit 1
         }
     }

@@ -115,7 +115,7 @@ cmake --preset linux-debug && cmake --build out/build/linux-debug
 ./bin/<arch>-<os>-<compiler>-<config>/<dir>/<name>
 ```
 
-The three scripts take the same words in any order and case, from any working directory; no word means `debug`. They configure into `build/`, which `build.cmake` wipes when a cache is present. Presets use `out/build/<preset>/` and define no build presets, hence the two-step line.
+The three scripts take the same words in any order and case, from any working directory; no word means `debug`. `-h` or `--help` prints the usage; `build.cmake` needs `--` before them, or CMake intercepts them. They configure into `build/`, which `build.cmake` wipes when a cache is present. Presets use `out/build/<preset>/` and define no build presets, hence the two-step line.
 
 Visual Studio 2022+: "Open a local folder" on the root, pick a target from **Select Startup Item**, F5. Breakpoints, Memory View and `.pdb` work without a `.sln`.
 

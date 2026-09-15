@@ -5,6 +5,17 @@ get_filename_component(ROOT_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
 set(BUILD_DIR "${ROOT_DIR}/build")
 set(BUILD_TYPE Debug)
 set(CLEAN FALSE)
+set(usage [=[
+usage: cmake -P build.cmake [--] [clean] [debug|release]
+
+Configure build/ and build every target into bin/.
+
+  clean       delete build/ first
+  debug       Debug configuration (default)
+  release     Release configuration
+  -h, --help  print this help (after --)
+
+Arguments are case-insensitive and may appear in any order.]=])
 
 math(EXPR last_arg "${CMAKE_ARGC} - 1")
 foreach(i RANGE ${last_arg})
@@ -18,8 +29,12 @@ foreach(i RANGE ${last_arg})
             set(BUILD_TYPE Debug)
         elseif(word STREQUAL "release")
             set(BUILD_TYPE Release)
+        elseif(word STREQUAL "-h" OR word STREQUAL "--help")
+            execute_process(COMMAND ${CMAKE_COMMAND} -E echo "${usage}")
+            return()
         else()
-            message(FATAL_ERROR "usage: cmake -P build.cmake [clean] [debug|release]")
+            message("${usage}")
+            message(FATAL_ERROR "unknown argument: ${CMAKE_ARGV${i}}")
         endif()
     endif()
 endforeach()
