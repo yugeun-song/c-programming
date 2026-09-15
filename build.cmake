@@ -28,11 +28,11 @@ endif()
 if(WIN32)
     # Force Visual Studio to prevent CMake from accidentally picking MinGW/Ninja
     message(STATUS ">> Windows detected: Probing for Visual Studio (2026 down to 2019)...")
-    
+
     # Newest first: VS 2026 (v18), VS 2022 (v17), VS 2019 (v16)
     set(vs_years 2026 2022 2019)
     set(vs_majors 18 17 16)
-    
+
     set(found_generator FALSE)
     list(LENGTH vs_years len)
     math(EXPR range "${len} - 1")
@@ -48,14 +48,14 @@ if(WIN32)
             OUTPUT_QUIET
             ERROR_QUIET
         )
-        
+
         if(result EQUAL 0)
             message(STATUS ">> Successfully configured with ${current_gen}")
             set(found_generator TRUE)
             break()
         endif()
     endforeach()
-    
+
     if(NOT found_generator)
         message(FATAL_ERROR "MSVC not found! Please install Visual Studio 2019 or later.")
     endif()
