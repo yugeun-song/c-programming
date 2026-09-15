@@ -151,6 +151,7 @@ else()
         -fno-builtin
         -fno-inline
         -fno-omit-frame-pointer
+        -mno-omit-leaf-frame-pointer
         -fno-optimize-sibling-calls
         -fasynchronous-unwind-tables
         -fno-stack-protector
@@ -165,6 +166,7 @@ else()
         -fstack-protector-strong
         -fstack-clash-protection
         -fno-omit-frame-pointer
+        -mno-omit-leaf-frame-pointer
         -Wformat
         -Werror=format-security
     )
