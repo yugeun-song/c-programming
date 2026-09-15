@@ -6,7 +6,7 @@ $BuildType = "Debug"
 $Clean = $false
 
 function Get-Usage {
-    $targets = cmake -S $PSScriptRoot --list-presets 2>$null | ForEach-Object { if ($_ -match '^\s*"(.+)"') { "  " + $Matches[1] } }
+    $targets = cmake -P (Join-Path $PSScriptRoot "cmake/targets.cmake") 2>$null
     @"
 usage: $(Split-Path -Leaf $PSCommandPath) [clean] [debug|release] [target]
 
@@ -20,7 +20,6 @@ Configure build/<target> from its CMake preset and build every program into bin/
 
 Arguments are case-insensitive and may appear in any order.
 
-Targets on this host:
 $($targets -join "`n")
 "@
 }

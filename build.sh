@@ -22,8 +22,7 @@ Configure build/<target> from its CMake preset and build every program into bin/
 
 Arguments are case-insensitive and may appear in any order.
 
-Targets on this host:
-$(cmake --list-presets 2>/dev/null | sed -n 's/^ *"\(.*\)".*$/  \1/p')
+$(cmake -P cmake/targets.cmake 2>/dev/null)
 EOF
 }
 

@@ -13,14 +13,11 @@ set(BUILD_TYPE Debug)
 set(CLEAN FALSE)
 
 execute_process(
-    COMMAND ${CMAKE_COMMAND} --list-presets
-    WORKING_DIRECTORY ${ROOT_DIR}
-    OUTPUT_VARIABLE presets
+    COMMAND ${CMAKE_COMMAND} -P ${ROOT_DIR}/cmake/targets.cmake
+    OUTPUT_VARIABLE targets
+    OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_QUIET
 )
-string(REGEX MATCHALL "\"[^\"]+\"" presets "${presets}")
-list(TRANSFORM presets REPLACE "\"(.+)\"" "  \\1")
-list(JOIN presets "\n" presets)
 set(usage [=[
 usage: cmake -P build.cmake [--] [clean] [debug|release] [target]
 
@@ -34,8 +31,7 @@ Configure build/<target> from its CMake preset and build every program into bin/
 
 Arguments are case-insensitive and may appear in any order.
 
-Targets on this host:
-@presets@]=])
+@targets@]=])
 string(CONFIGURE "${usage}" usage @ONLY)
 
 math(EXPR last_arg "${CMAKE_ARGC} - 1")
