@@ -1,26 +1,40 @@
 # OS-agnostic build script running on CMake itself
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 
 get_filename_component(ROOT_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
 set(BUILD_DIR "${ROOT_DIR}/build")
+set(BUILD_TYPE Debug)
+set(CLEAN FALSE)
 
-if(NOT DEFINED CONFIG)
-    set(CONFIG Debug)
-elseif(NOT CONFIG MATCHES "^(Debug|Release)$")
-    message(FATAL_ERROR "CONFIG must be Debug or Release, got '${CONFIG}'.")
-endif()
+math(EXPR last_arg "${CMAKE_ARGC} - 1")
+foreach(i RANGE ${last_arg})
+    if(CMAKE_ARGV${i} STREQUAL "-P")
+        math(EXPR first_word "${i} + 2")
+    elseif(DEFINED first_word AND i GREATER_EQUAL first_word AND NOT CMAKE_ARGV${i} STREQUAL "--")
+        string(TOLOWER "${CMAKE_ARGV${i}}" word)
+        if(word STREQUAL "clean")
+            set(CLEAN TRUE)
+        elseif(word STREQUAL "debug")
+            set(BUILD_TYPE Debug)
+        elseif(word STREQUAL "release")
+            set(BUILD_TYPE Release)
+        else()
+            message(FATAL_ERROR "usage: cmake -P build.cmake [clean] [debug|release]")
+        endif()
+    endif()
+endforeach()
 
 message(STATUS "-------------------------------------------------")
 message(STATUS "Build Script Started")
 message(STATUS "Root:  ${ROOT_DIR}")
-message(STATUS "Build: ${BUILD_DIR} (${CONFIG})")
+message(STATUS "Build: ${BUILD_DIR} (${BUILD_TYPE})")
 message(STATUS "-------------------------------------------------")
 
 message(STATUS "[Step 1] Configuring...")
 
 # This script forces a generator, so a cache left by a different one has to go first
-if(EXISTS "${BUILD_DIR}/CMakeCache.txt")
-    message(STATUS ">> Cleaning stale build cache...")
+if(CLEAN OR EXISTS "${BUILD_DIR}/CMakeCache.txt")
+    message(STATUS ">> Cleaning previous build...")
     file(REMOVE_RECURSE "${BUILD_DIR}")
 endif()
 
@@ -43,7 +57,7 @@ if(WIN32)
         set(current_gen "Visual Studio ${major} ${year}")
 
         execute_process(
-            COMMAND ${CMAKE_COMMAND} -G "${current_gen}" -A x64 -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${CONFIG}
+            COMMAND ${CMAKE_COMMAND} -G "${current_gen}" -A x64 -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
             RESULT_VARIABLE result
             OUTPUT_QUIET
             ERROR_QUIET
@@ -63,7 +77,7 @@ else()
     # On Linux/Unix: Use Unix Makefiles
     message(STATUS ">> Linux/Unix detected: Using Unix Makefiles...")
     execute_process(
-        COMMAND ${CMAKE_COMMAND} -G "Unix Makefiles" -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${CONFIG}
+        COMMAND ${CMAKE_COMMAND} -G "Unix Makefiles" -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
         RESULT_VARIABLE result
     )
 endif()
@@ -73,15 +87,8 @@ if(NOT result EQUAL 0)
 endif()
 
 message(STATUS "\n[Step 2] Building...")
-set(BUILD_CMD ${CMAKE_COMMAND} --build ${BUILD_DIR})
-
-# Multi-Config generators need the configuration at build time
-if(WIN32)
-    list(APPEND BUILD_CMD --config ${CONFIG})
-endif()
-
 execute_process(
-    COMMAND ${BUILD_CMD}
+    COMMAND ${CMAKE_COMMAND} --build ${BUILD_DIR} --parallel --config ${BUILD_TYPE}
     RESULT_VARIABLE result
 )
 
