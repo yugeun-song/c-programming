@@ -22,27 +22,25 @@ A toolchain directory names whose extension it is, not who can compile it — cl
 
 Binaries go to `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, so every combination coexists. CMake appends the platform suffix, so Windows targets get `.exe`, and MSVC puts the `.pdb` beside it. No build type means Debug.
 
-## Toolchain selection
+## Targets
 
-`CMakeLists.txt` picks no compiler. `project(c-programming C)` leaves it to CMake:
+`CMakePresets.json` holds every toolchain, one configure preset per target, named after its `bin/` directory. The build scripts only choose one.
 
-```
-CC  ->  cc  ->  gcc  ->  cl  ->  bcc  ->  xlc  ->  icx  ->  clang
-```
+| preset | host | compiler | runtime | generator |
+|---|---|---|---|---|
+| `x86_64-linux-gcc` | Linux | `gcc` | glibc | Ninja Multi-Config |
+| `x86_64-linux-clang` | Linux | `clang` | glibc | Ninja Multi-Config |
+| `aarch64-linux-gcc` | Linux | `aarch64-linux-gnu-gcc` | glibc | Ninja Multi-Config |
+| `aarch64-linux-clang` | Linux | `clang --target=aarch64-linux-gnu`, `lld` | glibc | Ninja Multi-Config |
+| `riscv64-linux-gcc` | Linux | `riscv64-linux-gnu-gcc` | glibc | Ninja Multi-Config |
+| `riscv64-linux-clang` | Linux | `clang --target=riscv64-linux-gnu`, `lld` | glibc | Ninja Multi-Config |
+| `x86_64-windows-gcc` | Linux, Windows | `x86_64-w64-mingw32-gcc` | MinGW-w64 | Ninja Multi-Config |
+| `x86_64-windows-msvc` | Windows | `cl` | UCRT | newest Visual Studio |
+| `x86_64-windows-clang` | Windows | `clang-cl`, toolset `ClangCL` | UCRT | newest Visual Studio |
 
-One name at a time across all of `PATH`, so name order beats directory order: a `clang` first in `PATH` loses to a `cc` or `gcc` last in it. `CC=clang` overrides.
+`cmake --list-presets` shows the presets valid on the host. Clang cross presets reuse the sysroot that the gcc cross packages install under `/usr/<triple>`. `CMAKE_C_COMPILER_ID` names the compiler segment and selects the MSVC or GCC-style flag set, and configure stops when the probed `<arch>-<os>-<compiler>` differs from the preset name.
 
-Nothing here prefers a vendor or errors on one. `CMAKE_C_COMPILER_ID` only names the `bin/` directory and selects the MSVC or GCC-style flag set; the gates that abort are OS and architecture. With no compiler at all, the error is CMake's own, raised inside `project()`.
-
-Three entry points pin a toolchain and stop rather than fall back:
-
-| entry point | pinned |
-|---|---|
-| presets `linux-debug`, `linux-release` | `CMAKE_C_COMPILER=gcc`, over `CC` |
-| preset `windows-debug` | generator `Visual Studio 17 2022` |
-| `build.cmake` on Windows | first of Visual Studio 2026, 2022, 2019 that configures |
-
-That loop is the only toolchain search written here, and it ranges over MSVC versions, not vendors. `build.sh` and `build.ps1` pin nothing.
+Without a preset, CMake picks the compiler itself: `CC`, then `cc`, `gcc`, `cl`, `bcc`, `xlc`, `icx`, `clang`, one name at a time across all of `PATH`.
 
 ## Build types
 
@@ -106,18 +104,19 @@ Probes are cached, so use one build directory per toolchain.
 ## Build and run
 
 ```bash
-./build.sh [clean] [debug|release]            # Linux
-./build.ps1 [clean] [debug|release]           # Windows
-cmake -P build.cmake [clean] [debug|release]  # either, picks the generator
+./build.sh [clean] [debug|release] [target]            # Linux
+./build.ps1 [clean] [debug|release] [target]           # Windows
+cmake -P build.cmake [clean] [debug|release] [target]  # either
 
-cmake --preset linux-debug && cmake --build out/build/linux-debug
+cmake --preset aarch64-linux-gcc && cmake --build build/aarch64-linux-gcc --config Release
 
 ./bin/<arch>-<os>-<compiler>-<config>/<dir>/<name>
+qemu-aarch64 -L /usr/aarch64-linux-gnu ./bin/aarch64-linux-gcc-release/<dir>/<name>
 ```
 
-The three scripts take the same words in any order and case, from any working directory; no word means `debug`. `-h` or `--help` prints the usage; `build.cmake` needs `--` before them, or CMake intercepts them. They configure into `build/`, which `build.cmake` wipes when a cache is present. Presets use `out/build/<preset>/` and define no build presets, hence the two-step line.
+The three scripts take the same words in any order and case, from any working directory. No word means `debug` and the host default target: `<arch>-linux-gcc` on Linux, `x86_64-windows-msvc` on Windows. `-h` or `--help` prints the usage and the targets valid on the host; `build.cmake` needs `--` before them, or CMake intercepts them. Each target configures once into `build/<target>/` and builds either config there; `clean` deletes that directory.
 
-Visual Studio 2022+: "Open a local folder" on the root, pick a target from **Select Startup Item**, F5. Breakpoints, Memory View and `.pdb` work without a `.sln`.
+Visual Studio 2022+: "Open a local folder" on the root, choose `x86_64-windows-msvc` or `x86_64-windows-clang` from the preset list, pick a program from **Select Startup Item**, F5. Breakpoints, Memory View and `.pdb` work without a `.sln`.
 
 ## Conventions
 

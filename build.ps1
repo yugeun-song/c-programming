@@ -1,33 +1,40 @@
 $ErrorActionPreference = "Stop"
 
-$BuildDir = Join-Path $PSScriptRoot "build"
+$DefaultTarget = if ($IsLinux) { "$(uname -m)-linux-gcc" } else { "x86_64-windows-msvc" }
+$Target = $DefaultTarget
 $BuildType = "Debug"
 $Clean = $false
 
 function Get-Usage {
+    $targets = cmake -S $PSScriptRoot --list-presets 2>$null | ForEach-Object { if ($_ -match '^\s*"(.+)"') { "  " + $Matches[1] } }
     @"
-usage: $(Split-Path -Leaf $PSCommandPath) [clean] [debug|release]
+usage: $(Split-Path -Leaf $PSCommandPath) [clean] [debug|release] [target]
 
-Configure build/ and build every target into bin/.
+Configure build/<target> from its CMake preset and build every program into bin/.
 
-  clean       delete build/ first
+  clean       delete build/<target> first
   debug       Debug configuration (default)
   release     Release configuration
+  target      configure preset to use (default $DefaultTarget)
   -h, --help  print this help
 
 Arguments are case-insensitive and may appear in any order.
+
+Targets on this host:
+$($targets -join "`n")
 "@
 }
 
 foreach ($arg in $args) {
-    switch ("$arg") {
-        "clean"   { $Clean = $true }
-        "debug"   { $BuildType = "Debug" }
-        "release" { $BuildType = "Release" }
-        { $_ -in "-h", "--help" } {
+    switch -Regex ("$arg") {
+        "^clean$"       { $Clean = $true }
+        "^debug$"       { $BuildType = "Debug" }
+        "^release$"     { $BuildType = "Release" }
+        "^(-h|--help)$" {
             Get-Usage
             exit 0
         }
+        "^[a-z0-9_]+-"  { $Target = "$arg".ToLowerInvariant() }
         default {
             [Console]::Error.WriteLine((Get-Usage))
             [Console]::Error.WriteLine("unknown argument: $arg")
@@ -36,18 +43,20 @@ foreach ($arg in $args) {
     }
 }
 
+$BuildDir = Join-Path $PSScriptRoot "build/$Target"
+
 if ($Clean) {
-    Write-Host "Cleaning previous build..." -ForegroundColor Yellow
+    Write-Host "Cleaning $BuildDir..." -ForegroundColor Yellow
     if (Test-Path $BuildDir) {
         Remove-Item -Recurse -Force $BuildDir
     }
 }
 
-Write-Host "Configuring CMake project ($BuildType)..." -ForegroundColor Cyan
-cmake -S $PSScriptRoot -B $BuildDir "-DCMAKE_BUILD_TYPE=$BuildType"
+Write-Host "Configuring $Target..." -ForegroundColor Cyan
+cmake -S $PSScriptRoot --preset $Target
 if ($LASTEXITCODE -ne 0) { throw "CMake configuration failed with exit code $LASTEXITCODE." }
 
-Write-Host "Building projects..." -ForegroundColor Cyan
+Write-Host "Building $Target ($BuildType)..." -ForegroundColor Cyan
 cmake --build $BuildDir --parallel --config $BuildType
 if ($LASTEXITCODE -ne 0) { throw "Build failed with exit code $LASTEXITCODE." }
 

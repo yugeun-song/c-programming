@@ -2,16 +2,31 @@
   "version": 3,
   "configurePresets": [
     {
-      "name": "windows-debug",
-      "displayName": "Windows Debug",
-      "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "name": "base",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "EXPECTED_TARGET": "${presetName}"
+      }
+    },
+    {
+      "name": "linux",
+      "hidden": true,
+      "inherits": "base",
+      "generator": "Ninja Multi-Config",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "windows",
+      "hidden": true,
+      "inherits": "base",
       "architecture": {
         "value": "x64",
-        "strategy": "external"
-      },
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug"
+        "strategy": "set"
       },
       "condition": {
         "type": "equals",
@@ -20,33 +35,81 @@
       }
     },
     {
-      "name": "linux-debug",
-      "displayName": "Linux Debug",
-      "generator": "Unix Makefiles",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "name": "x86_64-linux-gcc",
+      "inherits": "linux",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
         "CMAKE_C_COMPILER": "gcc"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
       }
     },
     {
-      "name": "linux-release",
-      "displayName": "Linux Release",
-      "generator": "Unix Makefiles",
-      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "name": "x86_64-linux-clang",
+      "inherits": "linux",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_C_COMPILER": "gcc"
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Linux"
+        "CMAKE_C_COMPILER": "clang"
+      }
+    },
+    {
+      "name": "aarch64-linux-gcc",
+      "inherits": "linux",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_SYSTEM_PROCESSOR": "aarch64",
+        "CMAKE_C_COMPILER": "aarch64-linux-gnu-gcc"
+      }
+    },
+    {
+      "name": "aarch64-linux-clang",
+      "inherits": "linux",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_SYSTEM_PROCESSOR": "aarch64",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_C_COMPILER_TARGET": "aarch64-linux-gnu",
+        "CMAKE_SYSROOT": "/usr/aarch64-linux-gnu",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld"
+      }
+    },
+    {
+      "name": "riscv64-linux-gcc",
+      "inherits": "linux",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_SYSTEM_PROCESSOR": "riscv64",
+        "CMAKE_C_COMPILER": "riscv64-linux-gnu-gcc"
+      }
+    },
+    {
+      "name": "riscv64-linux-clang",
+      "inherits": "linux",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Linux",
+        "CMAKE_SYSTEM_PROCESSOR": "riscv64",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_C_COMPILER_TARGET": "riscv64-linux-gnu",
+        "CMAKE_SYSROOT": "/usr/riscv64-linux-gnu",
+        "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=lld"
+      }
+    },
+    {
+      "name": "x86_64-windows-gcc",
+      "inherits": "base",
+      "generator": "Ninja Multi-Config",
+      "cacheVariables": {
+        "CMAKE_SYSTEM_NAME": "Windows",
+        "CMAKE_SYSTEM_PROCESSOR": "AMD64",
+        "CMAKE_C_COMPILER": "x86_64-w64-mingw32-gcc"
+      }
+    },
+    {
+      "name": "x86_64-windows-msvc",
+      "inherits": "windows"
+    },
+    {
+      "name": "x86_64-windows-clang",
+      "inherits": "windows",
+      "toolset": {
+        "value": "ClangCL",
+        "strategy": "set"
       }
     }
   ]

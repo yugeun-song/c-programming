@@ -1,21 +1,42 @@
 # OS-agnostic build script running on CMake itself
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.21)
 
 get_filename_component(ROOT_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
-set(BUILD_DIR "${ROOT_DIR}/build")
+if(CMAKE_HOST_WIN32)
+    set(DEFAULT_TARGET x86_64-windows-msvc)
+else()
+    cmake_host_system_information(RESULT host_arch QUERY OS_PLATFORM)
+    set(DEFAULT_TARGET ${host_arch}-linux-gcc)
+endif()
+set(TARGET ${DEFAULT_TARGET})
 set(BUILD_TYPE Debug)
 set(CLEAN FALSE)
+
+execute_process(
+    COMMAND ${CMAKE_COMMAND} --list-presets
+    WORKING_DIRECTORY ${ROOT_DIR}
+    OUTPUT_VARIABLE presets
+    ERROR_QUIET
+)
+string(REGEX MATCHALL "\"[^\"]+\"" presets "${presets}")
+list(TRANSFORM presets REPLACE "\"(.+)\"" "  \\1")
+list(JOIN presets "\n" presets)
 set(usage [=[
-usage: cmake -P build.cmake [--] [clean] [debug|release]
+usage: cmake -P build.cmake [--] [clean] [debug|release] [target]
 
-Configure build/ and build every target into bin/.
+Configure build/<target> from its CMake preset and build every program into bin/.
 
-  clean       delete build/ first
+  clean       delete build/<target> first
   debug       Debug configuration (default)
   release     Release configuration
+  target      configure preset to use (default @DEFAULT_TARGET@)
   -h, --help  print this help (after --)
 
-Arguments are case-insensitive and may appear in any order.]=])
+Arguments are case-insensitive and may appear in any order.
+
+Targets on this host:
+@presets@]=])
+string(CONFIGURE "${usage}" usage @ONLY)
 
 math(EXPR last_arg "${CMAKE_ARGC} - 1")
 foreach(i RANGE ${last_arg})
@@ -32,6 +53,8 @@ foreach(i RANGE ${last_arg})
         elseif(word STREQUAL "-h" OR word STREQUAL "--help")
             execute_process(COMMAND ${CMAKE_COMMAND} -E echo "${usage}")
             return()
+        elseif(word MATCHES "^[a-z0-9_]+-")
+            set(TARGET ${word})
         else()
             message("${usage}")
             message(FATAL_ERROR "unknown argument: ${CMAKE_ARGV${i}}")
@@ -39,64 +62,25 @@ foreach(i RANGE ${last_arg})
     endif()
 endforeach()
 
+set(BUILD_DIR "${ROOT_DIR}/build/${TARGET}")
+
 message(STATUS "-------------------------------------------------")
 message(STATUS "Build Script Started")
-message(STATUS "Root:  ${ROOT_DIR}")
-message(STATUS "Build: ${BUILD_DIR} (${BUILD_TYPE})")
+message(STATUS "Root:   ${ROOT_DIR}")
+message(STATUS "Target: ${TARGET} (${BUILD_TYPE})")
 message(STATUS "-------------------------------------------------")
 
-message(STATUS "[Step 1] Configuring...")
-
-# This script forces a generator, so a cache left by a different one has to go first
-if(CLEAN OR EXISTS "${BUILD_DIR}/CMakeCache.txt")
-    message(STATUS ">> Cleaning previous build...")
+if(CLEAN)
+    message(STATUS ">> Cleaning ${BUILD_DIR}...")
     file(REMOVE_RECURSE "${BUILD_DIR}")
 endif()
 
-# Determine the generator based on OS
-if(WIN32)
-    # Force Visual Studio to prevent CMake from accidentally picking MinGW/Ninja
-    message(STATUS ">> Windows detected: Probing for Visual Studio (2026 down to 2019)...")
-
-    # Newest first: VS 2026 (v18), VS 2022 (v17), VS 2019 (v16)
-    set(vs_years 2026 2022 2019)
-    set(vs_majors 18 17 16)
-
-    set(found_generator FALSE)
-    list(LENGTH vs_years len)
-    math(EXPR range "${len} - 1")
-
-    foreach(i RANGE ${range})
-        list(GET vs_years ${i} year)
-        list(GET vs_majors ${i} major)
-        set(current_gen "Visual Studio ${major} ${year}")
-        file(REMOVE_RECURSE "${BUILD_DIR}")
-
-        execute_process(
-            COMMAND ${CMAKE_COMMAND} -G "${current_gen}" -A x64 -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-            RESULT_VARIABLE result
-            OUTPUT_QUIET
-            ERROR_QUIET
-        )
-
-        if(result EQUAL 0)
-            message(STATUS ">> Successfully configured with ${current_gen}")
-            set(found_generator TRUE)
-            break()
-        endif()
-    endforeach()
-
-    if(NOT found_generator)
-        message(FATAL_ERROR "MSVC not found! Please install Visual Studio 2019 or later.")
-    endif()
-else()
-    # On Linux/Unix: Use Unix Makefiles
-    message(STATUS ">> Linux/Unix detected: Using Unix Makefiles...")
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} -G "Unix Makefiles" -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
-        RESULT_VARIABLE result
-    )
-endif()
+message(STATUS "[Step 1] Configuring...")
+execute_process(
+    COMMAND ${CMAKE_COMMAND} --preset ${TARGET}
+    WORKING_DIRECTORY ${ROOT_DIR}
+    RESULT_VARIABLE result
+)
 
 if(NOT result EQUAL 0)
     message(FATAL_ERROR "Configuration failed!")
