@@ -55,6 +55,7 @@ if(WIN32)
         list(GET vs_years ${i} year)
         list(GET vs_majors ${i} major)
         set(current_gen "Visual Studio ${major} ${year}")
+        file(REMOVE_RECURSE "${BUILD_DIR}")
 
         execute_process(
             COMMAND ${CMAKE_COMMAND} -G "${current_gen}" -A x64 -S ${ROOT_DIR} -B ${BUILD_DIR} -DCMAKE_BUILD_TYPE=${BUILD_TYPE}
