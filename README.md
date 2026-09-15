@@ -66,7 +66,7 @@ Release ships what distributions ship: `-O2 -g -fstack-protector-strong -fstack-
 
 Targets are Linux on x86_64, aarch64 and riscv64, and Windows on x86_64. CMake checks the OS, asks the compiler its architecture, and fails on anything else — macOS included — so no per-file platform checks are needed.
 
-Baseline is C99, extensions off. gcc and clang get `-std=c99`; MSVC has no `/std:c99` and its default covers it. Past C99 is opt-in: `__extension__` and `__builtin_*` for GNU, feature-test macros for POSIX and glibc.
+Baseline is C99, extensions off. gcc and clang get `-std=c99`; MSVC has no `/std:c99`; its default covers it from 19.27 (VS 2019 16.7), the first to accept `restrict`. Past C99 is opt-in: `__extension__` and `__builtin_*` for GNU, feature-test macros for POSIX and glibc.
 
 | axis | build system | source |
 |---|---|---|
