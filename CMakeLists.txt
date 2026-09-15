@@ -260,6 +260,7 @@ function(study_source rel_path)
     set(STUDY_SOURCES ${STUDY_SOURCES} "${rel_path}" PARENT_SCOPE)
 endfunction()
 
+study_source(memory/strict_pointer.c)
 study_source(memory/struct_padding.c)
 study_source(std/hello_world.c)
 study_source(tricks/comma_operator.c)
