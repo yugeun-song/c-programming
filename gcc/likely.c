@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 199309L
 
 #include <errno.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,7 +51,7 @@ static inline double calc_diff(struct timespec start, struct timespec end)
 int main(void)
 {
     int32_t *data;
-    volatile uint64_t sum;
+    uint64_t sum;
     struct timespec start;
     struct timespec end;
     size_t i;
@@ -85,7 +86,7 @@ int main(void)
         }
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
-    printf("1. Default (No Hint) : %.6f sec\n", calc_diff(start, end));
+    printf("1. Default (No Hint) : %.6f sec (sum=%" PRIu64 ")\n", calc_diff(start, end), sum);
 
     /* Test 2: With likely() Hint */
     sum = 0;
@@ -103,7 +104,7 @@ int main(void)
         }
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
-    printf("2. Likely (Optimized): %.6f sec\n", calc_diff(start, end));
+    printf("2. Likely (Optimized): %.6f sec (sum=%" PRIu64 ")\n", calc_diff(start, end), sum);
 
     free(data);
     data = NULL;
