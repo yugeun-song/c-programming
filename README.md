@@ -48,6 +48,8 @@ Every flag is probed with `check_c_compiler_flag` under `-Werror` and dropped if
 
 Debug keeps the machine code readable as C: `-O0 -ggdb3 -fno-builtin -fno-inline -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -fno-stack-protector -fno-eliminate-unused-debug-types -grecord-gcc-switches`, plus `-fkeep-inline-functions -fkeep-static-functions` on gcc and `-fdebug-macro` on clang. `-fno-builtin` stops gcc folding `printf("...\n")` into `puts` at `-O0`; `-ggdb3` and `-fdebug-macro` make `info macro` work; `-mno-omit-leaf-frame-pointer` keeps frame records in leaf functions, which aarch64 omits even at `-O0`.
 
+`memory/strict_pointer.c` is compiled with `-O2` in every gcc/clang config, as a per-target option, because the `restrict` violation it demonstrates is invisible at `-O0`.
+
 Release ships what distributions ship: `-O2 -g -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wformat -Werror=format-security -DNDEBUG`, `-fcf-protection=full` on x86_64, `-mbranch-protection=standard` on aarch64, linked `-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,--as-needed`. Fortification is probed separately: `-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3`, else `=2`, else nothing.
 
 `-pg` is not in Debug: it contaminates perf profiles, injects instructions mid-prologue on aarch64 and riscv64, and writes `gmon.out` into the working directory. uftrace needs no flag — `uftrace record -P . <binary>` traces a plain Debug build. gprof does, so it is an option.

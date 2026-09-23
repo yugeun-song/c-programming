@@ -297,3 +297,7 @@ foreach(rel_path IN LISTS STUDY_SOURCES)
 
     message(STATUS "      + Target created: ${unique_target} -> bin/${BUILD_TAG_SHOWN}/${dir_name}/${filename}")
 endforeach()
+
+if(TARGET memory_strict_pointer AND NOT MSVC)
+    target_compile_options(memory_strict_pointer PRIVATE -O2)
+endif()
