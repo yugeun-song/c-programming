@@ -1,95 +1,123 @@
-# OS-agnostic build script running on CMake itself
 cmake_minimum_required(VERSION 3.21)
 
-get_filename_component(ROOT_DIR ${CMAKE_CURRENT_LIST_FILE} DIRECTORY)
-if(CMAKE_HOST_WIN32)
+set(ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
+include("${ROOT_DIR}/cmake/targets.cmake")
+
+set(CONFIGS Debug Release)
+string(TOLOWER "${CONFIGS}" config_words)
+if(NOT DEFINED BUILD_SCRIPT)
+    set(BUILD_SCRIPT "cmake -P build.cmake --")
+endif()
+
+cmake_host_system_information(RESULT host_os QUERY OS_NAME)
+cmake_host_system_information(RESULT host_arch QUERY OS_PLATFORM)
+if(host_os STREQUAL "Linux")
+    set(DEFAULT_TARGET ${host_arch}-linux-gcc)
+elseif(host_os STREQUAL "Windows")
     set(DEFAULT_TARGET x86_64-windows-msvc)
 else()
-    cmake_host_system_information(RESULT host_arch QUERY OS_PLATFORM)
-    set(DEFAULT_TARGET ${host_arch}-linux-gcc)
+    message(FATAL_ERROR "Unsupported host '${host_os}'. Build on Linux or Windows.")
 endif()
-set(TARGET ${DEFAULT_TARGET})
-set(BUILD_TYPE Debug)
-set(CLEAN FALSE)
 
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -P ${ROOT_DIR}/cmake/targets.cmake
-    OUTPUT_VARIABLE targets
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-)
 set(usage [=[
-usage: cmake -P build.cmake [--] [clean] [debug|release] [target]
+usage: @BUILD_SCRIPT@ [clean] [debug|release] [target]
 
-Configure build/<target> from its CMake preset and build every program into bin/.
+Configure build/<target> from its CMake preset and build every program into bin/<target>-<config>/.
 
-  clean       delete build/<target> first
+  clean       delete build/<target> and bin/<target>-*/ first
   debug       Debug configuration (default)
   release     Release configuration
   target      configure preset to use (default @DEFAULT_TARGET@)
-  -h, --help  print this help (after --)
+  -h, --help  print this help
 
-Arguments are case-insensitive and may appear in any order.
+Words are case-insensitive, may come in any order, and each kind may appear once.
 
-@targets@]=])
+@TARGETS_HELP@]=])
 string(CONFIGURE "${usage}" usage @ONLY)
 
-math(EXPR last_arg "${CMAKE_ARGC} - 1")
-foreach(i RANGE ${last_arg})
+set(first ${CMAKE_ARGC})
+math(EXPR last "${CMAKE_ARGC} - 1")
+foreach(i RANGE ${last})
     if(CMAKE_ARGV${i} STREQUAL "-P")
-        math(EXPR first_word "${i} + 2")
-    elseif(DEFINED first_word AND i GREATER_EQUAL first_word AND NOT CMAKE_ARGV${i} STREQUAL "--")
-        string(TOLOWER "${CMAKE_ARGV${i}}" word)
-        if(word STREQUAL "clean")
-            set(CLEAN TRUE)
-        elseif(word STREQUAL "debug")
-            set(BUILD_TYPE Debug)
-        elseif(word STREQUAL "release")
-            set(BUILD_TYPE Release)
-        elseif(word STREQUAL "-h" OR word STREQUAL "--help")
-            execute_process(COMMAND ${CMAKE_COMMAND} -E echo "${usage}")
-            return()
-        elseif(word MATCHES "^[a-z0-9_]+-")
-            set(TARGET ${word})
-        else()
-            message("${usage}")
-            message(FATAL_ERROR "unknown argument: ${CMAKE_ARGV${i}}")
-        endif()
+        math(EXPR first "${i} + 2")
+        break()
     endif()
 endforeach()
-
-set(BUILD_DIR "${ROOT_DIR}/build/${TARGET}")
-
-message(STATUS "-------------------------------------------------")
-message(STATUS "Build Script Started")
-message(STATUS "Root:   ${ROOT_DIR}")
-message(STATUS "Target: ${TARGET} (${BUILD_TYPE})")
-message(STATUS "-------------------------------------------------")
-
-if(CLEAN)
-    message(STATUS ">> Cleaning ${BUILD_DIR}...")
-    file(REMOVE_RECURSE "${BUILD_DIR}")
+if(first LESS CMAKE_ARGC AND CMAKE_ARGV${first} STREQUAL "--")
+    math(EXPR first "${first} + 1")
 endif()
 
-message(STATUS "[Step 1] Configuring...")
-execute_process(
-    COMMAND ${CMAKE_COMMAND} --preset ${TARGET}
-    WORKING_DIRECTORY ${ROOT_DIR}
-    RESULT_VARIABLE result
-)
+set(clean FALSE)
+if(first LESS CMAKE_ARGC)
+    foreach(i RANGE ${first} ${last})
+        string(TOLOWER "${CMAKE_ARGV${i}}" word)
+        if(word STREQUAL "-h" OR word STREQUAL "--help")
+            execute_process(COMMAND "${CMAKE_COMMAND}" -E echo "${usage}")
+            return()
+        endif()
+    endforeach()
+    foreach(i RANGE ${first} ${last})
+        set(arg "${CMAKE_ARGV${i}}")
+        string(TOLOWER "${arg}" word)
+        if(word STREQUAL "clean" AND NOT clean)
+            set(clean TRUE)
+        elseif(word IN_LIST config_words AND NOT DEFINED config)
+            list(FIND config_words "${word}" index)
+            list(GET CONFIGS ${index} config)
+        elseif(word IN_LIST TARGETS AND NOT DEFINED target)
+            set(target "${word}")
+        elseif(word STREQUAL "clean" OR word IN_LIST config_words OR word IN_LIST TARGETS)
+            message(FATAL_ERROR "'${arg}' repeats or contradicts an earlier word; see '${BUILD_SCRIPT} -h'.")
+        else()
+            message(FATAL_ERROR "Unknown argument '${arg}'; see '${BUILD_SCRIPT} -h'.")
+        endif()
+    endforeach()
+endif()
+if(NOT DEFINED config)
+    list(GET CONFIGS 0 config)
+endif()
+if(NOT DEFINED target)
+    set(target ${DEFAULT_TARGET})
+endif()
+if(NOT target IN_LIST TARGETS)
+    message(FATAL_ERROR "No preset named '${target}'; see '${BUILD_SCRIPT} -h'.")
+endif()
+if(NOT target IN_LIST TARGETS_AVAILABLE)
+    message(FATAL_ERROR "Target '${target}' is unavailable: ${TARGET_PROBLEM_${target}}.")
+endif()
 
+preset_value(${target} binary_dir binaryDir)
+string(REPLACE "\${sourceDir}" "${ROOT_DIR}" binary_dir "${binary_dir}")
+string(REPLACE "\${presetName}" "${target}" binary_dir "${binary_dir}")
+cmake_path(NORMAL_PATH binary_dir)
+cmake_path(IS_PREFIX binary_dir "${ROOT_DIR}" NORMALIZE contains_root)
+if(binary_dir MATCHES "\\$" OR contains_root)
+    message(FATAL_ERROR "Preset '${target}' has an unusable binaryDir '${binary_dir}'.")
+endif()
+string(TOLOWER "${config}" config_word)
+set(bin_dir "${ROOT_DIR}/bin/${target}-${config_word}")
+
+if(clean)
+    if(EXISTS "${binary_dir}" AND NOT EXISTS "${binary_dir}/CMakeCache.txt")
+        message(FATAL_ERROR "Refusing to clean '${binary_dir}': it holds no CMakeCache.txt.")
+    endif()
+    message(STATUS "Cleaning ${binary_dir} and ${ROOT_DIR}/bin/${target}-*")
+    file(REMOVE_RECURSE "${binary_dir}")
+    foreach(word IN LISTS config_words)
+        file(REMOVE_RECURSE "${ROOT_DIR}/bin/${target}-${word}")
+    endforeach()
+endif()
+
+message(STATUS "Configuring ${target}")
+execute_process(COMMAND "${CMAKE_COMMAND}" --preset ${target} WORKING_DIRECTORY "${ROOT_DIR}" RESULT_VARIABLE result)
 if(NOT result EQUAL 0)
-    message(FATAL_ERROR "Configuration failed!")
+    message(FATAL_ERROR "Configuring ${target} failed.")
 endif()
 
-message(STATUS "\n[Step 2] Building...")
-execute_process(
-    COMMAND ${CMAKE_COMMAND} --build ${BUILD_DIR} --parallel --config ${BUILD_TYPE}
-    RESULT_VARIABLE result
-)
-
+message(STATUS "Building ${target} (${config})")
+execute_process(COMMAND "${CMAKE_COMMAND}" --build "${binary_dir}" --config ${config} --parallel RESULT_VARIABLE result)
 if(NOT result EQUAL 0)
-    message(FATAL_ERROR "Build failed!")
+    message(FATAL_ERROR "Building ${target} (${config}) failed.")
 endif()
 
-message(STATUS "\n[Success] Binaries are in 'bin/' directory.")
+message(STATUS "Programs are in ${bin_dir}")

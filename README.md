@@ -38,7 +38,7 @@ Binaries go to `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, so every combinatio
 | `x86_64-windows-msvc` | Windows | `cl` | UCRT | newest Visual Studio |
 | `x86_64-windows-clang` | Windows | `clang-cl`, toolset `ClangCL` | UCRT | newest Visual Studio |
 
-`cmake -P cmake/targets.cmake` lists every preset as available or unavailable on the host, naming what is missing. Clang cross presets reuse the sysroot that the gcc cross packages install under `/usr/<triple>`. `CMAKE_C_COMPILER_ID` names the compiler segment and selects the MSVC or GCC-style flag set, and configure stops when the probed `<arch>-<os>-<compiler>` differs from the preset name.
+`-h` lists every preset as available or unavailable on the host, naming what is missing. Clang cross presets reuse the sysroot that the gcc cross packages install under `/usr/<triple>`. `CMAKE_C_COMPILER_ID` names the compiler segment and selects the MSVC or GCC-style flag set, and configure stops when the probed `<arch>-<os>-<compiler>` differs from the preset name.
 
 Without a preset, CMake picks the compiler itself: `CC`, then `cc`, `gcc`, `cl`, `bcc`, `xlc`, `icx`, `clang`, one name at a time across all of `PATH`.
 
@@ -116,7 +116,7 @@ cmake --preset aarch64-linux-gcc && cmake --build build/aarch64-linux-gcc --conf
 qemu-aarch64 -L /usr/aarch64-linux-gnu ./bin/aarch64-linux-gcc-release/<dir>/<name>
 ```
 
-The three scripts take the same words in any order and case, from any working directory. No word means `debug` and the host default target: `<arch>-linux-gcc` on Linux, `x86_64-windows-msvc` on Windows. `-h` or `--help` prints the usage and every target, available or not on the host; `build.cmake` needs `--` before them, or CMake intercepts them. Each target configures once into `build/<target>/` and builds either config there; `clean` deletes that directory.
+`build.sh` and `build.ps1` hand their words to `build.cmake`, so all three parse alike from any working directory. Words take any order and case, each kind once; anything else, or a target not available on the host, stops before work starts. No word means `debug` and the host default: `<arch>-linux-gcc` on Linux, `x86_64-windows-msvc` on Windows. `-h` prints the usage and every target; `build.cmake` called directly needs `--` before it. A target configures once into `build/<target>/` and builds either config there; `clean` first deletes that tree and `bin/<target>-*/`.
 
 Visual Studio 2022+: "Open a local folder" on the root, choose `x86_64-windows-msvc` or `x86_64-windows-clang` from the preset list, pick a program from **Select Startup Item**, F5. Breakpoints, Memory View and `.pdb` work without a `.sln`.
 
