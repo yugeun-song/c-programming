@@ -1,91 +1,54 @@
-# Prerequisites
+# build output
+build/
+out/
+bin/
 *.d
-
-# Object files
 *.o
 *.obj
-
-# Linker output
 *.lib
 *.a
-
-# Executables (Final binaries are in /bin, but others might be generated)
 *.exe
 *.out
 *.app
-
-# Debug / Crash dumps
 *.pdb
 *.idb
 *.ilk
+
+# crash dumps
+core
+core.*
+vgcore.*
 *.dmp
 *.stackdump
 
-# ==============================================================================
-# Build Directories (Crucial for CMake)
-# ==============================================================================
-build/
-out/
-bin/*
-!bin/**/.gitkeep
+# tool output
+gdb.txt
+.gdb_history
+peda-session-*.txt
+perf.data*
+callgrind.out.*
+cachegrind.out.*
+massif.out.*
+helgrind.out.*
+strace.log
+*.strace
+ltrace.log
+*.ltrace
+uftrace.data*/
+gmon.out
 
-# ==============================================================================
-# IDE Specific
-# ==============================================================================
-# Visual Studio / MSVC
+# editors and IDEs
 .vs/
+.vscode/
 *.sln
 *.vcxproj
 *.vcxproj.user
 *.vcxproj.filters
 *.aps
 CMakeSettings.json
-
-# Visual Studio Code
-.vscode/
-
-# Neovim / Vim (Swap files)
 *.swp
 *.swo
-
-# ==============================================================================
-# OS Specific
-# ==============================================================================
-.DS_Store
-Thumbs.db
-
-# ==============================================================================
-# GDB / pwndbg Artifacts
-# ==============================================================================
-core
-core.*
-gdb.txt
-.gdb_history
-peda-session-*.txt
-
-# ==============================================================================
-# Valgrind Artifacts
-# ==============================================================================
-vgcore.*
-callgrind.out.*
-cachegrind.out.*
-massif.out.*
-helgrind.out.*
-
-# ==============================================================================
-# strace, ltrace, uftrace Artifacts
-# ==============================================================================
-strace.out
-strace.log
-*.strace
-ltrace.out
-ltrace.log
-*.ltrace
-uftrace.data/
-gmon.out
-
-# ==============================================================================
-# LSP / Editor Artifacts
-# ==============================================================================
 compile_commands.json
 .cache/
+.DS_Store
+Thumbs.db
