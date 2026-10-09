@@ -38,17 +38,19 @@ Binaries go to `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, so every combinatio
 | `x86_64-windows-msvc` | Windows | `cl` | UCRT | newest Visual Studio |
 | `x86_64-windows-clang` | Windows | `clang-cl`, toolset `ClangCL` | UCRT | newest Visual Studio |
 
-`-h` lists every preset as available or unavailable on the host, naming what is missing. Clang cross presets reuse the sysroot that the gcc cross packages install under `/usr/<triple>`. `CMAKE_C_COMPILER_ID` names the compiler segment and selects the MSVC or GCC-style flag set, and configure stops when the probed `<arch>-<os>-<compiler>` differs from the preset name.
+`-h` lists every preset as available or unavailable on the host, naming what is missing. Clang cross presets reuse the sysroot that the gcc cross packages install under `/usr/<triple>`. Presets blank `CFLAGS` and `LDFLAGS`, so the shell cannot leak flags into a build.
+
+Configure stops unless the compiler is GCC, Clang or MSVC; a compiler CMake calls GNU must also report that version through `-dumpfullversion`. It also stops when the probed `<arch>-<os>-<compiler>` differs from the preset name.
 
 Without a preset, CMake picks the compiler itself: `CC`, then `cc`, `gcc`, `cl`, `bcc`, `xlc`, `icx`, `clang`, one name at a time across all of `PATH`.
 
 ## Build types
 
-Every flag is probed with `check_c_compiler_flag` under `-Werror` and dropped if rejected. Both configs also get `-std=c99 -fPIE -Wall -Wextra -pedantic`.
+`cmake/flags.cmake` holds one candidate table per config and command-line syntax, `gnu` or `msvc`. Each flag is probed under `-Werror` (`/WX`) in its own config, after the flags accepted before it; a rejected flag is dropped and listed at configure. Both configs also get `-std=c99 -fPIE -Wall -Wextra -pedantic`.
 
 Debug keeps the machine code readable as C: `-O0 -ggdb3 -fno-builtin -fno-inline -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -fno-stack-protector -fno-eliminate-unused-debug-types -grecord-gcc-switches`, plus `-fkeep-inline-functions -fkeep-static-functions` on gcc and `-fdebug-macro` on clang. `-fno-builtin` stops gcc folding `printf("...\n")` into `puts` at `-O0`; `-ggdb3` and `-fdebug-macro` make `info macro` work; `-mno-omit-leaf-frame-pointer` keeps frame records in leaf functions, which aarch64 omits even at `-O0`.
 
-`memory/strict_pointer.c` is compiled with `-O2` in every gcc/clang config, as a per-target option, because the `restrict` violation it demonstrates is invisible at `-O0`.
+`OPTIMIZED` in the source table adds `-O2` to one source in every config. MSVC gets nothing, as `/O2` conflicts with `/RTC1`. `memory/strict_pointer.c` uses it because its `restrict` violation is invisible at `-O0`.
 
 Release ships what distributions ship: `-O2 -g -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wformat -Werror=format-security -DNDEBUG`, `-fcf-protection=full` on x86_64, `-mbranch-protection=standard` on aarch64, linked `-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,--as-needed`. Fortification is probed separately: `-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3`, else `=2`, else nothing.
 
@@ -60,7 +62,7 @@ Release ships what distributions ship: `-O2 -g -fstack-protector-strong -fstack-
 | `-DSANITIZE=address,undefined` | enables those sanitizers |
 | `-DENABLE_LTO=ON` | LTO in Release, if `check_ipo_supported` agrees |
 
-`ENABLE_GPROF` and `SANITIZE` emit GCC spelling unprobed, so both are gcc and clang only.
+Both instrumentation options are probed in every config; configure stops if the compiler rejects them.
 
 ## Portability
 
@@ -70,19 +72,19 @@ Baseline is C99, extensions off. gcc and clang get `-std=c99`; MSVC has no `/std
 
 | axis | build system | source |
 |---|---|---|
-| dialect | `DIALECT` tag against the probed set | none |
+| dialect | `DIALECT` tag against the compiler's set | none |
 | libc | `check_symbol_exists(__GLIBC__ features.h)` | none |
 | OS | `CMAKE_SYSTEM_NAME` and feature probes | `_POSIX_C_SOURCE`, `_DEFAULT_SOURCE` on line 1 |
 | architecture | `check_c_source_compiles` each, fatal if none match | `__x86_64__` / `__aarch64__` / `__riscv` dispatch |
 
-| dialect | predicate |
+| dialect | compilers |
 |---|---|
-| `gnu` | `__GNUC__` |
-| `gcc` | `__GNUC__` and not `__clang__` |
-| `clang` | `__clang__` |
-| `msvc` | `_MSC_VER` |
+| `gnu` | gcc, clang |
+| `gcc` | gcc |
+| `clang` | clang, clang-cl |
+| `msvc` | MSVC, clang-cl |
 
-A compiler belongs to every dialect it satisfies: clang to `gnu` and `clang`, clang-cl to `clang` and `msvc`. Satisfying none skips the tagged sources — a smaller build, not a failure.
+A compiler's dialects are its name and its command-line syntax: clang is `clang` and `gnu`, clang-cl `clang` and `msvc`. A source tagged with another dialect is skipped, not failed.
 
 - The build system decides which files compile. The source decides how it adapts.
 - A source guards only where it already branches and one branch has no code, as in `gcc/likely.c` picking an asm body. A guard restating a build-system gate is not written.
@@ -97,11 +99,12 @@ Drop the `.c` under its topic directory and add a line to the table in `CMakeLis
 
 ```cmake
 study_source(memory/foo.c)                                   # portable
-study_source(glibc/bar.c WHEN HAVE_GLIBC_LINUX)              # environment
+study_source(glibc/bar.c WHEN HAVE_GLIBC)                    # environment
 study_source(gcc/baz.c DIALECT gnu WHEN HAVE_CLOCK_GETTIME)  # dialect and feature
+study_source(memory/qux.c OPTIMIZED)                         # -O2 in every config
 ```
 
-Probes are cached, so use one build directory per toolchain.
+A path outside `<topic>/<name>.c`, an unknown keyword or dialect, or an undefined condition stops configure. Probes are cached, so use one build directory per toolchain.
 
 ## Build and run
 

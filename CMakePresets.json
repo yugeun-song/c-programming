@@ -5,6 +5,10 @@
       "name": "base",
       "hidden": true,
       "binaryDir": "${sourceDir}/build/${presetName}",
+      "environment": {
+        "CFLAGS": "",
+        "LDFLAGS": ""
+      },
       "cacheVariables": {
         "EXPECTED_TARGET": "${presetName}"
       }
