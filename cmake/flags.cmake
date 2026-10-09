@@ -16,9 +16,16 @@ set(gnu_debug
     -fno-optimize-sibling-calls
     -fasynchronous-unwind-tables
     -fno-stack-protector
+    -fno-stack-clash-protection
+    -fcf-protection=none
+    -mbranch-protection=none
+    -U_FORTIFY_SOURCE
+    -ffp-contract=off
+    -mno-relax
     -fno-eliminate-unused-debug-types
     -fkeep-inline-functions
     -fkeep-static-functions
+    -fkeep-persistent-storage-variables
     -grecord-gcc-switches
 )
 set(gnu_debug_link "")

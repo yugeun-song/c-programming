@@ -48,7 +48,18 @@ Without a preset, CMake picks the compiler itself: `CC`, then `cc`, `gcc`, `cl`,
 
 `cmake/flags.cmake` holds one candidate table per config and command-line syntax, `gnu` or `msvc`. Each flag is probed under `-Werror` (`/WX`) in its own config, after the flags accepted before it; a rejected flag is dropped and listed at configure. Both configs also get `-std=c99 -fPIE -Wall -Wextra -pedantic`.
 
-Debug keeps the machine code readable as C: `-O0 -ggdb3 -fno-builtin -fno-inline -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -fno-stack-protector -fno-eliminate-unused-debug-types -grecord-gcc-switches`, plus `-fkeep-inline-functions -fkeep-static-functions` on gcc and `-fdebug-macro` on clang. `-fno-builtin` stops gcc folding `printf("...\n")` into `puts` at `-O0`; `-ggdb3` and `-fdebug-macro` make `info macro` work; `-mno-omit-leaf-frame-pointer` keeps frame records in leaf functions, which aarch64 omits even at `-O0`.
+Debug keeps the machine code a literal translation of the C: `-O0 -ggdb3 -fno-inline -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -fno-eliminate-unused-debug-types -grecord-gcc-switches` and the flags below, plus `-fdebug-macro` on clang, so `info macro` works with either compiler.
+
+| flag | removes |
+|---|---|
+| `-fno-builtin` | `printf("...\n")` turned into `puts`, `memset` and friends expanded inline |
+| `-ffp-contract=off` | `a * b + c` fused into `fmadd`, which clang does even at `-O0` on aarch64 and riscv64 |
+| `-fno-stack-protector -fno-stack-clash-protection -fcf-protection=none -mbranch-protection=none -U_FORTIFY_SOURCE` | canaries, stack probes, `endbr64`, PAC/BTI and `__*_chk` calls, which toolchains enable by default: Arch gcc the canary, Ubuntu gcc all but PAC/BTI |
+| `-mno-relax` | riscv64 linker relaxation rewriting `auipc`+`jalr` calls into `jal` |
+| `-mno-omit-leaf-frame-pointer` | frameless leaf functions, which aarch64 emits even at `-O0` |
+| `-fkeep-inline-functions -fkeep-static-functions` (gcc), `-fkeep-persistent-storage-variables` (clang) | unused static functions and variables dropped from the binary |
+
+No flag stops gcc from strength-reducing `x / 3` and `x * 5` at `-O0`, or either compiler from folding constants and dropping `if (0)` bodies.
 
 `OPTIMIZED` in the source table adds `-O2` to one source in every config. MSVC gets nothing, as `/O2` conflicts with `/RTC1`. `memory/strict_pointer.c` uses it because its `restrict` violation is invisible at `-O0`.
 
