@@ -7,7 +7,13 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "environment": {
         "CFLAGS": "",
-        "LDFLAGS": ""
+        "LDFLAGS": "",
+        "CMAKE_TOOLCHAIN_FILE": "",
+        "CCC_OVERRIDE_OPTIONS": "#",
+        "CL": "",
+        "_CL_": "",
+        "LINK": "",
+        "_LINK_": ""
       },
       "cacheVariables": {
         "EXPECTED_TARGET": "${presetName}"

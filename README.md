@@ -38,15 +38,15 @@ Binaries go to `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, so every combinatio
 | `x86_64-windows-msvc` | Windows | `cl` | UCRT | newest Visual Studio |
 | `x86_64-windows-clang` | Windows | `clang-cl`, toolset `ClangCL` | UCRT | newest Visual Studio |
 
-`-h` lists every preset as available or unavailable on the host, naming what is missing. Clang cross presets reuse the sysroot that the gcc cross packages install under `/usr/<triple>`. Presets blank `CFLAGS` and `LDFLAGS`, so the shell cannot leak flags into a build.
+`-h` lists every preset as available or unavailable on the host, naming what is missing. Clang cross presets reuse the sysroot that the gcc cross packages install under `/usr/<triple>`. Presets blank `CFLAGS`, `LDFLAGS`, `CMAKE_TOOLCHAIN_FILE`, `CL`, `_CL_`, `LINK` and `_LINK_` and neutralize `CCC_OVERRIDE_OPTIONS`, so the shell cannot leak flags into a build; `build.cmake` applies the same environment to the build step.
 
-Configure stops unless the compiler is GCC, Clang or MSVC; a compiler CMake calls GNU must also report that version through `-dumpfullversion`. It also stops when the probed `<arch>-<os>-<compiler>` differs from the preset name.
+Configure stops unless the compiler is GCC, Clang or MSVC; for a compiler CMake calls GNU, `-dumpfullversion` must match `__GNUC__.__GNUC_MINOR__`. It also stops when the probed `<arch>-<os>-<compiler>` differs from the preset name.
 
 Without a preset, CMake picks the compiler itself: `CC`, then `cc`, `gcc`, `cl`, `bcc`, `xlc`, `icx`, `clang`, one name at a time across all of `PATH`.
 
 ## Build types
 
-`cmake/flags.cmake` holds one candidate table per config and command-line syntax, `gnu` or `msvc`. Each flag is probed under `-Werror` (`/WX`) in its own config, after the flags accepted before it; a rejected flag is dropped and listed at configure. Both configs also get `-std=c99 -fPIE -Wall -Wextra -pedantic`.
+`cmake/flags.cmake` holds one candidate table per config and command-line syntax, `gnu` or `msvc`. Each flag is probed in its own config under `-Werror` (`/WX`), GNU link flags under `-Wl,--fatal-warnings`, after the flags accepted before it; configure lists what it drops. Probes rerun when the compiler file, target, sysroot or base flags change. A cached `CMAKE_C_FLAGS_<CONFIG>` is ignored with a warning; extra flags go in `CMAKE_C_FLAGS`. Both configs also get `-std=c99 -fPIE -Wall -Wextra -pedantic`.
 
 Debug keeps the machine code a literal translation of the C: `-O0 -ggdb3 -fno-inline -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -fno-eliminate-unused-debug-types -grecord-gcc-switches` and the flags below, plus `-fdebug-macro` on clang, so `info macro` works with either compiler.
 
@@ -59,11 +59,11 @@ Debug keeps the machine code a literal translation of the C: `-O0 -ggdb3 -fno-in
 | `-mno-omit-leaf-frame-pointer` | frameless leaf functions, which aarch64 emits even at `-O0` |
 | `-fkeep-inline-functions -fkeep-static-functions` (gcc), `-fkeep-persistent-storage-variables` (clang) | unused static functions and variables dropped from the binary |
 
-No flag stops gcc from strength-reducing `x / 3` and `x * 5` at `-O0`, or either compiler from folding constants and dropping `if (0)` bodies.
+No flag stops gcc from strength-reducing `x / 3` and `x * 5` at `-O0`, or either compiler from folding constants and dropping `if (0)` bodies. MSVC syntax gets `/Od /Ob0 /Zi /GS-`, linked `/DEBUG /INCREMENTAL:NO`: no cookies, `/RTC1` checks, `/JMC` calls or incremental-link thunks.
 
-`OPTIMIZED` in the source table adds `-O2` to one source in every config. MSVC gets nothing, as `/O2` conflicts with `/RTC1`. `memory/strict_pointer.c` uses it because its `restrict` violation is invisible at `-O0`.
+`OPTIMIZED` in the source table adds `-O2` (`/O2`) to one source in every config. `memory/strict_pointer.c` uses it because its `restrict` violation is invisible at `-O0`.
 
-Release builds what distributions ship, at `-O2` with LTO: `-O2 -g -fasynchronous-unwind-tables -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wformat -Werror=format-security -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -DNDEBUG`, plus `-fcf-protection=full` on x86_64 and `-mbranch-protection=standard` on aarch64, linked `-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-z,pack-relative-relocs -Wl,--as-needed`; riscv64 ld.bfd rejects `pack-relative-relocs`. LTO is `-flto=auto -fno-fat-lto-objects` on gcc and `-flto=thin` on clang; a toolchain failing `check_ipo_supported` warns and links without it. MSVC gets `/O2 /Zi /sdl /GS /guard:cf /DNDEBUG`, linked `/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF /guard:cf /CETCOMPAT`, plus CMake's `/GL` and `/LTCG`.
+Release builds what distributions ship, at `-O2` with LTO: `-O2 -g -fasynchronous-unwind-tables -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wformat -Werror=format-security -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -DNDEBUG`, plus `-fcf-protection=full` on x86_64 and `-mbranch-protection=standard` on aarch64, linked `-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-z,pack-relative-relocs -Wl,--as-needed`; riscv64 ld.bfd rejects `pack-relative-relocs`. LTO is `-flto=auto -fno-fat-lto-objects` on gcc and `-flto=thin` on clang; a toolchain failing `check_ipo_supported` warns and links without it. MSVC gets `/O2 /Zi /sdl /GS /guard:cf /DNDEBUG`, linked `/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF /guard:cf /CETCOMPAT`, plus CMake's `/GL` and `/LTCG`; clang-cl accepts `/sdl` but ignores it.
 
 `-pg` is not in Debug: it contaminates perf profiles, injects instructions mid-prologue on aarch64 and riscv64, and writes `gmon.out` into the working directory. uftrace needs no flag — `uftrace record -P . <binary>` traces a plain Debug build. gprof does, so it is an option.
 
@@ -115,7 +115,7 @@ study_source(gcc/baz.c DIALECT gnu WHEN HAVE_CLOCK_GETTIME)  # dialect and featu
 study_source(memory/qux.c OPTIMIZED)                         # -O2 in every config
 ```
 
-A path outside `<topic>/<name>.c`, an unknown keyword or dialect, or an undefined condition stops configure. Probes are cached, so use one build directory per toolchain.
+Every argument must parse: a path outside `<topic>/<name>.c`, an unknown, repeated or empty keyword or value, or a condition that is not a cached probe stops configure. Probes are cached, so use one build directory per toolchain.
 
 ## Build and run
 

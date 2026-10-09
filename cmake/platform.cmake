@@ -2,20 +2,32 @@ include(CheckCSourceCompiles)
 include(CheckSymbolExists)
 set(CMAKE_REQUIRED_QUIET ON)
 
+file(REAL_PATH "${CMAKE_C_COMPILER}" compiler_file)
+file(TIMESTAMP "${compiler_file}" compiler_stamp "%s")
+string(MD5 toolchain_id "${compiler_file} ${compiler_stamp} ${CMAKE_C_COMPILER_TARGET} ${CMAKE_SYSROOT} ${CMAKE_C_FLAGS} ${CMAKE_EXE_LINKER_FLAGS}")
+if(NOT toolchain_id STREQUAL "$CACHE{PROBED_TOOLCHAIN}")
+    if(DEFINED CACHE{PROBED_TOOLCHAIN})
+        message(STATUS ">> Toolchain changed since the last configure: probing again")
+    endif()
+    get_property(cached DIRECTORY PROPERTY CACHE_VARIABLES)
+    list(FILTER cached INCLUDE REGEX "^(ARCH_IS_|ACCEPTS_|LINKS_|HAVE_|GCC_DRIVER_AGREES$|LTO_SUPPORTED$)")
+    foreach(entry IN LISTS cached)
+        unset(${entry} CACHE)
+    endforeach()
+    set(PROBED_TOOLCHAIN ${toolchain_id} CACHE INTERNAL "")
+endif()
+
 if(NOT CMAKE_SYSTEM_NAME MATCHES "^(Linux|Windows)$")
     message(FATAL_ERROR "Unsupported target OS '${CMAKE_SYSTEM_NAME}'. This project targets Linux and Windows.")
 endif()
 string(TOLOWER "${CMAKE_SYSTEM_NAME}" TARGET_OS)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    execute_process(
-        COMMAND "${CMAKE_C_COMPILER}" -dumpfullversion
-        OUTPUT_VARIABLE gcc_driver_version
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET
-    )
+    execute_process(COMMAND "${CMAKE_C_COMPILER}" -dumpfullversion OUTPUT_VARIABLE gcc_version ERROR_QUIET)
+    string(REGEX MATCH "^([0-9]+)\\.([0-9]+)" gcc_version "${gcc_version}")
+    check_c_source_compiles("#if __GNUC__ != ${CMAKE_MATCH_1}+0 || __GNUC_MINOR__ != ${CMAKE_MATCH_2}+0\n#error\n#endif\nint main(void) { return 0; }" GCC_DRIVER_AGREES)
 endif()
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND gcc_driver_version STREQUAL CMAKE_C_COMPILER_VERSION)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU" AND GCC_DRIVER_AGREES)
     set(TARGET_CC gcc)
     set(FLAG_SYNTAX gnu)
 elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang" AND CMAKE_C_COMPILER_FRONTEND_VARIANT STREQUAL "GNU")
