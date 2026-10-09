@@ -63,7 +63,7 @@ No flag stops gcc from strength-reducing `x / 3` and `x * 5` at `-O0`, or either
 
 `OPTIMIZED` in the source table adds `-O2` to one source in every config. MSVC gets nothing, as `/O2` conflicts with `/RTC1`. `memory/strict_pointer.c` uses it because its `restrict` violation is invisible at `-O0`.
 
-Release ships what distributions ship: `-O2 -g -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wformat -Werror=format-security -DNDEBUG`, `-fcf-protection=full` on x86_64, `-mbranch-protection=standard` on aarch64, linked `-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,--as-needed`. Fortification is probed separately: `-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3`, else `=2`, else nothing.
+Release builds what distributions ship, at `-O2` with LTO: `-O2 -g -fasynchronous-unwind-tables -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wformat -Werror=format-security -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -DNDEBUG`, plus `-fcf-protection=full` on x86_64 and `-mbranch-protection=standard` on aarch64, linked `-Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-z,pack-relative-relocs -Wl,--as-needed`; riscv64 ld.bfd rejects `pack-relative-relocs`. LTO is `-flto=auto -fno-fat-lto-objects` on gcc and `-flto=thin` on clang; a toolchain failing `check_ipo_supported` warns and links without it. MSVC gets `/O2 /Zi /sdl /GS /guard:cf /DNDEBUG`, linked `/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF /guard:cf /CETCOMPAT`, plus CMake's `/GL` and `/LTCG`.
 
 `-pg` is not in Debug: it contaminates perf profiles, injects instructions mid-prologue on aarch64 and riscv64, and writes `gmon.out` into the working directory. uftrace needs no flag — `uftrace record -P . <binary>` traces a plain Debug build. gprof does, so it is an option.
 
@@ -71,7 +71,7 @@ Release ships what distributions ship: `-O2 -g -fstack-protector-strong -fstack-
 |---|---|
 | `-DENABLE_GPROF=ON` | `-pg` on compile and link, every config |
 | `-DSANITIZE=address,undefined` | enables those sanitizers |
-| `-DENABLE_LTO=ON` | LTO in Release, if `check_ipo_supported` agrees |
+| `-DENABLE_LTO=OFF` | Release without LTO, which is on by default |
 
 Both instrumentation options are probed in every config; configure stops if the compiler rejects them.
 

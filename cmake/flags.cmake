@@ -1,9 +1,9 @@
-include(CheckLinkerFlag)
 include(CheckPIESupported)
 include(CMakeCheckCompilerFlagCommonPatterns)
 check_compiler_flag_common_patterns(flag_fail_patterns)
 
 set(gnu_strict -Werror)
+set(gnu_strict_link -Wl,--fatal-warnings)
 set(gnu_common -Wall -Wextra -pedantic)
 set(gnu_debug
     -O0
@@ -32,6 +32,7 @@ set(gnu_debug_link "")
 set(gnu_release
     -O2
     -g
+    -fasynchronous-unwind-tables
     -fstack-protector-strong
     -fstack-clash-protection
     -fno-omit-frame-pointer
@@ -47,19 +48,21 @@ set(gnu_release_link
     -Wl,-z,relro
     -Wl,-z,now
     -Wl,-z,noexecstack
+    -Wl,-z,pack-relative-relocs
     -Wl,--as-needed
 )
 set(gnu_optimized -O2)
 
 set(msvc_strict /WX)
+set(msvc_strict_link "")
 set(msvc_common /utf-8 /W4 /D_CRT_SECURE_NO_WARNINGS)
 set(msvc_debug /Od /Zi /RTC1 /JMC)
 set(msvc_debug_link /DEBUG /INCREMENTAL)
-set(msvc_release /O2 /Zi /guard:cf /Qspectre /sdl /GS)
-set(msvc_release_link /DEBUG /OPT:REF /OPT:ICF)
+set(msvc_release /O2 /Zi /sdl /GS /guard:cf)
+set(msvc_release_link /DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF /guard:cf /CETCOMPAT)
 set(msvc_optimized /O2)
 
-option(ENABLE_LTO "Link-time optimization in Release" OFF)
+option(ENABLE_LTO "Link-time optimization in Release" ON)
 option(ENABLE_GPROF "Instrument every config for gprof" OFF)
 set(SANITIZE "" CACHE STRING "Sanitizers for every config, e.g. address,undefined")
 
@@ -73,16 +76,16 @@ function(probe_flags out config)
     foreach(flag IN LISTS ARG_FLAGS)
         list(JOIN ARG_CONTEXT " " context)
         list(JOIN accepted " " prefix)
-        string(MD5 context_id "${config} ${context} ${prefix}")
+        string(MD5 context_id "${config} ${${FLAG_SYNTAX}_strict} ${${FLAG_SYNTAX}_strict_link} ${context} ${prefix}")
         string(SUBSTRING ${context_id} 0 8 context_id)
         if(ARG_LINK)
             string(MAKE_C_IDENTIFIER "LINKS_${flag}_${context_id}" probe)
-            check_linker_flag(C "${flag}" ${probe})
+            set(CMAKE_REQUIRED_LINK_OPTIONS ${${FLAG_SYNTAX}_strict_link} ${ARG_CONTEXT} ${accepted} ${flag})
         else()
             string(MAKE_C_IDENTIFIER "ACCEPTS_${flag}_${context_id}" probe)
             set(CMAKE_REQUIRED_FLAGS "${${FLAG_SYNTAX}_strict} ${context} ${prefix} ${flag}")
-            check_c_source_compiles("int main(void) { return 0; }" ${probe} ${flag_fail_patterns})
         endif()
+        check_c_source_compiles("int main(void) { return 0; }" ${probe} ${flag_fail_patterns})
         if(${probe})
             list(APPEND accepted "${flag}")
         endif()
