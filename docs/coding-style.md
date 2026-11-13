@@ -4072,6 +4072,7 @@ static void print_names(const char *const *const names, size_t count)
 
 - Do not cast when converting `void *` to another object pointer type. The same applies to the return value of `malloc`.
 - Use an explicit cast for conversions that may truncate a value and for operations that mix signedness.
+- When a cast converts the result of another cast, wrap the inner cast expression in parentheses even though the grammar does not require them. This makes each conversion read as a separate step, applied from the inside out.
 
 Incorrect:
 
@@ -4093,6 +4094,11 @@ static int compute_percent(size_t done, size_t total)
 static long compute_balance_change(unsigned long deposit_cents, long withdrawal_cents)
 {
     return deposit_cents - withdrawal_cents;
+}
+
+static uint64_t convert_buffer_address(const unsigned char *const buffer, size_t offset)
+{
+    return (uint64_t)(uintptr_t)(buffer + offset);
 }
 ```
 
@@ -4116,6 +4122,11 @@ static int compute_percent(size_t done, size_t total)
 static long compute_balance_change(unsigned long deposit_cents, long withdrawal_cents)
 {
     return (long)deposit_cents - withdrawal_cents;
+}
+
+static uint64_t convert_buffer_address(const unsigned char *const buffer, size_t offset)
+{
+    return (uint64_t)((uintptr_t)(buffer + offset));
 }
 ```
 

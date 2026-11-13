@@ -4072,6 +4072,7 @@ static void print_names(const char *const *const names, size_t count)
 
 - `void *`를 다른 객체 포인터로 바꿀 때는 캐스트하지 않는다. `malloc`의 반환값도 같다.
 - 값이 잘릴 수 있는 변환과 부호가 섞인 연산에는 명시적 캐스트를 쓴다.
+- 캐스트한 결과를 다시 캐스트할 때는 문법상 필요 없더라도 안쪽 캐스트 식을 괄호로 감싼다. 그러면 각 변환이 안쪽부터 차례로 적용되는 별개의 단계로 읽힌다.
 
 틀린 예:
 
@@ -4093,6 +4094,11 @@ static int compute_percent(size_t done, size_t total)
 static long compute_balance_change(unsigned long deposit_cents, long withdrawal_cents)
 {
     return deposit_cents - withdrawal_cents;
+}
+
+static uint64_t convert_buffer_address(const unsigned char *const buffer, size_t offset)
+{
+    return (uint64_t)(uintptr_t)(buffer + offset);
 }
 ```
 
@@ -4116,6 +4122,11 @@ static int compute_percent(size_t done, size_t total)
 static long compute_balance_change(unsigned long deposit_cents, long withdrawal_cents)
 {
     return (long)deposit_cents - withdrawal_cents;
+}
+
+static uint64_t convert_buffer_address(const unsigned char *const buffer, size_t offset)
+{
+    return (uint64_t)((uintptr_t)(buffer + offset));
 }
 ```
 
