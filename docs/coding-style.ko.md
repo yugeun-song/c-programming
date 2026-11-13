@@ -1,126 +1,128 @@
 # C 코딩 스타일
 
+영문판: [coding-style.md](coding-style.md)
+
 목차
 
-- **1. 적용 범위**
-  - 1.1. 적용 대상
-  - 1.2. 프로젝트와 종속성의 코딩 스타일 차이
-- **2. 대원칙**
-  - 2.1. 단순하고 직관적인, 일반적인 코드
-  - 2.2. 이름 충돌 피하기
-- **3. 언어 표준과 플랫폼**
-  - 3.1. 언어 표준
-  - 3.2. 플랫폼 API
-  - 3.3. 확장 기능의 표시
-  - 3.4. implementation-defined behavior
-  - 3.5. 표준 함수의 선택
-  - 3.6. 쓰지 않는 표준 함수
-- **4. 파일**
-  - 4.1. 파일 이름
-  - 4.2. 인코딩과 줄 끝
-  - 4.3. 문자 집합
-  - 4.4. 마지막 개행
-  - 4.5. 공백 문자
-  - 4.6. 파일 안의 배치 순서
-  - 4.7. feature test macro
-  - 4.8. include 순서
-  - 4.9. include guard
-  - 4.10. 헤더의 내용
-- **5. 서식**
-  - 5.1. 들여쓰기
-  - 5.2. 줄 길이
-  - 5.3. 긴 식 나누기
-  - 5.4. 사용자에게 보이는 문자열
-  - 5.5. 함수 선언부
-  - 5.6. 함수 중괄호
-  - 5.7. 제어문과 반복문 중괄호
-  - 5.8. 중괄호 생략 금지
-  - 5.9. struct, union, enum 중괄호
-  - 5.10. 범위를 좁히는 블록
-  - 5.11. 중괄호를 이용한 초기화
-  - 5.12. switch와 case
-  - 5.13. goto 레이블
-  - 5.14. 공백
-  - 5.15. 포인터 표기
-  - 5.16. 한 줄에는 가능한 한 문장만
-  - 5.17. 빈 줄
-  - 5.18. 정렬
-  - 5.19. preprocessing directive
-  - 5.20. GCC/Clang 인라인 어셈블리
-- **6. 이름**
-  - 6.1. 함수와 변수의 이름
-  - 6.2. 매크로와 enumeration constant의 이름
-  - 6.3. function-like macro
-  - 6.4. const 객체의 이름
-  - 6.5. 이름의 길이와 내용
-  - 6.6. 함수 이름의 첫 단어
-  - 6.7. 참 거짓을 나타내는 이름
-  - 6.8. 전역 변수와 static 변수
-  - 6.9. typedef
-  - 6.10. 예약된 식별자
-  - 6.11. Win32 API 심볼과 타입
-- **7. 선언과 타입**
-  - 7.1. 한 줄에 선언 하나
-  - 7.2. 선언 위치
-  - 7.3. 범위와 shadowing
-  - 7.4. 수명이 끝난 대상을 가리키는 포인터
-  - 7.5. 정수 타입
-  - 7.6. 참 거짓 값
-  - 7.7. 상수
-  - 7.8. const
-  - 7.9. register와 volatile
-  - 7.10. VLA
-  - 7.11. 초기화
-- **8. 식**
-  - 8.1. 리터럴 표기
-  - 8.2. 증감 연산자
-  - 8.3. sizeof
-  - 8.4. 캐스트
-  - 8.5. 우선순위 괄호
-  - 8.6. 비교
-  - 8.7. 널 포인터와 참 거짓 판정
-  - 8.8. 삼항 연산자
-  - 8.9. 대입
-  - 8.10. 쉼표 연산자
-- **9. 문장**
-  - 9.1. switch
-  - 9.2. 빈 반복문 본문
-  - 9.3. goto
-- **10. 함수**
-  - 10.1. 매개변수 목록
-  - 10.2. 매개변수 순서
-  - 10.3. 포인터 매개변수
-  - 10.4. 반환값 규약
-  - 10.5. 함수의 크기
-  - 10.6. inline
-  - 10.7. 함수 배치
-  - 10.8. main
-- **11. 전처리기와 매크로**
-  - 11.1. 조건부 컴파일
-  - 11.2. 매크로를 대신할 수단
-  - 11.3. 괄호
-  - 11.4. 여러 문장 매크로
-  - 11.5. 피해야 할 매크로
-  - 11.6. 매크로 안의 지역 이름
-- **12. 주석**
-  - 12.1. 주석의 양과 내용
-  - 12.2. 주석 형식
-  - 12.3. 함수 주석과 문서 주석
-- **13. 오류 처리와 자원**
-  - 13.1. 반환값 검사
-  - 13.2. unused 진단
-  - 13.3. errno
-  - 13.4. 자원 정리
-  - 13.5. 동적 메모리
-  - 13.6. assert
-  - 13.7. static assertion
-  - 13.8. 종료
-- **14. 도구**
-  - 14.1. clang-format
-  - 14.2. clang-tidy
-  - 14.3. GCC/Clang 컴파일러 경고
-  - 14.4. 에디터 설정
-- **15. 참고 자료**
+- **[1. 적용 범위](#1-적용-범위)**
+  - [1.1. 적용 대상](#11-적용-대상)
+  - [1.2. 프로젝트와 종속성의 코딩 스타일 차이](#12-프로젝트와-종속성의-코딩-스타일-차이)
+- **[2. 대원칙](#2-대원칙)**
+  - [2.1. 단순하고 직관적인, 일반적인 코드](#21-단순하고-직관적인-일반적인-코드)
+  - [2.2. 이름 충돌 피하기](#22-이름-충돌-피하기)
+- **[3. 언어 표준과 플랫폼](#3-언어-표준과-플랫폼)**
+  - [3.1. 언어 표준](#31-언어-표준)
+  - [3.2. 플랫폼 API](#32-플랫폼-api)
+  - [3.3. 확장 기능의 표시](#33-확장-기능의-표시)
+  - [3.4. implementation-defined behavior](#34-implementation-defined-behavior)
+  - [3.5. 표준 함수의 선택](#35-표준-함수의-선택)
+  - [3.6. 쓰지 않는 표준 함수](#36-쓰지-않는-표준-함수)
+- **[4. 파일](#4-파일)**
+  - [4.1. 파일 이름](#41-파일-이름)
+  - [4.2. 인코딩과 줄 끝](#42-인코딩과-줄-끝)
+  - [4.3. 문자 집합](#43-문자-집합)
+  - [4.4. 마지막 개행](#44-마지막-개행)
+  - [4.5. 공백 문자](#45-공백-문자)
+  - [4.6. 파일 안의 배치 순서](#46-파일-안의-배치-순서)
+  - [4.7. feature test macro](#47-feature-test-macro)
+  - [4.8. include 순서](#48-include-순서)
+  - [4.9. include guard](#49-include-guard)
+  - [4.10. 헤더의 내용](#410-헤더의-내용)
+- **[5. 서식](#5-서식)**
+  - [5.1. 들여쓰기](#51-들여쓰기)
+  - [5.2. 줄 길이](#52-줄-길이)
+  - [5.3. 긴 식 나누기](#53-긴-식-나누기)
+  - [5.4. 사용자에게 보이는 문자열](#54-사용자에게-보이는-문자열)
+  - [5.5. 함수 선언부](#55-함수-선언부)
+  - [5.6. 함수 중괄호](#56-함수-중괄호)
+  - [5.7. 제어문과 반복문 중괄호](#57-제어문과-반복문-중괄호)
+  - [5.8. 중괄호 생략 금지](#58-중괄호-생략-금지)
+  - [5.9. struct, union, enum 중괄호](#59-struct-union-enum-중괄호)
+  - [5.10. 범위를 좁히는 블록](#510-범위를-좁히는-블록)
+  - [5.11. 중괄호를 이용한 초기화](#511-중괄호를-이용한-초기화)
+  - [5.12. switch와 case](#512-switch와-case)
+  - [5.13. goto 레이블](#513-goto-레이블)
+  - [5.14. 공백](#514-공백)
+  - [5.15. 포인터 표기](#515-포인터-표기)
+  - [5.16. 한 줄에는 가능한 한 문장만](#516-한-줄에는-가능한-한-문장만)
+  - [5.17. 빈 줄](#517-빈-줄)
+  - [5.18. 정렬](#518-정렬)
+  - [5.19. preprocessing directive](#519-preprocessing-directive)
+  - [5.20. GCC/Clang 인라인 어셈블리](#520-gccclang-인라인-어셈블리)
+- **[6. 이름](#6-이름)**
+  - [6.1. 함수와 변수의 이름](#61-함수와-변수의-이름)
+  - [6.2. 매크로와 enumeration constant의 이름](#62-매크로와-enumeration-constant의-이름)
+  - [6.3. function-like macro](#63-function-like-macro)
+  - [6.4. const 객체의 이름](#64-const-객체의-이름)
+  - [6.5. 이름의 길이와 내용](#65-이름의-길이와-내용)
+  - [6.6. 함수 이름의 첫 단어](#66-함수-이름의-첫-단어)
+  - [6.7. 참 거짓을 나타내는 이름](#67-참-거짓을-나타내는-이름)
+  - [6.8. 전역 변수와 static 변수](#68-전역-변수와-static-변수)
+  - [6.9. typedef](#69-typedef)
+  - [6.10. 예약된 식별자](#610-예약된-식별자)
+  - [6.11. Win32 API 심볼과 타입](#611-win32-api-심볼과-타입)
+- **[7. 선언과 타입](#7-선언과-타입)**
+  - [7.1. 한 줄에 선언 하나](#71-한-줄에-선언-하나)
+  - [7.2. 선언 위치](#72-선언-위치)
+  - [7.3. 범위와 shadowing](#73-범위와-shadowing)
+  - [7.4. 수명이 끝난 대상을 가리키는 포인터](#74-수명이-끝난-대상을-가리키는-포인터)
+  - [7.5. 정수 타입](#75-정수-타입)
+  - [7.6. 참 거짓 값](#76-참-거짓-값)
+  - [7.7. 상수](#77-상수)
+  - [7.8. const](#78-const)
+  - [7.9. register와 volatile](#79-register와-volatile)
+  - [7.10. VLA](#710-vla)
+  - [7.11. 초기화](#711-초기화)
+- **[8. 식](#8-식)**
+  - [8.1. 리터럴 표기](#81-리터럴-표기)
+  - [8.2. 증감 연산자](#82-증감-연산자)
+  - [8.3. sizeof](#83-sizeof)
+  - [8.4. 캐스트](#84-캐스트)
+  - [8.5. 우선순위 괄호](#85-우선순위-괄호)
+  - [8.6. 비교](#86-비교)
+  - [8.7. 널 포인터와 참 거짓 판정](#87-널-포인터와-참-거짓-판정)
+  - [8.8. 삼항 연산자](#88-삼항-연산자)
+  - [8.9. 대입](#89-대입)
+  - [8.10. 쉼표 연산자](#810-쉼표-연산자)
+- **[9. 문장](#9-문장)**
+  - [9.1. switch](#91-switch)
+  - [9.2. 빈 반복문 본문](#92-빈-반복문-본문)
+  - [9.3. goto](#93-goto)
+- **[10. 함수](#10-함수)**
+  - [10.1. 매개변수 목록](#101-매개변수-목록)
+  - [10.2. 매개변수 순서](#102-매개변수-순서)
+  - [10.3. 포인터 매개변수](#103-포인터-매개변수)
+  - [10.4. 반환값 규약](#104-반환값-규약)
+  - [10.5. 함수의 크기](#105-함수의-크기)
+  - [10.6. inline](#106-inline)
+  - [10.7. 함수 배치](#107-함수-배치)
+  - [10.8. main](#108-main)
+- **[11. 전처리기와 매크로](#11-전처리기와-매크로)**
+  - [11.1. 조건부 컴파일](#111-조건부-컴파일)
+  - [11.2. 매크로를 대신할 수단](#112-매크로를-대신할-수단)
+  - [11.3. 괄호](#113-괄호)
+  - [11.4. 여러 문장 매크로](#114-여러-문장-매크로)
+  - [11.5. 피해야 할 매크로](#115-피해야-할-매크로)
+  - [11.6. 매크로 안의 지역 이름](#116-매크로-안의-지역-이름)
+- **[12. 주석](#12-주석)**
+  - [12.1. 주석의 양과 내용](#121-주석의-양과-내용)
+  - [12.2. 주석 형식](#122-주석-형식)
+  - [12.3. 함수 주석과 문서 주석](#123-함수-주석과-문서-주석)
+- **[13. 오류 처리와 자원](#13-오류-처리와-자원)**
+  - [13.1. 반환값 검사](#131-반환값-검사)
+  - [13.2. unused 진단](#132-unused-진단)
+  - [13.3. errno](#133-errno)
+  - [13.4. 자원 정리](#134-자원-정리)
+  - [13.5. 동적 메모리](#135-동적-메모리)
+  - [13.6. assert](#136-assert)
+  - [13.7. static assertion](#137-static-assertion)
+  - [13.8. 종료](#138-종료)
+- **[14. 도구](#14-도구)**
+  - [14.1. clang-format](#141-clang-format)
+  - [14.2. clang-tidy](#142-clang-tidy)
+  - [14.3. GCC/Clang 컴파일러 경고](#143-gccclang-컴파일러-경고)
+  - [14.4. 에디터 설정](#144-에디터-설정)
+- **[15. 참고 자료](#15-참고-자료)**
 
 ## 1. 적용 범위
 
@@ -6491,31 +6493,31 @@ int main(int argc, char *argv[])
 
 clang-format의 기본 동작이 이 문서의 규칙과 어긋나면, clang-format 전체를 끄지 않고 그 동작을 정하는 설정만 골라 바꾼다. 루트 `.clang-format`의 설정은 다음과 같다.
 
-- `BasedOnStyle: LLVM`과 `IndentWidth: 4`: LLVM 스타일을 바탕으로 하고, 들여쓰기를 공백 4칸으로 바꾼다(5.1절).
-- `ColumnLimit: 0`: 줄은 사람이 나눈다(5.2절, 5.3절). clang-format은 사람이 나눈 줄을 합치거나 다시 나누지 않고, 들여쓰기와 정렬만 맞춘다.
-- `BreakBeforeBraces: Custom`과 `BraceWrapping`의 `AfterFunction: true`: 함수 본문의 여는 중괄호만 새 줄에 둔다(5.6절, 5.7절).
-- `InsertBraces: true`: 제어문과 반복문의 본문을 중괄호로 감싼다(5.8절).
-- `AllowShortFunctionsOnASingleLine: None`: 짧은 함수의 본문을 한 줄로 합치지 않는다(5.6절).
-- `AllowShortEnumsOnASingleLine: false`: enum의 원소를 한 줄로 합치지 않는다(5.11절).
-- `Cpp11BracedListStyle: false`: 중괄호 초기화 목록의 안쪽에 공백을 둔다(5.11절).
-- `AlignTrailingComments`의 `Kind: Never`: 줄 끝 주석을 열에 맞추지 않는다(5.18절).
-- `AlignEscapedNewlines: Left`: 여러 줄 매크로의 줄 끝 `\`를 같은 열에 맞춘다(5.18절).
-- `IndentPPDirectives: AfterHash`와 `PPIndentWidth: 1`: 조건부 컴파일 블록 안의 directive를 `#` 뒤 공백 하나씩으로 들여쓴다(5.19절).
-- `IncludeBlocks: Regroup`과 `IncludeCategories`: include를 유형별로 묶어 정렬한다(4.8절). main header는 category 0으로 분류되어 맨 앞에 온다. 종속성이 있는 헤더는 다른 `<...>` 헤더와 같은 `Priority`에 더 큰 `SortPriority`를 줘서 같은 묶음의 맨 뒤로 보낸다. 이때 `"..."` 묶음의 `Priority`는 그 `SortPriority`보다 크게 둔다.
-- `InsertNewlineAtEOF: true`: 파일 끝에 개행이 없으면 더한다(4.4절).
+- `BasedOnStyle: LLVM`과 `IndentWidth: 4`: LLVM 스타일을 바탕으로 하고, 들여쓰기를 공백 4칸으로 바꾼다([5.1절](#51-들여쓰기)).
+- `ColumnLimit: 0`: 줄은 사람이 나눈다([5.2절](#52-줄-길이), [5.3절](#53-긴-식-나누기)). clang-format은 사람이 나눈 줄을 합치거나 다시 나누지 않고, 들여쓰기와 정렬만 맞춘다.
+- `BreakBeforeBraces: Custom`과 `BraceWrapping`의 `AfterFunction: true`: 함수 본문의 여는 중괄호만 새 줄에 둔다([5.6절](#56-함수-중괄호), [5.7절](#57-제어문과-반복문-중괄호)).
+- `InsertBraces: true`: 제어문과 반복문의 본문을 중괄호로 감싼다([5.8절](#58-중괄호-생략-금지)).
+- `AllowShortFunctionsOnASingleLine: None`: 짧은 함수의 본문을 한 줄로 합치지 않는다([5.6절](#56-함수-중괄호)).
+- `AllowShortEnumsOnASingleLine: false`: enum의 원소를 한 줄로 합치지 않는다([5.11절](#511-중괄호를-이용한-초기화)).
+- `Cpp11BracedListStyle: false`: 중괄호 초기화 목록의 안쪽에 공백을 둔다([5.11절](#511-중괄호를-이용한-초기화)).
+- `AlignTrailingComments`의 `Kind: Never`: 줄 끝 주석을 열에 맞추지 않는다([5.18절](#518-정렬)).
+- `AlignEscapedNewlines: Left`: 여러 줄 매크로의 줄 끝 `\`를 같은 열에 맞춘다([5.18절](#518-정렬)).
+- `IndentPPDirectives: AfterHash`와 `PPIndentWidth: 1`: 조건부 컴파일 블록 안의 directive를 `#` 뒤 공백 하나씩으로 들여쓴다([5.19절](#519-preprocessing-directive)).
+- `IncludeBlocks: Regroup`과 `IncludeCategories`: include를 유형별로 묶어 정렬한다([4.8절](#48-include-순서)). main header는 category 0으로 분류되어 맨 앞에 온다. 종속성이 있는 헤더는 다른 `<...>` 헤더와 같은 `Priority`에 더 큰 `SortPriority`를 줘서 같은 묶음의 맨 뒤로 보낸다. 이때 `"..."` 묶음의 `Priority`는 그 `SortPriority`보다 크게 둔다.
+- `InsertNewlineAtEOF: true`: 파일 끝에 개행이 없으면 더한다([4.4절](#44-마지막-개행)).
 
-이 설정으로 clang-format이 맞추는 규칙은 마지막 개행(4.4절), C 소스의 공백 문자(4.5절), include 순서(4.8절), 들여쓰기(5.1절), 소괄호 안에서 나눈 줄의 정렬(5.3절), 중괄호의 위치(5.6절~5.10절), 중괄호 초기화 목록 안쪽의 공백(5.11절), `switch`와 goto 레이블(5.12절, 5.13절), 공백과 포인터 표기(5.14절, 5.15절), 한 줄에 한 문장(5.16절), 정렬(5.18절), preprocessing directive(5.19절), 줄 끝 주석의 열 맞춤(12.2절)이다. 그 밖의 규칙은 사람이 맞춘다. 특히 다음은 clang-format이 고치지 않거나 규칙과 다르게 바꾸므로 직접 확인한다.
+이 설정으로 clang-format이 맞추는 규칙은 마지막 개행([4.4절](#44-마지막-개행)), C 소스의 공백 문자([4.5절](#45-공백-문자)), include 순서([4.8절](#48-include-순서)), 들여쓰기([5.1절](#51-들여쓰기)), 소괄호 안에서 나눈 줄의 정렬([5.3절](#53-긴-식-나누기)), 중괄호의 위치([5.6절](#56-함수-중괄호)~[5.10절](#510-범위를-좁히는-블록)), 중괄호 초기화 목록 안쪽의 공백([5.11절](#511-중괄호를-이용한-초기화)), `switch`와 goto 레이블([5.12절](#512-switch와-case), [5.13절](#513-goto-레이블)), 공백과 포인터 표기([5.14절](#514-공백), [5.15절](#515-포인터-표기)), 한 줄에 한 문장([5.16절](#516-한-줄에는-가능한-한-문장만)), 정렬([5.18절](#518-정렬)), preprocessing directive([5.19절](#519-preprocessing-directive)), 줄 끝 주석의 열 맞춤([12.2절](#122-주석-형식))이다. 그 밖의 규칙은 사람이 맞춘다. 특히 다음은 clang-format이 고치지 않거나 규칙과 다르게 바꾸므로 직접 확인한다.
 
-- 100열을 넘는 줄은 나누지 않는다(5.2절). 이항 연산자 앞에서 나눈 줄은 한 줄로 합치므로, 합친 줄이 100열을 넘을 수 있다.
-- 대입 연산자 뒤나 반환형 뒤에서 나눈 줄(5.3절, 5.5절)과 나눠 쓴 메시지 문자열(5.4절)은 그대로 둔다.
-- 늘어날 목록의 마지막 쉼표를 더하지 않고, 한 줄에 쓴 designated initializer를 멤버마다 나누지 않는다(5.11절).
-- 중괄호 없는 본문에 중괄호를 넣지만, 들여쓰기만 맞춰 둔 다음 문장은 본문에 넣지 않는다(5.8절).
-- 소괄호 없이 중첩한 삼항 연산자는 줄을 나눠 정렬한다(8.8절). 안쪽 삼항 연산자를 소괄호로 감싸면 한 줄로 둔다.
-- 빈 줄(5.17절)과 인라인 어셈블리의 문자열(5.20절)은 고치지 않는다.
+- 100열을 넘는 줄은 나누지 않는다([5.2절](#52-줄-길이)). 이항 연산자 앞에서 나눈 줄은 한 줄로 합치므로, 합친 줄이 100열을 넘을 수 있다.
+- 대입 연산자 뒤나 반환형 뒤에서 나눈 줄([5.3절](#53-긴-식-나누기), [5.5절](#55-함수-선언부))과 나눠 쓴 메시지 문자열([5.4절](#54-사용자에게-보이는-문자열))은 그대로 둔다.
+- 늘어날 목록의 마지막 쉼표를 더하지 않고, 한 줄에 쓴 designated initializer를 멤버마다 나누지 않는다([5.11절](#511-중괄호를-이용한-초기화)).
+- 중괄호 없는 본문에 중괄호를 넣지만, 들여쓰기만 맞춰 둔 다음 문장은 본문에 넣지 않는다([5.8절](#58-중괄호-생략-금지)).
+- 소괄호 없이 중첩한 삼항 연산자는 줄을 나눠 정렬한다([8.8절](#88-삼항-연산자)). 안쪽 삼항 연산자를 소괄호로 감싸면 한 줄로 둔다.
+- 빈 줄([5.17절](#517-빈-줄))과 인라인 어셈블리의 문자열([5.20절](#520-gccclang-인라인-어셈블리))은 고치지 않는다.
 
-종속성 코드의 디렉터리에는 `DisableFormat: true`만 담은 `.clang-format`과 그 코드에 맞춘 `.editorconfig`를 둔다(1.2절). 이 `.editorconfig`에는 `root = true`를 둔다. 그러지 않으면 프로젝트 루트의 `.editorconfig`에서 줄 끝 공백 제거 같은 설정을 물려받는다.
+종속성 코드의 디렉터리에는 `DisableFormat: true`만 담은 `.clang-format`과 그 코드에 맞춘 `.editorconfig`를 둔다([1.2절](#12-프로젝트와-종속성의-코딩-스타일-차이)). 이 `.editorconfig`에는 `root = true`를 둔다. 그러지 않으면 프로젝트 루트의 `.editorconfig`에서 줄 끝 공백 제거 같은 설정을 물려받는다.
 
-플랫폼마다 독립된 트리로 나눈 프로젝트(1.1절)는 트리마다 그 플랫폼의 스타일을 담은 `.clang-format`을 나란히 둔다. clang-format은 파일에서 가장 가까운 상위 디렉터리의 `.clang-format`을 쓰므로, 한 트리의 설정이 다른 트리에 섞이지 않는다. `.editorconfig`는 상위 디렉터리의 파일과 합쳐지므로, 트리마다 둔 `.editorconfig`에는 `root = true`를 넣는다.
+플랫폼마다 독립된 트리로 나눈 프로젝트([1.1절](#11-적용-대상))는 트리마다 그 플랫폼의 스타일을 담은 `.clang-format`을 나란히 둔다. clang-format은 파일에서 가장 가까운 상위 디렉터리의 `.clang-format`을 쓰므로, 한 트리의 설정이 다른 트리에 섞이지 않는다. `.editorconfig`는 상위 디렉터리의 파일과 합쳐지므로, 트리마다 둔 `.editorconfig`에는 `root = true`를 넣는다.
 
 종속성 코드가 프로젝트 코드와 같은 디렉터리에 있으면, 프로젝트 루트의 `.clang-format-ignore`에 그 파일들의 경로를 적고, 루트 `.editorconfig`에는 그 파일들만 고르는 섹션을 따로 둔다. clang-format은 `.clang-format-ignore`에 적힌 파일을 건너뛴다.
 
@@ -6605,7 +6607,7 @@ trim_trailing_whitespace = false
 
 ### 14.2. clang-tidy
 
-이름 규칙(6장)은 프로젝트 루트의 `.clang-tidy`가 `readability-identifier-naming`으로 검사한다. 예약된 식별자(6.10절)는 `bugprone-reserved-identifier`가, 선언과 정의의 매개변수 이름(10.1절)은 `readability-inconsistent-declaration-parameter-name`이 검사한다. 포인터 매개변수의 `mut_` 접두어(10.3절)는 검사하지 못한다. `readability-identifier-naming`은 `*const`로 선언한 포인터 매개변수를 대상의 `const` 여부와 상관없이 같은 종류로 분류하기 때문이다.
+이름 규칙([6장](#6-이름))은 프로젝트 루트의 `.clang-tidy`가 `readability-identifier-naming`으로 검사한다. 예약된 식별자([6.10절](#610-예약된-식별자))는 `bugprone-reserved-identifier`가, 선언과 정의의 매개변수 이름([10.1절](#101-매개변수-목록))은 `readability-inconsistent-declaration-parameter-name`이 검사한다. 포인터 매개변수의 `mut_` 접두어([10.3절](#103-포인터-매개변수))는 검사하지 못한다. `readability-identifier-naming`은 `*const`로 선언한 포인터 매개변수를 대상의 `const` 여부와 상관없이 같은 종류로 분류하기 때문이다.
 
 올바른 예:
 
@@ -6616,7 +6618,7 @@ clang-tidy path/to/file.c -- -std=c99
 ### 14.3. GCC/Clang 컴파일러 경고
 
 - GCC/Clang은 `-Wall -Wextra -pedantic -Wshadow`로 빌드한다.
-- unused 계열을 뺀 경고는 모두 고친다(13.2절).
+- unused 계열을 뺀 경고는 모두 고친다([13.2절](#132-unused-진단)).
 - `-Werror`는 쓰지 않는다.
 
 unused 계열 진단만 모아 볼 때는 그 진단만 걸러 따로 검사한다. GCC는 `-fsyntax-only`로 검사하면 `-Wunused-function`을 내지 않으므로, 오브젝트 코드까지 컴파일한 뒤 `-Wunused`가 붙은 진단만 고른다. Clang은 `-Wno-everything`으로 모든 경고를 끈 뒤 unused 계열만 다시 켠다. 다른 파일에서 쓰지 않는 external linkage 함수는 컴파일러가 찾지 못하므로, cppcheck의 `unusedFunction` 검사로 프로젝트 전체를 검사한다.
@@ -6655,67 +6657,67 @@ trim_trailing_whitespace = true
 
 ## 15. 참고 자료
 
-- C99 Foreword: N1256의 [PDF 9쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=9), [PDF 10쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=10) (7.2절, 7.6절, 7.11절, 10.3절, 10.6절)
-- C99: [ISO/IEC 9899:1999](https://www.iso.org/standard/29237.html). WG14 공개 초안 N1256의 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=22), [§4](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=19), [Annex J.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=504) (4.4절)
-- C99 §6.3.2.3: N1256의 [PDF 59쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=59) (8.5절, 8.7절)
-- C99 §6.5: N1256의 [PDF 79쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=79), [PDF 80쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=80) (8.2절, 8.5절)
-- C99 §6.5.7: N1256의 [PDF 97쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=97) (8.5절)
-- C99 §6.7.3.1: N1256의 [PDF 122쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=122) (10.3절)
-- C99 §6.7.4: N1256의 [PDF 124쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=124) (10.6절)
-- C99 §6.7.8: N1256의 [PDF 137쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=137), [PDF 139쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=139) (7.11절)
-- C99 §7.1.3: N1256의 [PDF 178쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=178) (6.10절)
-- C99 §5.1.2.2.3: N1256의 [PDF 25쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=25) (13.8절)
-- C11 Foreword: N1570의 [PDF 14쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=14) (3.6절, 13.7절)
-- C11: WG14 공개 초안 N1570의 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=29) (4.4절)
-- C11 §7.24.5.8: N1570의 [PDF 388쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=388) (3.5절)
-- C23: WG14 공개 초안 N3220의 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=24) (4.4절)
-- C23 §6.4.1: N3220의 [PDF 66쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=66) (2.2절)
-- C23 §6.4.4.1: N3220의 [PDF 70쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=70) (8.1절)
-- POSIX.1-2024 XBD [4.19](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html#tag_04_19) (12.1절)
-- POSIX.1-2024 XSH [2.2.1.1](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_01_01), [2.2.1.2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_01_02) (4.7절)
-- POSIX.1-2024 XSH [2.2.2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_02) (6.10절)
-- POSIX.1-2024 XSH [strlcpy](https://pubs.opengroup.org/onlinepubs/9799919799/functions/strlcpy.html) (2.2절)
-- POSIX.1-2024 XSH [pthread_mutex_lock](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_mutex_lock.html) (3.2절)
-- glibc 매뉴얼 [Feature Test Macros](https://sourceware.org/glibc/manual/latest/html_node/Feature-Test-Macros.html) (4.7절)
-- glibc 매뉴얼 [Reserved Names](https://sourceware.org/glibc/manual/latest/html_node/Reserved-Names.html) (6.10절)
-- glibc 소스 [sysdeps/gnu/net/if.h](https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/gnu/net/if.h;hb=HEAD) (4.9절)
-- Linux man-pages [feature_test_macros(7)](https://man7.org/linux/man-pages/man7/feature_test_macros.7.html) (4.7절)
-- GCC 매뉴얼 [C Dialect Options](https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html) (3.1절)
-- GCC 매뉴얼 [Built-in Functions for Memory Model Aware Atomic Operations](https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html) (3.2절)
-- GCC 매뉴얼 [Integers implementation](https://gcc.gnu.org/onlinedocs/gcc/Integers-implementation.html) (3.4절)
-- GCC 매뉴얼 [-Wunused-function](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-function) (4.10절)
-- GCC 매뉴얼 [Extended Asm](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#AssemblerTemplate) (5.20절)
-- GCC 매뉴얼 Extended Asm의 [Volatile](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Volatile-1) (7.9절)
-- GCC 매뉴얼 [Binary Constants using the ‘0b’ Prefix](https://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html) (8.1절)
-- GCC 매뉴얼 [-Wimplicit-fallthrough](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wimplicit-fallthrough) (9.1절)
-- GCC Bugzilla [Bug 66425](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425) (13.1절)
-- GCC 매뉴얼 [Warning Options](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html) (14.3절)
-- Clang 매뉴얼 [Differences between various standard modes](https://clang.llvm.org/docs/UsersManual.html#differences-between-various-standard-modes) (3.1절)
-- Clang 문서 [Diagnostic flags: -Wunused](https://clang.llvm.org/docs/DiagnosticsReference.html#wunused) (14.3절)
-- Microsoft [/std (Specify Language Standard Version)](https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version) (3.1절)
-- CMake 소스 [Modules/Compiler/MSVC-C.cmake](https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/Compiler/MSVC-C.cmake) (3.1절)
-- Microsoft [Slim Reader/Writer (SRW) Locks](https://learn.microsoft.com/en-us/windows/win32/sync/slim-reader-writer--srw--locks), [InterlockedIncrement](https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedincrement) (3.2절)
-- clang-format [IncludeCategories](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includecategories), [IncludeIsMainRegex](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includeismainregex) (14.1절)
-- clang-format [AlignEscapedNewlines](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alignescapednewlines), [AlignTrailingComments](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#aligntrailingcomments), [AllowShortEnumsOnASingleLine](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#allowshortenumsonasingleline), [AllowShortFunctionsOnASingleLine](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#allowshortfunctionsonasingleline), [IndentPPDirectives](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#indentppdirectives), [PPIndentWidth](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#ppindentwidth) (14.1절)
-- clang-format [ColumnLimit](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#columnlimit), [DisableFormat](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#disableformat), [BasedOnStyle](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#basedonstyle), [BraceWrapping](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#bracewrapping), [InsertBraces](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#insertbraces) (14.1절)
-- clang-format [.clang-format-ignore](https://clang.llvm.org/docs/ClangFormat.html#clang-format-ignore) (14.1절)
-- clang-tidy [bugprone-reserved-identifier](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/reserved-identifier.html), [readability-identifier-naming](https://clang.llvm.org/extra/clang-tidy/checks/readability/identifier-naming.html), [readability-inconsistent-declaration-parameter-name](https://clang.llvm.org/extra/clang-tidy/checks/readability/inconsistent-declaration-parameter-name.html) (14.2절)
-- Cppcheck [Manual](https://cppcheck.sourceforge.io/manual.pdf) (14.3절)
-- EditorConfig [Specification](https://spec.editorconfig.org/) (14.1절, 14.4절)
-- [Linux kernel coding style](https://www.kernel.org/doc/html/latest/process/coding-style.html) (1.1절, 2장)
-- Linux kernel coding style의 [Placing Braces and Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#placing-braces-and-spaces) (5.6절, 5.7절)
-- Linux kernel coding style의 [Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#spaces) (5.15절)
-- Linux kernel coding style의 [Naming](https://www.kernel.org/doc/html/latest/process/coding-style.html#naming) (6.1절, 6.5절)
-- Linux kernel coding style의 [Typedefs](https://www.kernel.org/doc/html/latest/process/coding-style.html#typedefs) (6.9절)
-- Linux kernel coding style의 [The inline disease](https://www.kernel.org/doc/html/latest/process/coding-style.html#the-inline-disease) (10.6절)
-- Linux kernel coding style의 [Conditional Compilation](https://www.kernel.org/doc/html/latest/process/coding-style.html#conditional-compilation) (11.1절)
-- Linux kernel 문서 [Kernel-doc comments](https://www.kernel.org/doc/html/latest/doc-guide/kernel-doc.html) (12.3절)
-- MISRA C:2025: MISRA [MISRA C](https://misra.org.uk/misra-c/) (2장)
-- Doxygen 매뉴얼 [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) (12.3절)
-- GNU Readline 매뉴얼 [Custom Functions](https://tiswww.cwru.edu/php/chet/readline/readline.html#Custom-Functions) (4.8절)
-- Git 문서 [gitattributes](https://git-scm.com/docs/gitattributes), [git-config](https://git-scm.com/docs/git-config) (4.2절)
-- GNU Coding Standards의 [Naming Variables, Functions, and Files](https://www.gnu.org/prep/standards/html_node/Names.html) (6.1절, 6.2절)
-- Microsoft [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file) (4.1절)
-- Microsoft [Using the Windows Headers](https://learn.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers) (4.7절)
-- Microsoft [Module 1. Your First Windows Program](https://learn.microsoft.com/en-us/windows/win32/learnwin32/your-first-windows-program) (5.7절)
-- Microsoft [Define consistent coding styles with EditorConfig](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options) (4.2절, 14.1절)
+- C99 Foreword: N1256의 [PDF 9쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=9), [PDF 10쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=10) ([7.2절](#72-선언-위치), [7.6절](#76-참-거짓-값), [7.11절](#711-초기화), [10.3절](#103-포인터-매개변수), [10.6절](#106-inline))
+- C99: [ISO/IEC 9899:1999](https://www.iso.org/standard/29237.html). WG14 공개 초안 N1256의 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=22), [§4](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=19), [Annex J.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=504) ([4.4절](#44-마지막-개행))
+- C99 §6.3.2.3: N1256의 [PDF 59쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=59) ([8.5절](#85-우선순위-괄호), [8.7절](#87-널-포인터와-참-거짓-판정))
+- C99 §6.5: N1256의 [PDF 79쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=79), [PDF 80쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=80) ([8.2절](#82-증감-연산자), [8.5절](#85-우선순위-괄호))
+- C99 §6.5.7: N1256의 [PDF 97쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=97) ([8.5절](#85-우선순위-괄호))
+- C99 §6.7.3.1: N1256의 [PDF 122쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=122) ([10.3절](#103-포인터-매개변수))
+- C99 §6.7.4: N1256의 [PDF 124쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=124) ([10.6절](#106-inline))
+- C99 §6.7.8: N1256의 [PDF 137쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=137), [PDF 139쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=139) ([7.11절](#711-초기화))
+- C99 §7.1.3: N1256의 [PDF 178쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=178) ([6.10절](#610-예약된-식별자))
+- C99 §5.1.2.2.3: N1256의 [PDF 25쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=25) ([13.8절](#138-종료))
+- C11 Foreword: N1570의 [PDF 14쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=14) ([3.6절](#36-쓰지-않는-표준-함수), [13.7절](#137-static-assertion))
+- C11: WG14 공개 초안 N1570의 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=29) ([4.4절](#44-마지막-개행))
+- C11 §7.24.5.8: N1570의 [PDF 388쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=388) ([3.5절](#35-표준-함수의-선택))
+- C23: WG14 공개 초안 N3220의 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=24) ([4.4절](#44-마지막-개행))
+- C23 §6.4.1: N3220의 [PDF 66쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=66) ([2.2절](#22-이름-충돌-피하기))
+- C23 §6.4.4.1: N3220의 [PDF 70쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=70) ([8.1절](#81-리터럴-표기))
+- POSIX.1-2024 XBD [4.19](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html#tag_04_19) ([12.1절](#121-주석의-양과-내용))
+- POSIX.1-2024 XSH [2.2.1.1](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_01_01), [2.2.1.2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_01_02) ([4.7절](#47-feature-test-macro))
+- POSIX.1-2024 XSH [2.2.2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_02) ([6.10절](#610-예약된-식별자))
+- POSIX.1-2024 XSH [strlcpy](https://pubs.opengroup.org/onlinepubs/9799919799/functions/strlcpy.html) ([2.2절](#22-이름-충돌-피하기))
+- POSIX.1-2024 XSH [pthread_mutex_lock](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_mutex_lock.html) ([3.2절](#32-플랫폼-api))
+- glibc 매뉴얼 [Feature Test Macros](https://sourceware.org/glibc/manual/latest/html_node/Feature-Test-Macros.html) ([4.7절](#47-feature-test-macro))
+- glibc 매뉴얼 [Reserved Names](https://sourceware.org/glibc/manual/latest/html_node/Reserved-Names.html) ([6.10절](#610-예약된-식별자))
+- glibc 소스 [sysdeps/gnu/net/if.h](https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/gnu/net/if.h;hb=HEAD) ([4.9절](#49-include-guard))
+- Linux man-pages [feature_test_macros(7)](https://man7.org/linux/man-pages/man7/feature_test_macros.7.html) ([4.7절](#47-feature-test-macro))
+- GCC 매뉴얼 [C Dialect Options](https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html) ([3.1절](#31-언어-표준))
+- GCC 매뉴얼 [Built-in Functions for Memory Model Aware Atomic Operations](https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html) ([3.2절](#32-플랫폼-api))
+- GCC 매뉴얼 [Integers implementation](https://gcc.gnu.org/onlinedocs/gcc/Integers-implementation.html) ([3.4절](#34-implementation-defined-behavior))
+- GCC 매뉴얼 [-Wunused-function](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-function) ([4.10절](#410-헤더의-내용))
+- GCC 매뉴얼 [Extended Asm](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#AssemblerTemplate) ([5.20절](#520-gccclang-인라인-어셈블리))
+- GCC 매뉴얼 Extended Asm의 [Volatile](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Volatile-1) ([7.9절](#79-register와-volatile))
+- GCC 매뉴얼 [Binary Constants using the ‘0b’ Prefix](https://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html) ([8.1절](#81-리터럴-표기))
+- GCC 매뉴얼 [-Wimplicit-fallthrough](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wimplicit-fallthrough) ([9.1절](#91-switch))
+- GCC Bugzilla [Bug 66425](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425) ([13.1절](#131-반환값-검사))
+- GCC 매뉴얼 [Warning Options](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html) ([14.3절](#143-gccclang-컴파일러-경고))
+- Clang 매뉴얼 [Differences between various standard modes](https://clang.llvm.org/docs/UsersManual.html#differences-between-various-standard-modes) ([3.1절](#31-언어-표준))
+- Clang 문서 [Diagnostic flags: -Wunused](https://clang.llvm.org/docs/DiagnosticsReference.html#wunused) ([14.3절](#143-gccclang-컴파일러-경고))
+- Microsoft [/std (Specify Language Standard Version)](https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version) ([3.1절](#31-언어-표준))
+- CMake 소스 [Modules/Compiler/MSVC-C.cmake](https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/Compiler/MSVC-C.cmake) ([3.1절](#31-언어-표준))
+- Microsoft [Slim Reader/Writer (SRW) Locks](https://learn.microsoft.com/en-us/windows/win32/sync/slim-reader-writer--srw--locks), [InterlockedIncrement](https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedincrement) ([3.2절](#32-플랫폼-api))
+- clang-format [IncludeCategories](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includecategories), [IncludeIsMainRegex](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includeismainregex) ([14.1절](#141-clang-format))
+- clang-format [AlignEscapedNewlines](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alignescapednewlines), [AlignTrailingComments](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#aligntrailingcomments), [AllowShortEnumsOnASingleLine](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#allowshortenumsonasingleline), [AllowShortFunctionsOnASingleLine](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#allowshortfunctionsonasingleline), [IndentPPDirectives](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#indentppdirectives), [PPIndentWidth](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#ppindentwidth) ([14.1절](#141-clang-format))
+- clang-format [ColumnLimit](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#columnlimit), [DisableFormat](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#disableformat), [BasedOnStyle](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#basedonstyle), [BraceWrapping](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#bracewrapping), [InsertBraces](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#insertbraces) ([14.1절](#141-clang-format))
+- clang-format [.clang-format-ignore](https://clang.llvm.org/docs/ClangFormat.html#clang-format-ignore) ([14.1절](#141-clang-format))
+- clang-tidy [bugprone-reserved-identifier](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/reserved-identifier.html), [readability-identifier-naming](https://clang.llvm.org/extra/clang-tidy/checks/readability/identifier-naming.html), [readability-inconsistent-declaration-parameter-name](https://clang.llvm.org/extra/clang-tidy/checks/readability/inconsistent-declaration-parameter-name.html) ([14.2절](#142-clang-tidy))
+- Cppcheck [Manual](https://cppcheck.sourceforge.io/manual.pdf) ([14.3절](#143-gccclang-컴파일러-경고))
+- EditorConfig [Specification](https://spec.editorconfig.org/) ([14.1절](#141-clang-format), [14.4절](#144-에디터-설정))
+- [Linux kernel coding style](https://www.kernel.org/doc/html/latest/process/coding-style.html) ([1.1절](#11-적용-대상), [2장](#2-대원칙))
+- Linux kernel coding style의 [Placing Braces and Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#placing-braces-and-spaces) ([5.6절](#56-함수-중괄호), [5.7절](#57-제어문과-반복문-중괄호))
+- Linux kernel coding style의 [Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#spaces) ([5.15절](#515-포인터-표기))
+- Linux kernel coding style의 [Naming](https://www.kernel.org/doc/html/latest/process/coding-style.html#naming) ([6.1절](#61-함수와-변수의-이름), [6.5절](#65-이름의-길이와-내용))
+- Linux kernel coding style의 [Typedefs](https://www.kernel.org/doc/html/latest/process/coding-style.html#typedefs) ([6.9절](#69-typedef))
+- Linux kernel coding style의 [The inline disease](https://www.kernel.org/doc/html/latest/process/coding-style.html#the-inline-disease) ([10.6절](#106-inline))
+- Linux kernel coding style의 [Conditional Compilation](https://www.kernel.org/doc/html/latest/process/coding-style.html#conditional-compilation) ([11.1절](#111-조건부-컴파일))
+- Linux kernel 문서 [Kernel-doc comments](https://www.kernel.org/doc/html/latest/doc-guide/kernel-doc.html) ([12.3절](#123-함수-주석과-문서-주석))
+- MISRA C:2025: MISRA [MISRA C](https://misra.org.uk/misra-c/) ([2장](#2-대원칙))
+- Doxygen 매뉴얼 [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) ([12.3절](#123-함수-주석과-문서-주석))
+- GNU Readline 매뉴얼 [Custom Functions](https://tiswww.cwru.edu/php/chet/readline/readline.html#Custom-Functions) ([4.8절](#48-include-순서))
+- Git 문서 [gitattributes](https://git-scm.com/docs/gitattributes), [git-config](https://git-scm.com/docs/git-config) ([4.2절](#42-인코딩과-줄-끝))
+- GNU Coding Standards의 [Naming Variables, Functions, and Files](https://www.gnu.org/prep/standards/html_node/Names.html) ([6.1절](#61-함수와-변수의-이름), [6.2절](#62-매크로와-enumeration-constant의-이름))
+- Microsoft [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file) ([4.1절](#41-파일-이름))
+- Microsoft [Using the Windows Headers](https://learn.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers) ([4.7절](#47-feature-test-macro))
+- Microsoft [Module 1. Your First Windows Program](https://learn.microsoft.com/en-us/windows/win32/learnwin32/your-first-windows-program) ([5.7절](#57-제어문과-반복문-중괄호))
+- Microsoft [Define consistent coding styles with EditorConfig](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options) ([4.2절](#42-인코딩과-줄-끝), [14.1절](#141-clang-format))

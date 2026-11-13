@@ -1,126 +1,128 @@
 # C Coding Style
 
+Korean edition: [coding-style.ko.md](coding-style.ko.md)
+
 Contents
 
-- **1. Scope**
-  - 1.1. Applicability
-  - 1.2. Coding style differences between project and dependencies
-- **2. Principles**
-  - 2.1. Simple, intuitive, conventional code
-  - 2.2. Avoiding name collisions
-- **3. Language standard and platform**
-  - 3.1. Language standard
-  - 3.2. Platform APIs
-  - 3.3. Marking extensions
-  - 3.4. Implementation-defined behavior
-  - 3.5. Choosing standard functions
-  - 3.6. Standard functions not to use
-- **4. Files**
-  - 4.1. File names
-  - 4.2. Encoding and line endings
-  - 4.3. Character set
-  - 4.4. Final newline
-  - 4.5. Whitespace characters
-  - 4.6. Order within a file
-  - 4.7. Feature test macros
-  - 4.8. Include order
-  - 4.9. Include guards
-  - 4.10. Header contents
-- **5. Formatting**
-  - 5.1. Indentation
-  - 5.2. Line length
-  - 5.3. Breaking long expressions
-  - 5.4. User-visible strings
-  - 5.5. Function headers
-  - 5.6. Function braces
-  - 5.7. Control statement and loop braces
-  - 5.8. Mandatory braces
-  - 5.9. struct, union, and enum braces
-  - 5.10. Scope-narrowing blocks
-  - 5.11. Brace initialization
-  - 5.12. switch and case
-  - 5.13. goto labels
-  - 5.14. Spaces
-  - 5.15. Pointer notation
-  - 5.16. One statement per line where possible
-  - 5.17. Blank lines
-  - 5.18. Alignment
-  - 5.19. Preprocessing directives
-  - 5.20. GCC/Clang inline assembly
-- **6. Naming**
-  - 6.1. Function and variable names
-  - 6.2. Macro and enumeration constant names
-  - 6.3. Function-like macros
-  - 6.4. Names of const objects
-  - 6.5. Name length and content
-  - 6.6. First word of function names
-  - 6.7. Names for truth values
-  - 6.8. Global and static variables
-  - 6.9. typedef
-  - 6.10. Reserved identifiers
-  - 6.11. Win32 API symbols and types
-- **7. Declarations and types**
-  - 7.1. One declaration per line
-  - 7.2. Declaration placement
-  - 7.3. Scope and shadowing
-  - 7.4. Pointers to objects whose lifetime has ended
-  - 7.5. Integer types
-  - 7.6. Truth values
-  - 7.7. Constants
-  - 7.8. const
-  - 7.9. register and volatile
-  - 7.10. VLA
-  - 7.11. Initialization
-- **8. Expressions**
-  - 8.1. Literal notation
-  - 8.2. Increment and decrement operators
-  - 8.3. sizeof
-  - 8.4. Casts
-  - 8.5. Parentheses for precedence
-  - 8.6. Comparisons
-  - 8.7. Null pointers and truth tests
-  - 8.8. Conditional operator
-  - 8.9. Assignment
-  - 8.10. Comma operator
-- **9. Statements**
-  - 9.1. switch
-  - 9.2. Empty loop bodies
-  - 9.3. goto
-- **10. Functions**
-  - 10.1. Parameter lists
-  - 10.2. Parameter order
-  - 10.3. Pointer parameters
-  - 10.4. Return value conventions
-  - 10.5. Function size
-  - 10.6. inline
-  - 10.7. Function placement
-  - 10.8. main
-- **11. Preprocessor and macros**
-  - 11.1. Conditional compilation
-  - 11.2. Alternatives to macros
-  - 11.3. Parentheses
-  - 11.4. Multi-statement macros
-  - 11.5. Macros to avoid
-  - 11.6. Local names in macros
-- **12. Comments**
-  - 12.1. Amount and content of comments
-  - 12.2. Comment format
-  - 12.3. Function comments and documentation comments
-- **13. Error handling and resources**
-  - 13.1. Checking return values
-  - 13.2. Unused diagnostics
-  - 13.3. errno
-  - 13.4. Resource cleanup
-  - 13.5. Dynamic memory
-  - 13.6. assert
-  - 13.7. Static assertions
-  - 13.8. Termination
-- **14. Tools**
-  - 14.1. clang-format
-  - 14.2. clang-tidy
-  - 14.3. GCC/Clang compiler warnings
-  - 14.4. Editor settings
-- **15. References**
+- **[1. Scope](#1-scope)**
+  - [1.1. Applicability](#11-applicability)
+  - [1.2. Coding style differences between project and dependencies](#12-coding-style-differences-between-project-and-dependencies)
+- **[2. Principles](#2-principles)**
+  - [2.1. Simple, intuitive, conventional code](#21-simple-intuitive-conventional-code)
+  - [2.2. Avoiding name collisions](#22-avoiding-name-collisions)
+- **[3. Language standard and platform](#3-language-standard-and-platform)**
+  - [3.1. Language standard](#31-language-standard)
+  - [3.2. Platform APIs](#32-platform-apis)
+  - [3.3. Marking extensions](#33-marking-extensions)
+  - [3.4. Implementation-defined behavior](#34-implementation-defined-behavior)
+  - [3.5. Choosing standard functions](#35-choosing-standard-functions)
+  - [3.6. Standard functions not to use](#36-standard-functions-not-to-use)
+- **[4. Files](#4-files)**
+  - [4.1. File names](#41-file-names)
+  - [4.2. Encoding and line endings](#42-encoding-and-line-endings)
+  - [4.3. Character set](#43-character-set)
+  - [4.4. Final newline](#44-final-newline)
+  - [4.5. Whitespace characters](#45-whitespace-characters)
+  - [4.6. Order within a file](#46-order-within-a-file)
+  - [4.7. Feature test macros](#47-feature-test-macros)
+  - [4.8. Include order](#48-include-order)
+  - [4.9. Include guards](#49-include-guards)
+  - [4.10. Header contents](#410-header-contents)
+- **[5. Formatting](#5-formatting)**
+  - [5.1. Indentation](#51-indentation)
+  - [5.2. Line length](#52-line-length)
+  - [5.3. Breaking long expressions](#53-breaking-long-expressions)
+  - [5.4. User-visible strings](#54-user-visible-strings)
+  - [5.5. Function headers](#55-function-headers)
+  - [5.6. Function braces](#56-function-braces)
+  - [5.7. Control statement and loop braces](#57-control-statement-and-loop-braces)
+  - [5.8. Mandatory braces](#58-mandatory-braces)
+  - [5.9. struct, union, and enum braces](#59-struct-union-and-enum-braces)
+  - [5.10. Scope-narrowing blocks](#510-scope-narrowing-blocks)
+  - [5.11. Brace initialization](#511-brace-initialization)
+  - [5.12. switch and case](#512-switch-and-case)
+  - [5.13. goto labels](#513-goto-labels)
+  - [5.14. Spaces](#514-spaces)
+  - [5.15. Pointer notation](#515-pointer-notation)
+  - [5.16. One statement per line where possible](#516-one-statement-per-line-where-possible)
+  - [5.17. Blank lines](#517-blank-lines)
+  - [5.18. Alignment](#518-alignment)
+  - [5.19. Preprocessing directives](#519-preprocessing-directives)
+  - [5.20. GCC/Clang inline assembly](#520-gccclang-inline-assembly)
+- **[6. Naming](#6-naming)**
+  - [6.1. Function and variable names](#61-function-and-variable-names)
+  - [6.2. Macro and enumeration constant names](#62-macro-and-enumeration-constant-names)
+  - [6.3. Function-like macros](#63-function-like-macros)
+  - [6.4. Names of const objects](#64-names-of-const-objects)
+  - [6.5. Name length and content](#65-name-length-and-content)
+  - [6.6. First word of function names](#66-first-word-of-function-names)
+  - [6.7. Names for truth values](#67-names-for-truth-values)
+  - [6.8. Global and static variables](#68-global-and-static-variables)
+  - [6.9. typedef](#69-typedef)
+  - [6.10. Reserved identifiers](#610-reserved-identifiers)
+  - [6.11. Win32 API symbols and types](#611-win32-api-symbols-and-types)
+- **[7. Declarations and types](#7-declarations-and-types)**
+  - [7.1. One declaration per line](#71-one-declaration-per-line)
+  - [7.2. Declaration placement](#72-declaration-placement)
+  - [7.3. Scope and shadowing](#73-scope-and-shadowing)
+  - [7.4. Pointers to objects whose lifetime has ended](#74-pointers-to-objects-whose-lifetime-has-ended)
+  - [7.5. Integer types](#75-integer-types)
+  - [7.6. Truth values](#76-truth-values)
+  - [7.7. Constants](#77-constants)
+  - [7.8. const](#78-const)
+  - [7.9. register and volatile](#79-register-and-volatile)
+  - [7.10. VLA](#710-vla)
+  - [7.11. Initialization](#711-initialization)
+- **[8. Expressions](#8-expressions)**
+  - [8.1. Literal notation](#81-literal-notation)
+  - [8.2. Increment and decrement operators](#82-increment-and-decrement-operators)
+  - [8.3. sizeof](#83-sizeof)
+  - [8.4. Casts](#84-casts)
+  - [8.5. Parentheses for precedence](#85-parentheses-for-precedence)
+  - [8.6. Comparisons](#86-comparisons)
+  - [8.7. Null pointers and truth tests](#87-null-pointers-and-truth-tests)
+  - [8.8. Conditional operator](#88-conditional-operator)
+  - [8.9. Assignment](#89-assignment)
+  - [8.10. Comma operator](#810-comma-operator)
+- **[9. Statements](#9-statements)**
+  - [9.1. switch](#91-switch)
+  - [9.2. Empty loop bodies](#92-empty-loop-bodies)
+  - [9.3. goto](#93-goto)
+- **[10. Functions](#10-functions)**
+  - [10.1. Parameter lists](#101-parameter-lists)
+  - [10.2. Parameter order](#102-parameter-order)
+  - [10.3. Pointer parameters](#103-pointer-parameters)
+  - [10.4. Return value conventions](#104-return-value-conventions)
+  - [10.5. Function size](#105-function-size)
+  - [10.6. inline](#106-inline)
+  - [10.7. Function placement](#107-function-placement)
+  - [10.8. main](#108-main)
+- **[11. Preprocessor and macros](#11-preprocessor-and-macros)**
+  - [11.1. Conditional compilation](#111-conditional-compilation)
+  - [11.2. Alternatives to macros](#112-alternatives-to-macros)
+  - [11.3. Parentheses](#113-parentheses)
+  - [11.4. Multi-statement macros](#114-multi-statement-macros)
+  - [11.5. Macros to avoid](#115-macros-to-avoid)
+  - [11.6. Local names in macros](#116-local-names-in-macros)
+- **[12. Comments](#12-comments)**
+  - [12.1. Amount and content of comments](#121-amount-and-content-of-comments)
+  - [12.2. Comment format](#122-comment-format)
+  - [12.3. Function comments and documentation comments](#123-function-comments-and-documentation-comments)
+- **[13. Error handling and resources](#13-error-handling-and-resources)**
+  - [13.1. Checking return values](#131-checking-return-values)
+  - [13.2. Unused diagnostics](#132-unused-diagnostics)
+  - [13.3. errno](#133-errno)
+  - [13.4. Resource cleanup](#134-resource-cleanup)
+  - [13.5. Dynamic memory](#135-dynamic-memory)
+  - [13.6. assert](#136-assert)
+  - [13.7. Static assertions](#137-static-assertions)
+  - [13.8. Termination](#138-termination)
+- **[14. Tools](#14-tools)**
+  - [14.1. clang-format](#141-clang-format)
+  - [14.2. clang-tidy](#142-clang-tidy)
+  - [14.3. GCC/Clang compiler warnings](#143-gccclang-compiler-warnings)
+  - [14.4. Editor settings](#144-editor-settings)
+- **[15. References](#15-references)**
 
 ## 1. Scope
 
@@ -6491,31 +6493,31 @@ The `.clang-format` at the project root can be used to check and clean up format
 
 If the default behavior of clang-format conflicts with the rules of this document, do not turn off clang-format as a whole. Change only the settings that control that behavior. The root `.clang-format` has the following settings.
 
-- `BasedOnStyle: LLVM` and `IndentWidth: 4`: Start from the LLVM style and change indentation to four spaces (section 5.1).
-- `ColumnLimit: 0`: Lines are broken by hand (sections 5.2 and 5.3). clang-format neither joins nor re-breaks lines broken by hand. It only adjusts indentation and alignment.
-- `BreakBeforeBraces: Custom` and `AfterFunction: true` in `BraceWrapping`: Put only the opening brace of a function body on a new line (sections 5.6 and 5.7).
-- `InsertBraces: true`: Wrap the bodies of control statements and loops in braces (section 5.8).
-- `AllowShortFunctionsOnASingleLine: None`: Do not merge the body of a short function onto one line (section 5.6).
-- `AllowShortEnumsOnASingleLine: false`: Do not merge the elements of an enum onto one line (section 5.11).
-- `Cpp11BracedListStyle: false`: Put spaces just inside the braces of initializer lists (section 5.11).
-- `Kind: Never` in `AlignTrailingComments`: Do not align trailing comments in columns (section 5.18).
-- `AlignEscapedNewlines: Left`: Align the line-ending `\` of multi-line macros in one column (section 5.18).
-- `IndentPPDirectives: AfterHash` and `PPIndentWidth: 1`: Indent directives inside conditional compilation blocks with one space per level after `#` (section 5.19).
-- `IncludeBlocks: Regroup` and `IncludeCategories`: Group includes by category and sort them (section 4.8). The main header is classified as category 0 and comes first. A header with a dependency gets the same `Priority` as the other `<...>` headers and a larger `SortPriority`, which moves it to the end of the same group. In this case, set the `Priority` of the `"..."` group larger than that `SortPriority`.
-- `InsertNewlineAtEOF: true`: Add a newline at the end of a file if it is missing (section 4.4).
+- `BasedOnStyle: LLVM` and `IndentWidth: 4`: Start from the LLVM style and change indentation to four spaces (section [5.1](#51-indentation)).
+- `ColumnLimit: 0`: Lines are broken by hand (sections [5.2](#52-line-length) and [5.3](#53-breaking-long-expressions)). clang-format neither joins nor re-breaks lines broken by hand. It only adjusts indentation and alignment.
+- `BreakBeforeBraces: Custom` and `AfterFunction: true` in `BraceWrapping`: Put only the opening brace of a function body on a new line (sections [5.6](#56-function-braces) and [5.7](#57-control-statement-and-loop-braces)).
+- `InsertBraces: true`: Wrap the bodies of control statements and loops in braces (section [5.8](#58-mandatory-braces)).
+- `AllowShortFunctionsOnASingleLine: None`: Do not merge the body of a short function onto one line (section [5.6](#56-function-braces)).
+- `AllowShortEnumsOnASingleLine: false`: Do not merge the elements of an enum onto one line (section [5.11](#511-brace-initialization)).
+- `Cpp11BracedListStyle: false`: Put spaces just inside the braces of initializer lists (section [5.11](#511-brace-initialization)).
+- `Kind: Never` in `AlignTrailingComments`: Do not align trailing comments in columns (section [5.18](#518-alignment)).
+- `AlignEscapedNewlines: Left`: Align the line-ending `\` of multi-line macros in one column (section [5.18](#518-alignment)).
+- `IndentPPDirectives: AfterHash` and `PPIndentWidth: 1`: Indent directives inside conditional compilation blocks with one space per level after `#` (section [5.19](#519-preprocessing-directives)).
+- `IncludeBlocks: Regroup` and `IncludeCategories`: Group includes by category and sort them (section [4.8](#48-include-order)). The main header is classified as category 0 and comes first. A header with a dependency gets the same `Priority` as the other `<...>` headers and a larger `SortPriority`, which moves it to the end of the same group. In this case, set the `Priority` of the `"..."` group larger than that `SortPriority`.
+- `InsertNewlineAtEOF: true`: Add a newline at the end of a file if it is missing (section [4.4](#44-final-newline)).
 
-With these settings, clang-format enforces the final newline (section 4.4), whitespace characters in C sources (section 4.5), include order (section 4.8), indentation (section 5.1), alignment of lines broken inside parentheses (section 5.3), brace placement (sections 5.6 to 5.10), spaces inside initializer list braces (section 5.11), `switch` and goto labels (sections 5.12 and 5.13), spaces and pointer notation (sections 5.14 and 5.15), one statement per line (section 5.16), alignment (section 5.18), preprocessing directives (section 5.19), and column alignment of trailing comments (section 12.2). Apply the remaining rules by hand. In particular, check the following by hand, because clang-format does not fix them or changes them against the rules.
+With these settings, clang-format enforces the final newline (section [4.4](#44-final-newline)), whitespace characters in C sources (section [4.5](#45-whitespace-characters)), include order (section [4.8](#48-include-order)), indentation (section [5.1](#51-indentation)), alignment of lines broken inside parentheses (section [5.3](#53-breaking-long-expressions)), brace placement (sections [5.6](#56-function-braces) to [5.10](#510-scope-narrowing-blocks)), spaces inside initializer list braces (section [5.11](#511-brace-initialization)), `switch` and goto labels (sections [5.12](#512-switch-and-case) and [5.13](#513-goto-labels)), spaces and pointer notation (sections [5.14](#514-spaces) and [5.15](#515-pointer-notation)), one statement per line (section [5.16](#516-one-statement-per-line-where-possible)), alignment (section [5.18](#518-alignment)), preprocessing directives (section [5.19](#519-preprocessing-directives)), and column alignment of trailing comments (section [12.2](#122-comment-format)). Apply the remaining rules by hand. In particular, check the following by hand, because clang-format does not fix them or changes them against the rules.
 
-- Lines over 100 columns are not broken (section 5.2). A line broken before a binary operator is joined into one line, so the joined line can exceed 100 columns.
-- Lines broken after an assignment operator or after a return type (sections 5.3 and 5.5) and split message strings (section 5.4) are left as they are.
-- The trailing comma of a list that will grow is not added, and a designated initializer written on one line is not split per member (section 5.11).
-- Braces are inserted around a body without braces, but a following statement that is only indented to match is not put into the body (section 5.8).
-- Conditional operators nested without parentheses are broken across lines and aligned (section 8.8). If the inner conditional operator is wrapped in parentheses, the expression stays on one line.
-- Blank lines (section 5.17) and inline assembly strings (section 5.20) are not fixed.
+- Lines over 100 columns are not broken (section [5.2](#52-line-length)). A line broken before a binary operator is joined into one line, so the joined line can exceed 100 columns.
+- Lines broken after an assignment operator or after a return type (sections [5.3](#53-breaking-long-expressions) and [5.5](#55-function-headers)) and split message strings (section [5.4](#54-user-visible-strings)) are left as they are.
+- The trailing comma of a list that will grow is not added, and a designated initializer written on one line is not split per member (section [5.11](#511-brace-initialization)).
+- Braces are inserted around a body without braces, but a following statement that is only indented to match is not put into the body (section [5.8](#58-mandatory-braces)).
+- Conditional operators nested without parentheses are broken across lines and aligned (section [8.8](#88-conditional-operator)). If the inner conditional operator is wrapped in parentheses, the expression stays on one line.
+- Blank lines (section [5.17](#517-blank-lines)) and inline assembly strings (section [5.20](#520-gccclang-inline-assembly)) are not fixed.
 
-In a directory of dependency code, put a `.clang-format` that contains only `DisableFormat: true` and a `.editorconfig` that matches that code (section 1.2). Put `root = true` in this `.editorconfig`. Otherwise it inherits settings such as trailing whitespace removal from the `.editorconfig` at the project root.
+In a directory of dependency code, put a `.clang-format` that contains only `DisableFormat: true` and a `.editorconfig` that matches that code (section [1.2](#12-coding-style-differences-between-project-and-dependencies)). Put `root = true` in this `.editorconfig`. Otherwise it inherits settings such as trailing whitespace removal from the `.editorconfig` at the project root.
 
-A project split into independent trees for each platform (section 1.1) puts a `.clang-format` with the style of that platform in each tree, side by side. clang-format uses the `.clang-format` in the nearest parent directory of a file, so the settings of one tree do not mix into another. `.editorconfig` files are merged with those of parent directories, so put `root = true` in the `.editorconfig` of each tree.
+A project split into independent trees for each platform (section [1.1](#11-applicability)) puts a `.clang-format` with the style of that platform in each tree, side by side. clang-format uses the `.clang-format` in the nearest parent directory of a file, so the settings of one tree do not mix into another. `.editorconfig` files are merged with those of parent directories, so put `root = true` in the `.editorconfig` of each tree.
 
 If dependency code shares a directory with project code, list the paths of those files in `.clang-format-ignore` at the project root, and add a separate section to the root `.editorconfig` that selects only those files. clang-format skips the files listed in `.clang-format-ignore`.
 
@@ -6605,7 +6607,7 @@ trim_trailing_whitespace = false
 
 ### 14.2. clang-tidy
 
-The `.clang-tidy` at the project root checks the naming rules (chapter 6) with `readability-identifier-naming`. `bugprone-reserved-identifier` checks reserved identifiers (section 6.10), and `readability-inconsistent-declaration-parameter-name` checks parameter names in declarations and definitions (section 10.1). The `mut_` prefix of pointer parameters (section 10.3) cannot be checked, because `readability-identifier-naming` classifies all pointer parameters declared `*const` as the same kind, regardless of whether the target is `const`.
+The `.clang-tidy` at the project root checks the naming rules (chapter [6](#6-naming)) with `readability-identifier-naming`. `bugprone-reserved-identifier` checks reserved identifiers (section [6.10](#610-reserved-identifiers)), and `readability-inconsistent-declaration-parameter-name` checks parameter names in declarations and definitions (section [10.1](#101-parameter-lists)). The `mut_` prefix of pointer parameters (section [10.3](#103-pointer-parameters)) cannot be checked, because `readability-identifier-naming` classifies all pointer parameters declared `*const` as the same kind, regardless of whether the target is `const`.
 
 Correct:
 
@@ -6616,7 +6618,7 @@ clang-tidy path/to/file.c -- -std=c99
 ### 14.3. GCC/Clang compiler warnings
 
 - With GCC/Clang, build with `-Wall -Wextra -pedantic -Wshadow`.
-- Fix all warnings other than unused diagnostics (section 13.2).
+- Fix all warnings other than unused diagnostics (section [13.2](#132-unused-diagnostics)).
 - Do not use `-Werror`.
 
 To review the unused diagnostics on their own, run a separate check that keeps only those diagnostics. GCC does not issue `-Wunused-function` when checking with `-fsyntax-only`, so compile all the way to object code and then pick out only the diagnostics marked `-Wunused`. For Clang, turn off all warnings with `-Wno-everything` and then turn only the unused diagnostics back on. The compiler cannot find functions with external linkage that no other file uses, so check the whole project with the cppcheck `unusedFunction` check.
@@ -6655,67 +6657,67 @@ trim_trailing_whitespace = true
 
 ## 15. References
 
-- C99 Foreword: N1256 [PDF page 9](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=9), [PDF page 10](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=10) (sections 7.2, 7.6, 7.11, 10.3, and 10.6)
-- C99: [ISO/IEC 9899:1999](https://www.iso.org/standard/29237.html). WG14 public draft N1256 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=22), [§4](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=19), [Annex J.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=504) (section 4.4)
-- C99 §6.3.2.3: N1256 [PDF page 59](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=59) (sections 8.5 and 8.7)
-- C99 §6.5: N1256 [PDF page 79](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=79), [PDF page 80](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=80) (sections 8.2 and 8.5)
-- C99 §6.5.7: N1256 [PDF page 97](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=97) (section 8.5)
-- C99 §6.7.3.1: N1256 [PDF page 122](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=122) (section 10.3)
-- C99 §6.7.4: N1256 [PDF page 124](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=124) (section 10.6)
-- C99 §6.7.8: N1256 [PDF page 137](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=137), [PDF page 139](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=139) (section 7.11)
-- C99 §7.1.3: N1256 [PDF page 178](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=178) (section 6.10)
-- C99 §5.1.2.2.3: N1256 [PDF page 25](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=25) (section 13.8)
-- C11 Foreword: N1570 [PDF page 14](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=14) (sections 3.6 and 13.7)
-- C11: WG14 public draft N1570 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=29) (section 4.4)
-- C11 §7.24.5.8: N1570 [PDF page 388](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=388) (section 3.5)
-- C23: WG14 public draft N3220 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=24) (section 4.4)
-- C23 §6.4.1: N3220 [PDF page 66](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=66) (section 2.2)
-- C23 §6.4.4.1: N3220 [PDF page 70](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=70) (section 8.1)
-- POSIX.1-2024 XBD [4.19](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html#tag_04_19) (section 12.1)
-- POSIX.1-2024 XSH [2.2.1.1](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_01_01), [2.2.1.2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_01_02) (section 4.7)
-- POSIX.1-2024 XSH [2.2.2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_02) (section 6.10)
-- POSIX.1-2024 XSH [strlcpy](https://pubs.opengroup.org/onlinepubs/9799919799/functions/strlcpy.html) (section 2.2)
-- POSIX.1-2024 XSH [pthread_mutex_lock](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_mutex_lock.html) (section 3.2)
-- glibc manual: [Feature Test Macros](https://sourceware.org/glibc/manual/latest/html_node/Feature-Test-Macros.html) (section 4.7)
-- glibc manual: [Reserved Names](https://sourceware.org/glibc/manual/latest/html_node/Reserved-Names.html) (section 6.10)
-- glibc source: [sysdeps/gnu/net/if.h](https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/gnu/net/if.h;hb=HEAD) (section 4.9)
-- Linux man-pages [feature_test_macros(7)](https://man7.org/linux/man-pages/man7/feature_test_macros.7.html) (section 4.7)
-- GCC manual: [C Dialect Options](https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html) (section 3.1)
-- GCC manual: [Built-in Functions for Memory Model Aware Atomic Operations](https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html) (section 3.2)
-- GCC manual: [Integers implementation](https://gcc.gnu.org/onlinedocs/gcc/Integers-implementation.html) (section 3.4)
-- GCC manual: [-Wunused-function](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-function) (section 4.10)
-- GCC manual: [Extended Asm](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#AssemblerTemplate) (section 5.20)
-- GCC manual: Extended Asm [Volatile](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Volatile-1) (section 7.9)
-- GCC manual: [Binary Constants using the ‘0b’ Prefix](https://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html) (section 8.1)
-- GCC manual: [-Wimplicit-fallthrough](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wimplicit-fallthrough) (section 9.1)
-- GCC Bugzilla [Bug 66425](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425) (section 13.1)
-- GCC manual: [Warning Options](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html) (section 14.3)
-- Clang manual: [Differences between various standard modes](https://clang.llvm.org/docs/UsersManual.html#differences-between-various-standard-modes) (section 3.1)
-- Clang documentation: [Diagnostic flags: -Wunused](https://clang.llvm.org/docs/DiagnosticsReference.html#wunused) (section 14.3)
-- Microsoft [/std (Specify Language Standard Version)](https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version) (section 3.1)
-- CMake source: [Modules/Compiler/MSVC-C.cmake](https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/Compiler/MSVC-C.cmake) (section 3.1)
-- Microsoft [Slim Reader/Writer (SRW) Locks](https://learn.microsoft.com/en-us/windows/win32/sync/slim-reader-writer--srw--locks), [InterlockedIncrement](https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedincrement) (section 3.2)
-- clang-format [IncludeCategories](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includecategories), [IncludeIsMainRegex](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includeismainregex) (section 14.1)
-- clang-format [AlignEscapedNewlines](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alignescapednewlines), [AlignTrailingComments](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#aligntrailingcomments), [AllowShortEnumsOnASingleLine](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#allowshortenumsonasingleline), [AllowShortFunctionsOnASingleLine](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#allowshortfunctionsonasingleline), [IndentPPDirectives](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#indentppdirectives), [PPIndentWidth](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#ppindentwidth) (section 14.1)
-- clang-format [ColumnLimit](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#columnlimit), [DisableFormat](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#disableformat), [BasedOnStyle](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#basedonstyle), [BraceWrapping](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#bracewrapping), [InsertBraces](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#insertbraces) (section 14.1)
-- clang-format [.clang-format-ignore](https://clang.llvm.org/docs/ClangFormat.html#clang-format-ignore) (section 14.1)
-- clang-tidy [bugprone-reserved-identifier](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/reserved-identifier.html), [readability-identifier-naming](https://clang.llvm.org/extra/clang-tidy/checks/readability/identifier-naming.html), [readability-inconsistent-declaration-parameter-name](https://clang.llvm.org/extra/clang-tidy/checks/readability/inconsistent-declaration-parameter-name.html) (section 14.2)
-- Cppcheck [Manual](https://cppcheck.sourceforge.io/manual.pdf) (section 14.3)
-- EditorConfig [Specification](https://spec.editorconfig.org/) (sections 14.1 and 14.4)
-- [Linux kernel coding style](https://www.kernel.org/doc/html/latest/process/coding-style.html) (section 1.1, chapter 2)
-- Linux kernel coding style: [Placing Braces and Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#placing-braces-and-spaces) (sections 5.6 and 5.7)
-- Linux kernel coding style: [Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#spaces) (section 5.15)
-- Linux kernel coding style: [Naming](https://www.kernel.org/doc/html/latest/process/coding-style.html#naming) (sections 6.1 and 6.5)
-- Linux kernel coding style: [Typedefs](https://www.kernel.org/doc/html/latest/process/coding-style.html#typedefs) (section 6.9)
-- Linux kernel coding style: [The inline disease](https://www.kernel.org/doc/html/latest/process/coding-style.html#the-inline-disease) (section 10.6)
-- Linux kernel coding style: [Conditional Compilation](https://www.kernel.org/doc/html/latest/process/coding-style.html#conditional-compilation) (section 11.1)
-- Linux kernel documentation: [Kernel-doc comments](https://www.kernel.org/doc/html/latest/doc-guide/kernel-doc.html) (section 12.3)
-- MISRA C:2025: MISRA [MISRA C](https://misra.org.uk/misra-c/) (chapter 2)
-- Doxygen manual: [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) (section 12.3)
-- GNU Readline manual: [Custom Functions](https://tiswww.cwru.edu/php/chet/readline/readline.html#Custom-Functions) (section 4.8)
-- Git documentation: [gitattributes](https://git-scm.com/docs/gitattributes), [git-config](https://git-scm.com/docs/git-config) (section 4.2)
-- GNU Coding Standards: [Naming Variables, Functions, and Files](https://www.gnu.org/prep/standards/html_node/Names.html) (sections 6.1 and 6.2)
-- Microsoft [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file) (section 4.1)
-- Microsoft [Using the Windows Headers](https://learn.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers) (section 4.7)
-- Microsoft [Module 1. Your First Windows Program](https://learn.microsoft.com/en-us/windows/win32/learnwin32/your-first-windows-program) (section 5.7)
-- Microsoft [Define consistent coding styles with EditorConfig](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options) (sections 4.2 and 14.1)
+- C99 Foreword: N1256 [PDF page 9](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=9), [PDF page 10](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=10) (sections [7.2](#72-declaration-placement), [7.6](#76-truth-values), [7.11](#711-initialization), [10.3](#103-pointer-parameters), and [10.6](#106-inline))
+- C99: [ISO/IEC 9899:1999](https://www.iso.org/standard/29237.html). WG14 public draft N1256 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=22), [§4](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=19), [Annex J.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=504) (section [4.4](#44-final-newline))
+- C99 §6.3.2.3: N1256 [PDF page 59](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=59) (sections [8.5](#85-parentheses-for-precedence) and [8.7](#87-null-pointers-and-truth-tests))
+- C99 §6.5: N1256 [PDF page 79](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=79), [PDF page 80](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=80) (sections [8.2](#82-increment-and-decrement-operators) and [8.5](#85-parentheses-for-precedence))
+- C99 §6.5.7: N1256 [PDF page 97](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=97) (section [8.5](#85-parentheses-for-precedence))
+- C99 §6.7.3.1: N1256 [PDF page 122](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=122) (section [10.3](#103-pointer-parameters))
+- C99 §6.7.4: N1256 [PDF page 124](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=124) (section [10.6](#106-inline))
+- C99 §6.7.8: N1256 [PDF page 137](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=137), [PDF page 139](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=139) (section [7.11](#711-initialization))
+- C99 §7.1.3: N1256 [PDF page 178](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=178) (section [6.10](#610-reserved-identifiers))
+- C99 §5.1.2.2.3: N1256 [PDF page 25](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=25) (section [13.8](#138-termination))
+- C11 Foreword: N1570 [PDF page 14](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=14) (sections [3.6](#36-standard-functions-not-to-use) and [13.7](#137-static-assertions))
+- C11: WG14 public draft N1570 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=29) (section [4.4](#44-final-newline))
+- C11 §7.24.5.8: N1570 [PDF page 388](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf#page=388) (section [3.5](#35-choosing-standard-functions))
+- C23: WG14 public draft N3220 [§5.1.1.2](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=24) (section [4.4](#44-final-newline))
+- C23 §6.4.1: N3220 [PDF page 66](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=66) (section [2.2](#22-avoiding-name-collisions))
+- C23 §6.4.4.1: N3220 [PDF page 70](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3220.pdf#page=70) (section [8.1](#81-literal-notation))
+- POSIX.1-2024 XBD [4.19](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/V1_chap04.html#tag_04_19) (section [12.1](#121-amount-and-content-of-comments))
+- POSIX.1-2024 XSH [2.2.1.1](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_01_01), [2.2.1.2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_01_02) (section [4.7](#47-feature-test-macros))
+- POSIX.1-2024 XSH [2.2.2](https://pubs.opengroup.org/onlinepubs/9799919799/functions/V2_chap02.html#tag_16_02_02) (section [6.10](#610-reserved-identifiers))
+- POSIX.1-2024 XSH [strlcpy](https://pubs.opengroup.org/onlinepubs/9799919799/functions/strlcpy.html) (section [2.2](#22-avoiding-name-collisions))
+- POSIX.1-2024 XSH [pthread_mutex_lock](https://pubs.opengroup.org/onlinepubs/9799919799/functions/pthread_mutex_lock.html) (section [3.2](#32-platform-apis))
+- glibc manual: [Feature Test Macros](https://sourceware.org/glibc/manual/latest/html_node/Feature-Test-Macros.html) (section [4.7](#47-feature-test-macros))
+- glibc manual: [Reserved Names](https://sourceware.org/glibc/manual/latest/html_node/Reserved-Names.html) (section [6.10](#610-reserved-identifiers))
+- glibc source: [sysdeps/gnu/net/if.h](https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/gnu/net/if.h;hb=HEAD) (section [4.9](#49-include-guards))
+- Linux man-pages [feature_test_macros(7)](https://man7.org/linux/man-pages/man7/feature_test_macros.7.html) (section [4.7](#47-feature-test-macros))
+- GCC manual: [C Dialect Options](https://gcc.gnu.org/onlinedocs/gcc/C-Dialect-Options.html) (section [3.1](#31-language-standard))
+- GCC manual: [Built-in Functions for Memory Model Aware Atomic Operations](https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html) (section [3.2](#32-platform-apis))
+- GCC manual: [Integers implementation](https://gcc.gnu.org/onlinedocs/gcc/Integers-implementation.html) (section [3.4](#34-implementation-defined-behavior))
+- GCC manual: [-Wunused-function](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wunused-function) (section [4.10](#410-header-contents))
+- GCC manual: [Extended Asm](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#AssemblerTemplate) (section [5.20](#520-gccclang-inline-assembly))
+- GCC manual: Extended Asm [Volatile](https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Volatile-1) (section [7.9](#79-register-and-volatile))
+- GCC manual: [Binary Constants using the ‘0b’ Prefix](https://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html) (section [8.1](#81-literal-notation))
+- GCC manual: [-Wimplicit-fallthrough](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wimplicit-fallthrough) (section [9.1](#91-switch))
+- GCC Bugzilla [Bug 66425](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425) (section [13.1](#131-checking-return-values))
+- GCC manual: [Warning Options](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html) (section [14.3](#143-gccclang-compiler-warnings))
+- Clang manual: [Differences between various standard modes](https://clang.llvm.org/docs/UsersManual.html#differences-between-various-standard-modes) (section [3.1](#31-language-standard))
+- Clang documentation: [Diagnostic flags: -Wunused](https://clang.llvm.org/docs/DiagnosticsReference.html#wunused) (section [14.3](#143-gccclang-compiler-warnings))
+- Microsoft [/std (Specify Language Standard Version)](https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version) (section [3.1](#31-language-standard))
+- CMake source: [Modules/Compiler/MSVC-C.cmake](https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/Compiler/MSVC-C.cmake) (section [3.1](#31-language-standard))
+- Microsoft [Slim Reader/Writer (SRW) Locks](https://learn.microsoft.com/en-us/windows/win32/sync/slim-reader-writer--srw--locks), [InterlockedIncrement](https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedincrement) (section [3.2](#32-platform-apis))
+- clang-format [IncludeCategories](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includecategories), [IncludeIsMainRegex](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includeismainregex) (section [14.1](#141-clang-format))
+- clang-format [AlignEscapedNewlines](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#alignescapednewlines), [AlignTrailingComments](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#aligntrailingcomments), [AllowShortEnumsOnASingleLine](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#allowshortenumsonasingleline), [AllowShortFunctionsOnASingleLine](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#allowshortfunctionsonasingleline), [IndentPPDirectives](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#indentppdirectives), [PPIndentWidth](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#ppindentwidth) (section [14.1](#141-clang-format))
+- clang-format [ColumnLimit](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#columnlimit), [DisableFormat](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#disableformat), [BasedOnStyle](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#basedonstyle), [BraceWrapping](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#bracewrapping), [InsertBraces](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#insertbraces) (section [14.1](#141-clang-format))
+- clang-format [.clang-format-ignore](https://clang.llvm.org/docs/ClangFormat.html#clang-format-ignore) (section [14.1](#141-clang-format))
+- clang-tidy [bugprone-reserved-identifier](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/reserved-identifier.html), [readability-identifier-naming](https://clang.llvm.org/extra/clang-tidy/checks/readability/identifier-naming.html), [readability-inconsistent-declaration-parameter-name](https://clang.llvm.org/extra/clang-tidy/checks/readability/inconsistent-declaration-parameter-name.html) (section [14.2](#142-clang-tidy))
+- Cppcheck [Manual](https://cppcheck.sourceforge.io/manual.pdf) (section [14.3](#143-gccclang-compiler-warnings))
+- EditorConfig [Specification](https://spec.editorconfig.org/) (sections [14.1](#141-clang-format) and [14.4](#144-editor-settings))
+- [Linux kernel coding style](https://www.kernel.org/doc/html/latest/process/coding-style.html) (section [1.1](#11-applicability), chapter [2](#2-principles))
+- Linux kernel coding style: [Placing Braces and Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#placing-braces-and-spaces) (sections [5.6](#56-function-braces) and [5.7](#57-control-statement-and-loop-braces))
+- Linux kernel coding style: [Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#spaces) (section [5.15](#515-pointer-notation))
+- Linux kernel coding style: [Naming](https://www.kernel.org/doc/html/latest/process/coding-style.html#naming) (sections [6.1](#61-function-and-variable-names) and [6.5](#65-name-length-and-content))
+- Linux kernel coding style: [Typedefs](https://www.kernel.org/doc/html/latest/process/coding-style.html#typedefs) (section [6.9](#69-typedef))
+- Linux kernel coding style: [The inline disease](https://www.kernel.org/doc/html/latest/process/coding-style.html#the-inline-disease) (section [10.6](#106-inline))
+- Linux kernel coding style: [Conditional Compilation](https://www.kernel.org/doc/html/latest/process/coding-style.html#conditional-compilation) (section [11.1](#111-conditional-compilation))
+- Linux kernel documentation: [Kernel-doc comments](https://www.kernel.org/doc/html/latest/doc-guide/kernel-doc.html) (section [12.3](#123-function-comments-and-documentation-comments))
+- MISRA C:2025: MISRA [MISRA C](https://misra.org.uk/misra-c/) (chapter [2](#2-principles))
+- Doxygen manual: [Documenting the code](https://www.doxygen.nl/manual/docblocks.html) (section [12.3](#123-function-comments-and-documentation-comments))
+- GNU Readline manual: [Custom Functions](https://tiswww.cwru.edu/php/chet/readline/readline.html#Custom-Functions) (section [4.8](#48-include-order))
+- Git documentation: [gitattributes](https://git-scm.com/docs/gitattributes), [git-config](https://git-scm.com/docs/git-config) (section [4.2](#42-encoding-and-line-endings))
+- GNU Coding Standards: [Naming Variables, Functions, and Files](https://www.gnu.org/prep/standards/html_node/Names.html) (sections [6.1](#61-function-and-variable-names) and [6.2](#62-macro-and-enumeration-constant-names))
+- Microsoft [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file) (section [4.1](#41-file-names))
+- Microsoft [Using the Windows Headers](https://learn.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers) (section [4.7](#47-feature-test-macros))
+- Microsoft [Module 1. Your First Windows Program](https://learn.microsoft.com/en-us/windows/win32/learnwin32/your-first-windows-program) (section [5.7](#57-control-statement-and-loop-braces))
+- Microsoft [Define consistent coding styles with EditorConfig](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options) (sections [4.2](#42-encoding-and-line-endings) and [14.1](#141-clang-format))
