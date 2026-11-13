@@ -20,12 +20,12 @@ Directories name the topic, not the platform; one appears with its first file.
 
 | build file | role |
 |---|---|
-| `CMakeLists.txt` | configs and the source table |
+| `CMakeLists.txt` | configs and the program list |
 | `cmake/platform.cmake` | compiler, OS, architecture and libc checks |
-| `cmake/flags.cmake` | flag tables, probing, options |
+| `cmake/flags.cmake` | flag lists, probing, options |
 | `CMakePresets.json` | one configure preset per target |
 | `build.cmake` | build command; `build.sh`, `build.ps1` and the `Makefile` forward to it |
-| `cmake/targets.cmake` | preset lookup and availability for `build.cmake` |
+| `cmake/presets.cmake` | preset lookup and availability for `build.cmake` |
 
 Programs go to `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, with `.exe` and `.pdb` on Windows.
 
@@ -48,7 +48,7 @@ Configure stops unless the compiler is GCC, Clang or MSVC, and a compiler CMake 
 
 ## Build types
 
-`cmake/flags.cmake` has a candidate table per config and command-line syntax, `gnu` or `msvc`. Each flag is probed in its own config under `-Werror` (`/WX`), GNU link flags under `-Wl,--fatal-warnings`, after the flags accepted before it; configure lists what it drops. Probes rerun when the compiler file, target, sysroot or base flags change. Every config gets `-std=c99 -Wall -Wextra -pedantic -Wshadow`, or `/utf-8 /W4 /D_CRT_SECURE_NO_WARNINGS`. The configs are Debug, Sanitize and Release. A cached `CMAKE_C_FLAGS_<CONFIG>` is ignored with a warning; extra flags go in `CMAKE_C_FLAGS`.
+`cmake/flags.cmake` has a candidate flag list per config and command-line syntax, `gnu` or `msvc`. Each flag is probed in its own config under `-Werror` (`/WX`), GNU link flags under `-Wl,--fatal-warnings`, after the flags accepted before it; configure lists what it drops. Probes rerun when the compiler file, target, sysroot or base flags change. Every config gets `-std=c99 -Wall -Wextra -pedantic -Wshadow`, or `/utf-8 /W4 /D_CRT_SECURE_NO_WARNINGS`. The configs are Debug, Sanitize and Release. A cached `CMAKE_C_FLAGS_<CONFIG>` is ignored with a warning; extra flags go in `CMAKE_C_FLAGS`.
 
 Debug keeps the machine code a literal translation of the C: `-O0 -ggdb3 -fno-inline -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -fno-eliminate-unused-debug-types -grecord-gcc-switches -fno-pie`, `-fdebug-macro` on clang for `info macro`, linked `-no-pie -rdynamic -Wl,--build-id`, and:
 
@@ -63,13 +63,13 @@ Debug keeps the machine code a literal translation of the C: `-O0 -ggdb3 -fno-in
 
 MSVC syntax gets `/Od /Ob0 /Zi /GS-`, linked `/DEBUG /INCREMENTAL:NO`: no cookies, `/RTC1` checks, `/JMC` calls or incremental-link thunks. No flag stops gcc from strength-reducing `x / 3` and `x * 5` at `-O0`, or either compiler from folding constants and dropping `if (0)` bodies.
 
-Without PIE the addresses `objdump` and `nm` print are the ones the process runs at; `-rdynamic` puts every function in the dynamic symbol table, where `backtrace()` and `dladdr()` find it; the build ID lets perf and debuginfod match the binary to its debug information. Debug and Sanitize also compile and link every program with `-pg` for gprof and uftrace, except a source marked `UNPROFILED`. `-pg` adds a call to every function and allocates the profiling buffers on the heap at startup, so `glibc/heap_fragmentation.c`, which measures how much freed heap a later request reuses, is marked `UNPROFILED`: with `-pg` its probe reused 0 bytes instead of 1888. It also skews perf profiles, lands mid-prologue on aarch64 and riscv64, makes gdb stop at `break <function>` before the arguments are stored, and writes `gmon.out` into the working directory.
+Without PIE the addresses `objdump` and `nm` print are the ones the process runs at; `-rdynamic` puts every function in the dynamic symbol table, where `backtrace()` and `dladdr()` find it; the build ID lets perf and debuginfod match the binary to its debug information. Debug and Sanitize also compile and link every program with `-pg` for gprof and uftrace, except a source marked `NO_GPROF`. `-pg` adds a call to every function and allocates the profiling buffers on the heap at startup, so `glibc/heap_fragmentation.c`, which measures how much freed heap a later request reuses, is marked `NO_GPROF`: with `-pg` its probe reused 0 bytes instead of 1888. It also skews perf profiles, lands mid-prologue on aarch64 and riscv64, makes gdb stop at `break <function>` before the arguments are stored, and writes `gmon.out` into the working directory.
 
 Sanitize is Debug plus `-fsanitize=<SANITIZE> -fno-sanitize-recover=all`, `address` by default, or `/fsanitize=address` in MSVC syntax. A toolchain that cannot link the sanitizer runtime, such as the cross toolchains on a plain Linux host, gets the config skipped with a note.
 
-Release builds what distributions ship, at `-O2` with LTO: `-O2 -g -fasynchronous-unwind-tables -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wformat -Werror=format-security -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -DNDEBUG -fPIE`, `-fcf-protection=full` on x86_64, `-mbranch-protection=standard` on aarch64, linked `-pie -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-z,pack-relative-relocs -Wl,--as-needed -Wl,--build-id`; riscv64 ld.bfd rejects `pack-relative-relocs`. LTO is `-flto=auto -fno-fat-lto-objects` on gcc and `-flto=thin` on clang; a toolchain failing `check_ipo_supported` warns and links without it. MSVC syntax gets `/O2 /Zi /sdl /GS /guard:cf /DNDEBUG` with CMake's `/GL`, linked `/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF /guard:cf /CETCOMPAT /LTCG`; clang-cl accepts `/sdl` but ignores it.
+Release builds what distributions ship, at `-O2` with link-time optimization (LTO): `-O2 -g -fasynchronous-unwind-tables -fstack-protector-strong -fstack-clash-protection -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer -Wformat -Werror=format-security -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=3 -DNDEBUG -fPIE`, `-fcf-protection=full` on x86_64, `-mbranch-protection=standard` on aarch64, linked `-pie -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-z,pack-relative-relocs -Wl,--as-needed -Wl,--build-id`; riscv64 ld.bfd rejects `pack-relative-relocs`. LTO is `-flto=auto -fno-fat-lto-objects` on gcc and `-flto=thin` on clang; a toolchain failing `check_ipo_supported` warns and links without it. MSVC syntax gets `/O2 /Zi /sdl /GS /guard:cf /DNDEBUG` with CMake's `/GL`, linked `/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF /guard:cf /CETCOMPAT /LTCG`; clang-cl accepts `/sdl` but ignores it.
 
-`OPTIMIZED` in the source table adds `-O2` (`/O2`) to one source in every config; `memory/strict_pointer.c` needs it, since its `restrict` violation is invisible at `-O0`. `UNPROFILED` leaves `-pg` out of one source.
+`OPTIMIZED` in the program list adds `-O2` (`/O2`) to one source in every config; `memory/strict_pointer.c` needs it, since its `restrict` violation is invisible at `-O0`. `NO_GPROF` leaves `-pg` out of one source.
 
 | option | effect |
 |---|---|
@@ -107,13 +107,13 @@ A compiler's dialects are its name and its command-line syntax; a source tagged 
 
 ## Adding a program
 
-Drop the `.c` under its topic directory and add a line to the source table in `CMakeLists.txt`; nothing is globbed.
+Drop the `.c` under its topic directory and add a line to the program list in `CMakeLists.txt`; nothing is globbed.
 
 ```cmake
-study_source(memory/foo.c)                                   # portable
-study_source(glibc/bar.c WHEN HAVE_GLIBC)                    # environment
-study_source(gcc/baz.c DIALECT gnu WHEN HAVE_CLOCK_GETTIME)  # dialect and feature
-study_source(memory/qux.c OPTIMIZED)                         # -O2 in every config
+add_program(memory/foo.c)                                    # portable
+add_program(glibc/bar.c WHEN HAVE_GLIBC)                     # environment
+add_program(gcc/baz.c DIALECT gnu WHEN HAVE_CLOCK_GETTIME)   # dialect and feature
+add_program(memory/qux.c OPTIMIZED)                          # -O2 in every config
 ```
 
 Every argument must parse: a path other than `<topic>/<name>.c`, an unknown, repeated or empty keyword or value, or a condition that is not a cached probe stops configure. Use one build directory per preset.
@@ -121,30 +121,30 @@ Every argument must parse: a path other than `<topic>/<name>.c`, an unknown, rep
 ## Build and run
 
 ```bash
-make [verb ...] [PRESET=<target>] [CC=gcc|clang] [PROFILE=debug|release] [SANITIZE=<list>]   # Linux
-./build.sh [verb ...] [target] [PROFILE=debug|release] [SANITIZE=<list>]                       # Linux
-./build.ps1 [verb ...] [target] [PROFILE=debug|release] [SANITIZE=<list>]                      # Windows
-cmake -P build.cmake -- [verb ...] [target] [PROFILE=debug|release] [SANITIZE=<list>]          # either
+make [command ...] [PRESET=<preset>] [CC=gcc|clang] [PROFILE=debug|release] [SANITIZE=<list>]   # Linux
+./build.sh [command ...] [preset] [PROFILE=debug|release] [SANITIZE=<list>]                       # Linux
+./build.ps1 [command ...] [preset] [PROFILE=debug|release] [SANITIZE=<list>]                      # Windows
+cmake -P build.cmake -- [command ...] [preset] [PROFILE=debug|release] [SANITIZE=<list>]          # either
 
 cmake --preset aarch64-linux-gcc && cmake --build build/aarch64-linux-gcc --config Release
 qemu-aarch64 -L /usr/aarch64-linux-gnu ./bin/aarch64-linux-gcc-release/<dir>/<name>
 ```
 
-| verb | effect |
+| command | effect |
 |---|---|
 | `all` | `debug` and `sanitize`, or `release` with `PROFILE=release`; the default |
-| `debug`, `sanitize`, `release` | configure `build/<target>/` and build that config into `bin/<target>-<config>/` |
+| `debug`, `sanitize`, `release` | configure `build/<preset>/` and build that config into `bin/<preset>-<config>/` |
 | `index` | `compile_commands.json` with the entries of the `PROFILE` config, `tags` and `cscope.out`, in the root; later builds rewrite the `compile_commands.json` when its flags change |
 | `clean-index` | remove the index files |
 | `clean` | remove `bin/` and the build products of every configured tree; the configuration stays |
 | `distclean` | `clean`, `clean-index`, `build/`, tool outputs (`gmon.out`, `perf.data`, `uftrace.data`, core files) and `.cache/` |
 | `unused` | unused diagnostics of every source (clang) and unused functions (cppcheck), with the `PROFILE` definitions |
-| `check` | build every config the target can link and run its tests |
+| `check` | build every config the preset can link and run its tests |
 | `tidy` | clang-tidy over every source with the `PROFILE` flags |
-| `lsp-check` | clangd parses every source and header and prints its errors |
-| `help`, `-h` | the verbs, the variables and the presets the host can build |
+| `clangd-check` | clangd parses every source and header and prints its errors |
+| `help`, `-h` | the commands, the variables and the presets the host can build |
 
-All four entry points parse the same words, from any working directory: verbs in any case run in the order given, and the target, `PROFILE` and the `SANITIZE` list come once. Anything else, or a target the host cannot build, stops before any work. No verb means `all`, and no target means the host default, `<arch>-linux-gcc` on Linux or `x86_64-windows-clang` on Windows. The `Makefile` runs its goals one at a time and maps `CC=gcc`, `CC=clang` and the cross gcc names to their presets; `PRESET=` names any preset. Each verb ends with a `=>` line that names what it produced, and configure reports the probed flags in the same form whenever they change.
+All four entry points parse the same arguments, from any working directory: commands in any case run in the order given, and the preset, `PROFILE` and the `SANITIZE` list come once. Anything else, or a preset the host cannot build, stops before any work. No command means `all`, and no preset means the host default, `<arch>-linux-gcc` on Linux or `x86_64-windows-clang` on Windows. The `Makefile` runs its goals one at a time and maps `CC=gcc`, `CC=clang` and the cross gcc names to their presets; `PRESET=` names any preset. Each command ends with a `=>` line that names what it produced, and configure reports the probed flags in the same form whenever they change.
 
 Visual Studio 2022+: "Open a local folder" on the root, choose `x86_64-windows-msvc` or `x86_64-windows-clang` from the preset list, pick a program from **Select Startup Item**, F5. Breakpoints, Memory View and `.pdb` work without a `.sln`.
 
