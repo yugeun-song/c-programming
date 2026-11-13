@@ -134,7 +134,7 @@ qemu-aarch64 -L /usr/aarch64-linux-gnu ./bin/aarch64-linux-gcc-release/<dir>/<na
 |---|---|
 | `all` | `debug` and `sanitize`, or `release` with `PROFILE=release`; the default |
 | `debug`, `sanitize`, `release` | configure `build/<target>/` and build that config into `bin/<target>-<config>/` |
-| `index` | `compile_commands.json` with the entries of the `PROFILE` config, `tags` and `cscope.out`, in the root |
+| `index` | `compile_commands.json` with the entries of the `PROFILE` config, `tags` and `cscope.out`, in the root; later builds rewrite the `compile_commands.json` when its flags change |
 | `clean-index` | remove the index files |
 | `clean` | remove `bin/` and the build products of every configured tree; the configuration stays |
 | `distclean` | `clean`, `clean-index`, `build/`, tool outputs (`gmon.out`, `perf.data`, `uftrace.data`, core files) and `.cache/` |
