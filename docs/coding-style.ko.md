@@ -6508,9 +6508,9 @@ clang-format의 기본 동작이 이 문서의 규칙과 어긋나면, clang-for
 - `ColumnLimit: 0`: 줄은 사람이 나눈다([5.2절](#52-줄-길이), [5.3절](#53-긴-식-나누기)). clang-format은 사람이 나눈 줄을 합치거나 다시 나누지 않고, 들여쓰기와 정렬만 맞춘다.
 - `BreakBeforeBraces: Custom`과 `BraceWrapping`의 `AfterFunction: true`: 함수 본문의 여는 중괄호만 새 줄에 둔다([5.6절](#56-함수-중괄호), [5.7절](#57-제어문과-반복문-중괄호)).
 - `InsertBraces: true`: 제어문과 반복문의 본문을 중괄호로 감싼다([5.8절](#58-중괄호-생략-금지)).
-- `AllowShortFunctionsOnASingleLine: None`: 짧은 함수의 본문을 한 줄로 합치지 않는다([5.6절](#56-함수-중괄호)).
+- `AllowShortFunctionsOnASingleLine`의 `Empty: false`, `Inline: false`, `Other: false`: 짧은 함수의 본문을 한 줄로 합치지 않는다([5.6절](#56-함수-중괄호)).
 - `AllowShortEnumsOnASingleLine: false`: enum의 원소를 한 줄로 합치지 않는다([5.11절](#511-중괄호를-이용한-초기화)).
-- `Cpp11BracedListStyle: false`: 중괄호 초기화 목록의 안쪽에 공백을 둔다([5.11절](#511-중괄호를-이용한-초기화)).
+- `Cpp11BracedListStyle: Block`: 중괄호 초기화 목록의 안쪽에 공백을 둔다([5.11절](#511-중괄호를-이용한-초기화)).
 - `AlignTrailingComments`의 `Kind: Never`: 줄 끝 주석을 열에 맞추지 않는다([5.18절](#518-정렬)).
 - `AlignEscapedNewlines: Left`: 여러 줄 매크로의 줄 끝 `\`를 같은 열에 맞춘다([5.18절](#518-정렬)).
 - `IndentPPDirectives: AfterHash`와 `PPIndentWidth: 1`: 조건부 컴파일 블록 안의 directive를 `#` 뒤 공백 하나씩으로 들여쓴다([5.19절](#519-preprocessing-directive)).
@@ -6549,9 +6549,12 @@ BreakBeforeBraces: Custom
 BraceWrapping:
     AfterFunction: true
 InsertBraces: true
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine:
+    Empty: false
+    Inline: false
+    Other: false
 AllowShortEnumsOnASingleLine: false
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: Block
 AlignTrailingComments:
     Kind: Never
 AlignEscapedNewlines: Left

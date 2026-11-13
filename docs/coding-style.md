@@ -6508,9 +6508,9 @@ If the default behavior of clang-format conflicts with the rules of this documen
 - `ColumnLimit: 0`: Lines are broken by hand (sections [5.2](#52-line-length) and [5.3](#53-breaking-long-expressions)). clang-format neither joins nor re-breaks lines broken by hand. It only adjusts indentation and alignment.
 - `BreakBeforeBraces: Custom` and `AfterFunction: true` in `BraceWrapping`: Put only the opening brace of a function body on a new line (sections [5.6](#56-function-braces) and [5.7](#57-control-statement-and-loop-braces)).
 - `InsertBraces: true`: Wrap the bodies of control statements and loops in braces (section [5.8](#58-mandatory-braces)).
-- `AllowShortFunctionsOnASingleLine: None`: Do not merge the body of a short function onto one line (section [5.6](#56-function-braces)).
+- `Empty: false`, `Inline: false`, and `Other: false` in `AllowShortFunctionsOnASingleLine`: Do not merge the body of a short function onto one line (section [5.6](#56-function-braces)).
 - `AllowShortEnumsOnASingleLine: false`: Do not merge the elements of an enum onto one line (section [5.11](#511-brace-initialization)).
-- `Cpp11BracedListStyle: false`: Put spaces just inside the braces of initializer lists (section [5.11](#511-brace-initialization)).
+- `Cpp11BracedListStyle: Block`: Put spaces just inside the braces of initializer lists (section [5.11](#511-brace-initialization)).
 - `Kind: Never` in `AlignTrailingComments`: Do not align trailing comments in columns (section [5.18](#518-alignment)).
 - `AlignEscapedNewlines: Left`: Align the line-ending `\` of multi-line macros in one column (section [5.18](#518-alignment)).
 - `IndentPPDirectives: AfterHash` and `PPIndentWidth: 1`: Indent directives inside conditional compilation blocks with one space per level after `#` (section [5.19](#519-preprocessing-directives)).
@@ -6549,9 +6549,12 @@ BreakBeforeBraces: Custom
 BraceWrapping:
     AfterFunction: true
 InsertBraces: true
-AllowShortFunctionsOnASingleLine: None
+AllowShortFunctionsOnASingleLine:
+    Empty: false
+    Inline: false
+    Other: false
 AllowShortEnumsOnASingleLine: false
-Cpp11BracedListStyle: false
+Cpp11BracedListStyle: Block
 AlignTrailingComments:
     Kind: Never
 AlignEscapedNewlines: Left
