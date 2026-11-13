@@ -4,7 +4,7 @@ check_compiler_flag_common_patterns(flag_fail_patterns)
 
 set(gnu_strict -Werror)
 set(gnu_strict_link -Wl,--fatal-warnings)
-set(gnu_common -Wall -Wextra -pedantic)
+set(gnu_common -Wall -Wextra -pedantic -Wshadow)
 set(gnu_debug
     -O0
     -ggdb3

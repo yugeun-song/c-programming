@@ -49,7 +49,7 @@ Configure stops unless the compiler is GCC, Clang or MSVC, and a compiler CMake 
 
 ## Build types
 
-`cmake/flags.cmake` has a candidate table per config and command-line syntax, `gnu` or `msvc`. Each flag is probed in its own config under `-Werror` (`/WX`), GNU link flags under `-Wl,--fatal-warnings`, after the flags accepted before it; configure lists what it drops. Probes rerun when the compiler file, target, sysroot or base flags change. Every config gets `-std=c99 -Wall -Wextra -pedantic` and PIE, or `/utf-8 /W4 /D_CRT_SECURE_NO_WARNINGS`. A cached `CMAKE_C_FLAGS_<CONFIG>` is ignored with a warning; extra flags go in `CMAKE_C_FLAGS`.
+`cmake/flags.cmake` has a candidate table per config and command-line syntax, `gnu` or `msvc`. Each flag is probed in its own config under `-Werror` (`/WX`), GNU link flags under `-Wl,--fatal-warnings`, after the flags accepted before it; configure lists what it drops. Probes rerun when the compiler file, target, sysroot or base flags change. Every config gets `-std=c99 -Wall -Wextra -pedantic -Wshadow` and PIE, or `/utf-8 /W4 /D_CRT_SECURE_NO_WARNINGS`. A cached `CMAKE_C_FLAGS_<CONFIG>` is ignored with a warning; extra flags go in `CMAKE_C_FLAGS`.
 
 Debug keeps the machine code a literal translation of the C: `-O0 -ggdb3 -fno-inline -fno-omit-frame-pointer -fno-optimize-sibling-calls -fasynchronous-unwind-tables -fno-eliminate-unused-debug-types -grecord-gcc-switches`, `-fdebug-macro` on clang for `info macro`, and:
 
