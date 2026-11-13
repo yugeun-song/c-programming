@@ -120,7 +120,7 @@
 - **[14. 도구](#14-도구)**
   - [14.1. clang-format](#141-clang-format)
   - [14.2. clang-tidy](#142-clang-tidy)
-  - [14.3. GCC/Clang 컴파일러 경고](#143-gccclang-컴파일러-경고)
+  - [14.3. 컴파일러 경고](#143-컴파일러-경고)
   - [14.4. 에디터 설정](#144-에디터-설정)
 - **[15. 참고 자료](#15-참고-자료)**
 
@@ -327,7 +327,8 @@ static size_t copy_string(char *const mut_dst, const char *const src, size_t dst
 기본 표준은 C99이다. 프로젝트는 필요하면 다른 표준이나 GNU 방언을 골라도 된다. 고른 표준은 빌드 설정에 명시한다.
 
 - GCC와 Clang은 `-std`로 고른다(`-std=c99`, `-std=c11`, `-std=c17`, `-std=c23`, `-std=gnu99`).
-- MSVC에는 C99 모드가 없다. `/std`를 주지 않은 기본 모드는 C89에 Microsoft 확장을 더한 것이며, 확장 가운데 일부가 C99 기능이다. C11 이상은 `/std:c11`, `/std:c17`, `/std:clatest`로 고른다.
+- MSVC에는 C99 모드가 없다. `/std`를 주지 않은 기본 모드는 C89에 Microsoft 확장을 더한 것이며, 확장 가운데 일부가 C99 기능이다. C11 이상은 `/std:c11`, `/std:c17`, `/std:clatest`로 고른다. 기본 모드는 traditional preprocessor를 쓴다. C99에 맞는 preprocessor는 `/Zc:preprocessor`로 고른다. `/std:c11`이나 `/std:c17`을 주면 이 preprocessor가 함께 켜진다.
+- Visual Studio 프로젝트는 `LanguageStandard_C`(`stdc11`, `stdc17`, `stdclatest`)와 `UseStandardPreprocessor` 속성으로 고른다.
 - CMake는 `CMAKE_C_STANDARD`로 고른다. MSVC 19.27 이상에서 `CMAKE_C_STANDARD 99`는 표준 옵션을 넘기지 않으므로 기본 모드로 빌드된다.
 
 표준 문서와 WG14 공개 초안은 다음과 같다. 대응 관계는 [WG14 프로젝트 페이지](https://www.open-std.org/jtc1/sc22/wg14/www/projects)를 따른다.
@@ -753,7 +754,7 @@ printer.c
 
 ### 4.2. 인코딩과 줄 끝
 
-파일은 BOM 없는 UTF-8과 LF를 쓴다. Visual Studio 프로젝트 파일(`.sln`, `.slnx`, `.vcxproj`, `.vcxproj.filters`)만 CRLF를 쓴다. `.gitattributes`와 `.editorconfig`로 이 규칙을 강제할 수 있다.
+파일은 BOM 없는 UTF-8과 LF를 쓴다. Visual Studio 프로젝트 파일(`.sln`, `.slnx`, `.vcxproj`, `.vcxproj.filters`, `.props`, `.targets`)만 CRLF를 쓴다. `.gitattributes`와 `.editorconfig`로 이 규칙을 강제할 수 있다.
 
 Git의 `core.autocrlf`는 쓰지 않는다. `core.autocrlf`는 사람마다 다르게 둘 수 있는 로컬 설정이라 프로젝트의 줄 끝을 고정하지 못한다. 줄 끝은 프로젝트에 함께 들어가는 `.gitattributes`로 정한다. `.gitattributes`에서 `eol`을 정한 파일은 `core.autocrlf` 값과 상관없이 그 줄 끝으로 checkout된다.
 
@@ -776,6 +777,8 @@ git config --global core.autocrlf true
 *.slnx text eol=crlf
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
 ```
 
 올바른 예:
@@ -791,6 +794,8 @@ word_count.c: C source, ASCII text
 *.slnx text eol=crlf
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
 *.png binary
 ```
 
@@ -6027,7 +6032,7 @@ static long measure_file(const char *const path)
 
 ### 13.2. unused 진단
 
-unused 계열 진단을 소스 코드로 숨기지 않는다. `(void)x;`, unused 속성, 진단 pragma, 진단을 피하려고 이름을 지우는 편집을 쓰지 않는다. 이 진단을 무시할지, 컴파일러 옵션(`-Wno-unused-parameter` 등)으로 끌지는 재량에 따라 판단한다.
+unused 계열 진단을 소스 코드로 숨기지 않는다. `(void)x;`, unused 속성, 진단 pragma, 진단을 피하려고 이름을 지우는 편집을 쓰지 않는다. 이 진단을 무시할지, 컴파일러 옵션(`-Wno-unused-parameter`, `/wd4100` 등)으로 끌지는 재량에 따라 판단한다.
 
 틀린 예:
 
@@ -6500,7 +6505,7 @@ int main(int argc, char *argv[])
 
 ### 14.1. clang-format
 
-서식 검사와 정리에는 프로젝트 루트의 `.clang-format`을 사용할 수 있다. 커밋하기 전에 바꾼 파일을 검사한다.
+서식 검사와 정리에는 프로젝트 루트의 `.clang-format`을 사용할 수 있다. 커밋하기 전에 바꾼 파일을 검사한다. Visual Studio도 가장 가까운 `.clang-format`으로 서식을 맞춘다.
 
 clang-format의 기본 동작이 이 문서의 규칙과 어긋나면, clang-format 전체를 끄지 않고 그 동작을 정하는 설정만 골라 바꾼다. 루트 `.clang-format`의 설정은 다음과 같다.
 
@@ -6623,17 +6628,23 @@ trim_trailing_whitespace = false
 
 이름 규칙([6장](#6-이름))은 프로젝트 루트의 `.clang-tidy`가 `readability-identifier-naming`으로 검사한다. 예약된 식별자([6.10절](#610-예약된-식별자))는 `bugprone-reserved-identifier`가, 선언과 정의의 매개변수 이름([10.1절](#101-매개변수-목록))은 `readability-inconsistent-declaration-parameter-name`이 검사한다. 포인터 매개변수의 `mut_` 접두어([10.3절](#103-포인터-매개변수))는 검사하지 못한다. `readability-identifier-naming`은 `*const`로 선언한 포인터 매개변수를 대상의 `const` 여부와 상관없이 같은 종류로 분류하기 때문이다.
 
+Visual Studio는 코드 분석 설정에서 Enable Clang-Tidy를 켜면 같은 `.clang-tidy`로 clang-tidy를 실행한다. CMake 프로젝트는 `CMakePresets.json`의 Visual Studio vendor 설정에 `enableClangTidyCodeAnalysis`를 두어 켠다.
+
 올바른 예:
 
 ```sh
 clang-tidy path/to/file.c -- -std=c99
 ```
 
-### 14.3. GCC/Clang 컴파일러 경고
+### 14.3. 컴파일러 경고
 
 - GCC/Clang은 `-Wall -Wextra -pedantic -Wshadow`로 빌드한다.
+- MSVC는 `/W4`로 빌드한다. `/W4`에는 shadowing 경고 C4456, C4457, C4459가 들어 있다. MSVC에는 C용 `-pedantic`이 없다. `/Za`를 주면 컴파일러가 C89만 받아들인다.
+- clang-cl은 `/W4 -Wshadow /clang:-pedantic`으로 빌드한다. clang-cl에서 `/W4`를 주면 `-Wall -Wextra`만 켜진다.
 - unused 계열을 뺀 경고는 모두 고친다([13.2절](#132-unused-진단)).
-- `-Werror`는 쓰지 않는다.
+- `-Werror`와 `/WX`는 쓰지 않는다.
+
+Visual Studio 프로젝트는 이 옵션을 트리 루트 디렉터리의 `Directory.Build.targets`에서 받는다. MSBuild는 각 프로젝트 위쪽에서 가장 가까운 `Directory.Build.targets`를 프로젝트 파일 다음에 가져온다. 따라서 나중에 더한 프로젝트를 포함해 트리의 모든 프로젝트가 이 설정을 받는다. 프로젝트 템플릿이 적는 `WarningLevel`도 이 설정으로 바뀐다. `Directory.Build.props`는 여기에 맞지 않는다. MSBuild가 이 파일을 프로젝트 파일보다 먼저 가져오므로, 이 파일에 둔 값은 템플릿 값에 밀린다.
 
 unused 계열 진단만 모아 볼 때는 그 진단만 걸러 따로 검사한다. GCC는 `-fsyntax-only`로 검사하면 `-Wunused-function`을 내지 않으므로, 오브젝트 코드까지 컴파일한 뒤 `-Wunused`가 붙은 진단만 고른다. Clang은 `-Wno-everything`으로 모든 경고를 끈 뒤 unused 계열만 다시 켠다. 다른 파일에서 쓰지 않는 external linkage 함수는 컴파일러가 찾지 못하므로, cppcheck의 `unusedFunction` 검사로 프로젝트 전체를 검사한다.
 
@@ -6641,6 +6652,30 @@ unused 계열 진단만 모아 볼 때는 그 진단만 걸러 따로 검사한�
 
 ```sh
 gcc -std=c99 -Wall -Wextra -pedantic -Wshadow -c foo.c
+```
+
+올바른 예(MSVC와 clang-cl):
+
+```bat
+cl /W4 /c foo.c
+clang-cl /W4 -Wshadow /clang:-pedantic /c foo.c
+```
+
+올바른 예(Visual Studio 트리 루트의 `Directory.Build.targets`):
+
+```xml
+<Project>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(PlatformToolset)' == 'ClangCL'">
+    <ClCompile>
+      <AdditionalOptions>-Wshadow /clang:-pedantic %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>
 ```
 
 올바른 예(unused 계열 진단만 모아 보는 경우):
@@ -6653,7 +6688,7 @@ cppcheck --enable=unusedFunction --quiet src/
 
 ### 14.4. 에디터 설정
 
-`.editorconfig`는 에디터에 C 소스와 헤더의 인코딩, 줄 끝, 들여쓰기, 마지막 개행, 줄 끝 공백 규칙을 알린다. `.gitattributes`는 프로젝트 안의 줄 끝을 고정한다. 에디터 설정은 이 두 파일에만 두고, 소스 파일에 에디터 modeline을 넣지 않는다.
+`.editorconfig`는 에디터에 C 소스와 헤더의 인코딩, 줄 끝, 들여쓰기, 마지막 개행, 줄 끝 공백 규칙을 알린다. Visual Studio는 이 핵심 EditorConfig 속성을 자체 텍스트 편집기 설정보다 앞서 적용한다. `.gitattributes`는 프로젝트 안의 줄 끝을 고정한다. 에디터 설정은 이 두 파일에만 두고, 소스 파일에 에디터 modeline을 넣지 않는다.
 
 올바른 예:
 
@@ -6705,10 +6740,10 @@ trim_trailing_whitespace = true
 - GCC 매뉴얼 [Binary Constants using the ‘0b’ Prefix](https://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html) ([8.1절](#81-리터럴-표기))
 - GCC 매뉴얼 [-Wimplicit-fallthrough](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wimplicit-fallthrough) ([9.1절](#91-switch))
 - GCC Bugzilla [Bug 66425](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425) ([13.1절](#131-반환값-검사))
-- GCC 매뉴얼 [Warning Options](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html) ([14.3절](#143-gccclang-컴파일러-경고))
+- GCC 매뉴얼 [Warning Options](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html) ([14.3절](#143-컴파일러-경고))
 - Clang 매뉴얼 [Differences between various standard modes](https://clang.llvm.org/docs/UsersManual.html#differences-between-various-standard-modes) ([3.1절](#31-언어-표준))
-- Clang 문서 [Diagnostic flags: -Wunused](https://clang.llvm.org/docs/DiagnosticsReference.html#wunused) ([14.3절](#143-gccclang-컴파일러-경고))
-- Microsoft [/std (Specify Language Standard Version)](https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version) ([3.1절](#31-언어-표준))
+- Clang 문서 [Diagnostic flags: -Wunused](https://clang.llvm.org/docs/DiagnosticsReference.html#wunused) ([14.3절](#143-컴파일러-경고))
+- Microsoft [/std (Specify Language Standard Version)](https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version), [/Zc:preprocessor (Enable preprocessor conformance mode)](https://learn.microsoft.com/en-us/cpp/build/reference/zc-preprocessor) ([3.1절](#31-언어-표준))
 - CMake 소스 [Modules/Compiler/MSVC-C.cmake](https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/Compiler/MSVC-C.cmake) ([3.1절](#31-언어-표준))
 - Microsoft [Slim Reader/Writer (SRW) Locks](https://learn.microsoft.com/en-us/windows/win32/sync/slim-reader-writer--srw--locks), [InterlockedIncrement](https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedincrement) ([3.2절](#32-플랫폼-api))
 - clang-format [IncludeCategories](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includecategories), [IncludeIsMainRegex](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includeismainregex) ([14.1절](#141-clang-format))
@@ -6716,7 +6751,7 @@ trim_trailing_whitespace = true
 - clang-format [ColumnLimit](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#columnlimit), [DisableFormat](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#disableformat), [BasedOnStyle](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#basedonstyle), [BraceWrapping](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#bracewrapping), [InsertBraces](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#insertbraces) ([14.1절](#141-clang-format))
 - clang-format [.clang-format-ignore](https://clang.llvm.org/docs/ClangFormat.html#clang-format-ignore) ([14.1절](#141-clang-format))
 - clang-tidy [bugprone-reserved-identifier](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/reserved-identifier.html), [readability-identifier-naming](https://clang.llvm.org/extra/clang-tidy/checks/readability/identifier-naming.html), [readability-inconsistent-declaration-parameter-name](https://clang.llvm.org/extra/clang-tidy/checks/readability/inconsistent-declaration-parameter-name.html) ([14.2절](#142-clang-tidy))
-- Cppcheck [Manual](https://cppcheck.sourceforge.io/manual.pdf) ([14.3절](#143-gccclang-컴파일러-경고))
+- Cppcheck [Manual](https://cppcheck.sourceforge.io/manual.pdf) ([14.3절](#143-컴파일러-경고))
 - EditorConfig [Specification](https://spec.editorconfig.org/) ([14.1절](#141-clang-format), [14.4절](#144-에디터-설정))
 - [Linux kernel coding style](https://www.kernel.org/doc/html/latest/process/coding-style.html) ([1.1절](#11-적용-대상), [2장](#2-대원칙))
 - Linux kernel coding style의 [Placing Braces and Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#placing-braces-and-spaces) ([5.6절](#56-함수-중괄호), [5.7절](#57-제어문과-반복문-중괄호))
@@ -6734,4 +6769,10 @@ trim_trailing_whitespace = true
 - Microsoft [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file) ([4.1절](#41-파일-이름))
 - Microsoft [Using the Windows Headers](https://learn.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers) ([4.7절](#47-feature-test-macro))
 - Microsoft [Module 1. Your First Windows Program](https://learn.microsoft.com/en-us/windows/win32/learnwin32/your-first-windows-program) ([5.7절](#57-제어문과-반복문-중괄호))
-- Microsoft [Define consistent coding styles with EditorConfig](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options) ([4.2절](#42-인코딩과-줄-끝), [14.1절](#141-clang-format))
+- Microsoft [Define consistent coding styles with EditorConfig](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options) ([4.2절](#42-인코딩과-줄-끝), [14.1절](#141-clang-format), [14.4절](#144-에디터-설정))
+- Microsoft [Options, Text Editor, C/C++, Formatting](https://learn.microsoft.com/en-us/visualstudio/ide/reference/options-text-editor-c-cpp-formatting) ([14.1절](#141-clang-format))
+- Microsoft [Using Clang-Tidy in Visual Studio](https://learn.microsoft.com/en-us/cpp/code-quality/clang-tidy) ([14.2절](#142-clang-tidy))
+- Microsoft [/w, /W0, /W1, /W2, /W3, /W4, /w1, /w2, /w3, /w4, /Wall, /wd, /we, /wo, /Wv, /WX (Warning level)](https://learn.microsoft.com/en-us/cpp/build/reference/compiler-option-warning-level), [Compiler Warning (level 4) C4456](https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4456), [C4457](https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4457), [C4459](https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4459), [/Za, /Ze (Disable Language Extensions)](https://learn.microsoft.com/en-us/cpp/build/reference/za-ze-disable-language-extensions) ([14.3절](#143-컴파일러-경고))
+- Microsoft [Compiler Warning (level 4) C4100](https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4100) ([13.2절](#132-unused-진단))
+- Microsoft [Customize the build by folder](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory), [Customize C++ builds for MSBuild](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-cpp-builds) ([14.3절](#143-컴파일러-경고))
+- Clang 매뉴얼 [clang-cl](https://clang.llvm.org/docs/UsersManual.html#clang-cl) ([14.3절](#143-컴파일러-경고))

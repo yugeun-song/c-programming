@@ -120,7 +120,7 @@ Contents
 - **[14. Tools](#14-tools)**
   - [14.1. clang-format](#141-clang-format)
   - [14.2. clang-tidy](#142-clang-tidy)
-  - [14.3. GCC/Clang compiler warnings](#143-gccclang-compiler-warnings)
+  - [14.3. Compiler warnings](#143-compiler-warnings)
   - [14.4. Editor settings](#144-editor-settings)
 - **[15. References](#15-references)**
 
@@ -327,7 +327,8 @@ static size_t copy_string(char *const mut_dst, const char *const src, size_t dst
 The default standard is C99. A project may choose another standard or a GNU dialect if needed. State the chosen standard explicitly in the build configuration.
 
 - For GCC and Clang, select it with `-std` (`-std=c99`, `-std=c11`, `-std=c17`, `-std=c23`, `-std=gnu99`).
-- MSVC has no C99 mode. Its default mode, without `/std`, is C89 plus Microsoft extensions, and some of those extensions are C99 features. Select C11 or later with `/std:c11`, `/std:c17`, or `/std:clatest`.
+- MSVC has no C99 mode. Its default mode, without `/std`, is C89 plus Microsoft extensions, and some of those extensions are C99 features. Select C11 or later with `/std:c11`, `/std:c17`, or `/std:clatest`. The default mode keeps the traditional preprocessor. `/Zc:preprocessor` selects the preprocessor that conforms to C99, and `/std:c11` and `/std:c17` select it on their own.
+- In a Visual Studio project, select them with the `LanguageStandard_C` (`stdc11`, `stdc17`, `stdclatest`) and `UseStandardPreprocessor` properties.
 - For CMake, select it with `CMAKE_C_STANDARD`. With MSVC 19.27 or later, `CMAKE_C_STANDARD 99` passes no standard option, so the build uses the default mode.
 
 The standard documents and their WG14 public drafts are as follows. The mapping follows the [WG14 projects page](https://www.open-std.org/jtc1/sc22/wg14/www/projects).
@@ -753,7 +754,7 @@ printer.c
 
 ### 4.2. Encoding and line endings
 
-Use UTF-8 without a BOM and LF line endings in files. Use CRLF only in Visual Studio project files (`.sln`, `.slnx`, `.vcxproj`, `.vcxproj.filters`). `.gitattributes` and `.editorconfig` can enforce this rule.
+Use UTF-8 without a BOM and LF line endings in files. Use CRLF only in Visual Studio project files (`.sln`, `.slnx`, `.vcxproj`, `.vcxproj.filters`, `.props`, `.targets`). `.gitattributes` and `.editorconfig` can enforce this rule.
 
 Do not use Git's `core.autocrlf`. `core.autocrlf` is a local setting that each person can set differently, so it cannot pin down the project's line endings. Set line endings with the `.gitattributes` that is part of the project. A file whose `eol` is set in `.gitattributes` is checked out with that line ending regardless of the `core.autocrlf` value.
 
@@ -776,6 +777,8 @@ git config --global core.autocrlf true
 *.slnx text eol=crlf
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
 ```
 
 Correct:
@@ -791,6 +794,8 @@ word_count.c: C source, ASCII text
 *.slnx text eol=crlf
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
+*.props text eol=crlf
+*.targets text eol=crlf
 *.png binary
 ```
 
@@ -6027,7 +6032,7 @@ static long measure_file(const char *const path)
 
 ### 13.2. Unused diagnostics
 
-Do not hide unused diagnostics in source code. Do not use `(void)x;`, the unused attribute, diagnostic pragmas, or edits that delete names to avoid a diagnostic. Whether to ignore these diagnostics or turn them off with compiler options (`-Wno-unused-parameter` and so on) is a matter of discretion.
+Do not hide unused diagnostics in source code. Do not use `(void)x;`, the unused attribute, diagnostic pragmas, or edits that delete names to avoid a diagnostic. Whether to ignore these diagnostics or turn them off with compiler options (`-Wno-unused-parameter`, `/wd4100`, and so on) is a matter of discretion.
 
 Incorrect:
 
@@ -6500,7 +6505,7 @@ int main(int argc, char *argv[])
 
 ### 14.1. clang-format
 
-The `.clang-format` at the project root can be used to check and clean up formatting. Check changed files before committing.
+The `.clang-format` at the project root can be used to check and clean up formatting. Check changed files before committing. Visual Studio formats with the nearest `.clang-format` as well.
 
 If the default behavior of clang-format conflicts with the rules of this document, do not turn off clang-format as a whole. Change only the settings that control that behavior. The root `.clang-format` has the following settings.
 
@@ -6623,17 +6628,23 @@ trim_trailing_whitespace = false
 
 The `.clang-tidy` at the project root checks the naming rules (chapter [6](#6-naming)) with `readability-identifier-naming`. `bugprone-reserved-identifier` checks reserved identifiers (section [6.10](#610-reserved-identifiers)), and `readability-inconsistent-declaration-parameter-name` checks parameter names in declarations and definitions (section [10.1](#101-parameter-lists)). The `mut_` prefix of pointer parameters (section [10.3](#103-pointer-parameters)) cannot be checked, because `readability-identifier-naming` classifies all pointer parameters declared `*const` as the same kind, regardless of whether the target is `const`.
 
+Visual Studio runs clang-tidy with the same `.clang-tidy` when Enable Clang-Tidy is on in the code analysis settings. A CMake project turns it on with `enableClangTidyCodeAnalysis` in the Visual Studio vendor settings of `CMakePresets.json`.
+
 Correct:
 
 ```sh
 clang-tidy path/to/file.c -- -std=c99
 ```
 
-### 14.3. GCC/Clang compiler warnings
+### 14.3. Compiler warnings
 
 - With GCC/Clang, build with `-Wall -Wextra -pedantic -Wshadow`.
+- With MSVC, build with `/W4`. `/W4` includes the shadowing warnings C4456, C4457, and C4459. MSVC has no `-pedantic` for C, and `/Za` holds C to C89.
+- With clang-cl, build with `/W4 -Wshadow /clang:-pedantic`. In clang-cl, `/W4` turns on only `-Wall -Wextra`.
 - Fix all warnings other than unused diagnostics (section [13.2](#132-unused-diagnostics)).
-- Do not use `-Werror`.
+- Do not use `-Werror` or `/WX`.
+
+A Visual Studio project takes these options from `Directory.Build.targets` in the root directory of its tree. MSBuild imports the nearest `Directory.Build.targets` above each project after the project file, so the settings reach every project in the tree, including projects added later, and override the `WarningLevel` that the project templates write. `Directory.Build.props` does not fit here: MSBuild imports it before the project file, so the template values override it.
 
 To review the unused diagnostics on their own, run a separate check that keeps only those diagnostics. GCC does not issue `-Wunused-function` when checking with `-fsyntax-only`, so compile all the way to object code and then pick out only the diagnostics marked `-Wunused`. For Clang, turn off all warnings with `-Wno-everything` and then turn only the unused diagnostics back on. The compiler cannot find functions with external linkage that no other file uses, so check the whole project with the cppcheck `unusedFunction` check.
 
@@ -6641,6 +6652,30 @@ Correct:
 
 ```sh
 gcc -std=c99 -Wall -Wextra -pedantic -Wshadow -c foo.c
+```
+
+Correct (MSVC and clang-cl):
+
+```bat
+cl /W4 /c foo.c
+clang-cl /W4 -Wshadow /clang:-pedantic /c foo.c
+```
+
+Correct (`Directory.Build.targets` at the root of a Visual Studio tree):
+
+```xml
+<Project>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(PlatformToolset)' == 'ClangCL'">
+    <ClCompile>
+      <AdditionalOptions>-Wshadow /clang:-pedantic %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+</Project>
 ```
 
 Correct (reviewing the unused diagnostics on their own):
@@ -6653,7 +6688,7 @@ cppcheck --enable=unusedFunction --quiet src/
 
 ### 14.4. Editor settings
 
-`.editorconfig` tells editors the encoding, line ending, indentation, final newline, and trailing whitespace rules for C sources and headers. `.gitattributes` pins the line endings in the project. Keep editor settings in these two files only, and do not put editor modelines in source files.
+`.editorconfig` tells editors the encoding, line ending, indentation, final newline, and trailing whitespace rules for C sources and headers. Visual Studio applies these core EditorConfig properties ahead of its own text editor settings. `.gitattributes` pins the line endings in the project. Keep editor settings in these two files only, and do not put editor modelines in source files.
 
 Correct:
 
@@ -6705,10 +6740,10 @@ trim_trailing_whitespace = true
 - GCC manual: [Binary Constants using the ‘0b’ Prefix](https://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html) (section [8.1](#81-literal-notation))
 - GCC manual: [-Wimplicit-fallthrough](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html#index-Wimplicit-fallthrough) (section [9.1](#91-switch))
 - GCC Bugzilla [Bug 66425](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66425) (section [13.1](#131-checking-return-values))
-- GCC manual: [Warning Options](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html) (section [14.3](#143-gccclang-compiler-warnings))
+- GCC manual: [Warning Options](https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html) (section [14.3](#143-compiler-warnings))
 - Clang manual: [Differences between various standard modes](https://clang.llvm.org/docs/UsersManual.html#differences-between-various-standard-modes) (section [3.1](#31-language-standard))
-- Clang documentation: [Diagnostic flags: -Wunused](https://clang.llvm.org/docs/DiagnosticsReference.html#wunused) (section [14.3](#143-gccclang-compiler-warnings))
-- Microsoft [/std (Specify Language Standard Version)](https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version) (section [3.1](#31-language-standard))
+- Clang documentation: [Diagnostic flags: -Wunused](https://clang.llvm.org/docs/DiagnosticsReference.html#wunused) (section [14.3](#143-compiler-warnings))
+- Microsoft [/std (Specify Language Standard Version)](https://learn.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version), [/Zc:preprocessor (Enable preprocessor conformance mode)](https://learn.microsoft.com/en-us/cpp/build/reference/zc-preprocessor) (section [3.1](#31-language-standard))
 - CMake source: [Modules/Compiler/MSVC-C.cmake](https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/Compiler/MSVC-C.cmake) (section [3.1](#31-language-standard))
 - Microsoft [Slim Reader/Writer (SRW) Locks](https://learn.microsoft.com/en-us/windows/win32/sync/slim-reader-writer--srw--locks), [InterlockedIncrement](https://learn.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-interlockedincrement) (section [3.2](#32-platform-apis))
 - clang-format [IncludeCategories](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includecategories), [IncludeIsMainRegex](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#includeismainregex) (section [14.1](#141-clang-format))
@@ -6716,7 +6751,7 @@ trim_trailing_whitespace = true
 - clang-format [ColumnLimit](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#columnlimit), [DisableFormat](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#disableformat), [BasedOnStyle](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#basedonstyle), [BraceWrapping](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#bracewrapping), [InsertBraces](https://clang.llvm.org/docs/ClangFormatStyleOptions.html#insertbraces) (section [14.1](#141-clang-format))
 - clang-format [.clang-format-ignore](https://clang.llvm.org/docs/ClangFormat.html#clang-format-ignore) (section [14.1](#141-clang-format))
 - clang-tidy [bugprone-reserved-identifier](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/reserved-identifier.html), [readability-identifier-naming](https://clang.llvm.org/extra/clang-tidy/checks/readability/identifier-naming.html), [readability-inconsistent-declaration-parameter-name](https://clang.llvm.org/extra/clang-tidy/checks/readability/inconsistent-declaration-parameter-name.html) (section [14.2](#142-clang-tidy))
-- Cppcheck [Manual](https://cppcheck.sourceforge.io/manual.pdf) (section [14.3](#143-gccclang-compiler-warnings))
+- Cppcheck [Manual](https://cppcheck.sourceforge.io/manual.pdf) (section [14.3](#143-compiler-warnings))
 - EditorConfig [Specification](https://spec.editorconfig.org/) (sections [14.1](#141-clang-format) and [14.4](#144-editor-settings))
 - [Linux kernel coding style](https://www.kernel.org/doc/html/latest/process/coding-style.html) (section [1.1](#11-applicability), chapter [2](#2-principles))
 - Linux kernel coding style: [Placing Braces and Spaces](https://www.kernel.org/doc/html/latest/process/coding-style.html#placing-braces-and-spaces) (sections [5.6](#56-function-braces) and [5.7](#57-control-statement-and-loop-braces))
@@ -6734,4 +6769,10 @@ trim_trailing_whitespace = true
 - Microsoft [Naming Files, Paths, and Namespaces](https://learn.microsoft.com/en-us/windows/win32/fileio/naming-a-file) (section [4.1](#41-file-names))
 - Microsoft [Using the Windows Headers](https://learn.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers) (section [4.7](#47-feature-test-macros))
 - Microsoft [Module 1. Your First Windows Program](https://learn.microsoft.com/en-us/windows/win32/learnwin32/your-first-windows-program) (section [5.7](#57-control-statement-and-loop-braces))
-- Microsoft [Define consistent coding styles with EditorConfig](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options) (sections [4.2](#42-encoding-and-line-endings) and [14.1](#141-clang-format))
+- Microsoft [Define consistent coding styles with EditorConfig](https://learn.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options) (sections [4.2](#42-encoding-and-line-endings), [14.1](#141-clang-format), and [14.4](#144-editor-settings))
+- Microsoft [Options, Text Editor, C/C++, Formatting](https://learn.microsoft.com/en-us/visualstudio/ide/reference/options-text-editor-c-cpp-formatting) (section [14.1](#141-clang-format))
+- Microsoft [Using Clang-Tidy in Visual Studio](https://learn.microsoft.com/en-us/cpp/code-quality/clang-tidy) (section [14.2](#142-clang-tidy))
+- Microsoft [/w, /W0, /W1, /W2, /W3, /W4, /w1, /w2, /w3, /w4, /Wall, /wd, /we, /wo, /Wv, /WX (Warning level)](https://learn.microsoft.com/en-us/cpp/build/reference/compiler-option-warning-level), [Compiler Warning (level 4) C4456](https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4456), [C4457](https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4457), [C4459](https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4459), [/Za, /Ze (Disable Language Extensions)](https://learn.microsoft.com/en-us/cpp/build/reference/za-ze-disable-language-extensions) (section [14.3](#143-compiler-warnings))
+- Microsoft [Compiler Warning (level 4) C4100](https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4100) (section [13.2](#132-unused-diagnostics))
+- Microsoft [Customize the build by folder](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-by-directory), [Customize C++ builds for MSBuild](https://learn.microsoft.com/en-us/visualstudio/msbuild/customize-cpp-builds) (section [14.3](#143-compiler-warnings))
+- Clang manual: [clang-cl](https://clang.llvm.org/docs/UsersManual.html#clang-cl) (section [14.3](#143-compiler-warnings))
