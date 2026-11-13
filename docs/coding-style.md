@@ -130,7 +130,7 @@ This coding style is the convention for code on the Linux platform and for cross
 
 Your own Linux kernel modules and drivers may use this coding style, independently of the original kernel source. However, when customizing the Linux kernel source itself, follow the kernel coding style as it is. This keeps different styles from mixing within the kernel source.
 
-A project that targets only a specific OS or architecture, such as a Windows-only, FreeBSD-only, or macOS-only project, follows the coding style of that OS or architecture. In a cross-platform project, by contrast, apply this coding style to OS-specific code as well.
+A project that targets only a specific OS or architecture, such as a Windows-only, FreeBSD-only, or macOS-only project, follows the coding style of that OS or architecture. In a cross-platform project, by contrast, apply this coding style to OS-specific code as well. Trees that each have their own structure and binaries for one platform are not a cross-platform project, and each such tree follows the style of its own platform.
 
 ### 1.2. Coding style differences between project and dependencies
 
@@ -6502,7 +6502,9 @@ With these settings, clang-format enforces the final newline (section 4.4), whit
 - Conditional operators nested without parentheses are broken across lines and aligned (section 8.8). If the inner conditional operator is wrapped in parentheses, the expression stays on one line.
 - Blank lines (section 5.17) and inline assembly strings (section 5.20) are not fixed.
 
-In a directory of code that does not use this coding style, such as dependency code or the code of a Windows-only project, put a `.clang-format` that contains only `DisableFormat: true` and a `.editorconfig` that matches that code (sections 1.1 and 1.2). Put `root = true` in this `.editorconfig`. Otherwise it inherits settings such as trailing whitespace removal from the `.editorconfig` at the project root.
+In a directory of dependency code, put a `.clang-format` that contains only `DisableFormat: true` and a `.editorconfig` that matches that code (section 1.2). Put `root = true` in this `.editorconfig`. Otherwise it inherits settings such as trailing whitespace removal from the `.editorconfig` at the project root.
+
+A project split into independent trees for each platform (section 1.1) puts a `.clang-format` with the style of that platform in each tree, side by side. clang-format uses the `.clang-format` in the nearest parent directory of a file, so the settings of one tree do not mix into another. `.editorconfig` files are merged with those of parent directories, so put `root = true` in the `.editorconfig` of each tree.
 
 If dependency code shares a directory with project code, list the paths of those files in `.clang-format-ignore` at the project root, and add a separate section to the root `.editorconfig` that selects only those files. clang-format skips the files listed in `.clang-format-ignore`.
 
@@ -6544,7 +6546,7 @@ IncludeCategories:
 InsertNewlineAtEOF: true
 ```
 
-Correct (`.clang-format` in a directory of dependency code or of a Windows-only project):
+Correct (`.clang-format` in a directory of dependency code):
 
 ```yaml
 DisableFormat: true
@@ -6558,6 +6560,20 @@ root = true
 [*.{c,h}]
 indent_style = space
 indent_size = 2
+```
+
+Correct (a project split into independent trees for each platform):
+
+```text
+netprobe/
+    linux/
+        .clang-format
+        .editorconfig
+        netprobe.c
+    windows/
+        .clang-format
+        .editorconfig
+        netprobe.c
 ```
 
 Correct (`.clang-format-ignore` at the project root):

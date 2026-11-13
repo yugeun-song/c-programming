@@ -130,7 +130,7 @@
 
 직접 작성하는 Linux 커널 모듈과 드라이버에는 커널 원본 소스와 별개로 이 코딩 스타일을 적용할 수 있다. 다만 Linux 커널 소스 자체를 커스터마이징할 때는 커널 코딩 스타일을 그대로 따른다. 커널 소스 안에 서로 다른 스타일이 섞이지 않게 하기 위해서이다.
 
-Windows 전용, FreeBSD 전용, macOS 전용 프로젝트처럼 특정 OS나 아키텍처만 대상으로 하는 프로젝트는 그 OS나 아키텍처의 코딩 스타일을 따른다. 반면 크로스플랫폼 프로젝트에서는 특정 OS에 종속된 코드에도 이 코딩 스타일을 적용한다.
+Windows 전용, FreeBSD 전용, macOS 전용 프로젝트처럼 특정 OS나 아키텍처만 대상으로 하는 프로젝트는 그 OS나 아키텍처의 코딩 스타일을 따른다. 반면 크로스플랫폼 프로젝트에서는 특정 OS에 종속된 코드에도 이 코딩 스타일을 적용한다. 플랫폼마다 독립된 구조와 바이너리를 가진 트리는 크로스플랫폼 프로젝트가 아니며, 각 트리는 자기 플랫폼의 스타일을 따른다.
 
 ### 1.2. 프로젝트와 종속성의 코딩 스타일 차이
 
@@ -6502,7 +6502,9 @@ clang-format의 기본 동작이 이 문서의 규칙과 어긋나면, clang-for
 - 소괄호 없이 중첩한 삼항 연산자는 줄을 나눠 정렬한다(8.8절). 안쪽 삼항 연산자를 소괄호로 감싸면 한 줄로 둔다.
 - 빈 줄(5.17절)과 인라인 어셈블리의 문자열(5.20절)은 고치지 않는다.
 
-종속성 코드나 Windows 전용 프로젝트의 코드처럼 이 코딩 스타일을 쓰지 않는 코드의 디렉터리에는 `DisableFormat: true`만 담은 `.clang-format`과 그 코드에 맞춘 `.editorconfig`를 둔다(1.1절, 1.2절). 이 `.editorconfig`에는 `root = true`를 둔다. 그러지 않으면 프로젝트 루트의 `.editorconfig`에서 줄 끝 공백 제거 같은 설정을 물려받는다.
+종속성 코드의 디렉터리에는 `DisableFormat: true`만 담은 `.clang-format`과 그 코드에 맞춘 `.editorconfig`를 둔다(1.2절). 이 `.editorconfig`에는 `root = true`를 둔다. 그러지 않으면 프로젝트 루트의 `.editorconfig`에서 줄 끝 공백 제거 같은 설정을 물려받는다.
+
+플랫폼마다 독립된 트리로 나눈 프로젝트(1.1절)는 트리마다 그 플랫폼의 스타일을 담은 `.clang-format`을 나란히 둔다. clang-format은 파일에서 가장 가까운 상위 디렉터리의 `.clang-format`을 쓰므로, 한 트리의 설정이 다른 트리에 섞이지 않는다. `.editorconfig`는 상위 디렉터리의 파일과 합쳐지므로, 트리마다 둔 `.editorconfig`에는 `root = true`를 넣는다.
 
 종속성 코드가 프로젝트 코드와 같은 디렉터리에 있으면, 프로젝트 루트의 `.clang-format-ignore`에 그 파일들의 경로를 적고, 루트 `.editorconfig`에는 그 파일들만 고르는 섹션을 따로 둔다. clang-format은 `.clang-format-ignore`에 적힌 파일을 건너뛴다.
 
@@ -6544,7 +6546,7 @@ IncludeCategories:
 InsertNewlineAtEOF: true
 ```
 
-올바른 예(종속성 코드나 Windows 전용 프로젝트 디렉터리의 `.clang-format`):
+올바른 예(종속성 코드 디렉터리의 `.clang-format`):
 
 ```yaml
 DisableFormat: true
@@ -6558,6 +6560,20 @@ root = true
 [*.{c,h}]
 indent_style = space
 indent_size = 2
+```
+
+올바른 예(플랫폼마다 독립된 트리로 나눈 프로젝트):
+
+```text
+netprobe/
+    linux/
+        .clang-format
+        .editorconfig
+        netprobe.c
+    windows/
+        .clang-format
+        .editorconfig
+        netprobe.c
 ```
 
 올바른 예(프로젝트 루트의 `.clang-format-ignore`):
