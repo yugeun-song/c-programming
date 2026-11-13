@@ -755,6 +755,8 @@ Use UTF-8 without a BOM and LF line endings in files. Use CRLF only in Visual St
 
 Do not use Git's `core.autocrlf`. `core.autocrlf` is a local setting that each person can set differently, so it cannot pin down the project's line endings. Set line endings with the `.gitattributes` that is part of the project. A file whose `eol` is set in `.gitattributes` is checked out with that line ending regardless of the `core.autocrlf` value.
 
+Do not use settings such as `text=auto` that let Git decide by itself whether a file is text, either. Automatic detection decides from the contents of each file, so the path alone does not tell which line ending a file gets. Set `text` and `eol` explicitly for each path, and mark binary files with `binary`.
+
 Incorrect:
 
 ```text
@@ -766,6 +768,14 @@ word_count.c: C source, Unicode text, UTF-8 (with BOM) text, with CRLF line term
 git config --global core.autocrlf true
 ```
 
+```gitattributes
+* text=auto eol=lf
+*.sln text eol=crlf
+*.slnx text eol=crlf
+*.vcxproj text eol=crlf
+*.vcxproj.filters text eol=crlf
+```
+
 Correct:
 
 ```text
@@ -774,11 +784,12 @@ word_count.c: C source, ASCII text
 ```
 
 ```gitattributes
-* text=auto eol=lf
+* text eol=lf
 *.sln text eol=crlf
 *.slnx text eol=crlf
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
+*.png binary
 ```
 
 ### 4.3. Character set

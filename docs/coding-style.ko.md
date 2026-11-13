@@ -755,6 +755,8 @@ printer.c
 
 Git의 `core.autocrlf`는 쓰지 않는다. `core.autocrlf`는 사람마다 다르게 둘 수 있는 로컬 설정이라 프로젝트의 줄 끝을 고정하지 못한다. 줄 끝은 프로젝트에 함께 들어가는 `.gitattributes`로 정한다. `.gitattributes`에서 `eol`을 정한 파일은 `core.autocrlf` 값과 상관없이 그 줄 끝으로 checkout된다.
 
+`text=auto`처럼 Git이 텍스트 여부를 스스로 판정하게 하는 설정도 쓰지 않는다. 자동 판정은 파일 내용을 보고 텍스트 여부를 정하므로, 경로만 보고는 줄 끝을 알 수 없다. 경로마다 `text`와 `eol`을 직접 정하고, 바이너리 파일은 `binary`로 표시한다.
+
 틀린 예:
 
 ```text
@@ -766,6 +768,14 @@ word_count.c: C source, Unicode text, UTF-8 (with BOM) text, with CRLF line term
 git config --global core.autocrlf true
 ```
 
+```gitattributes
+* text=auto eol=lf
+*.sln text eol=crlf
+*.slnx text eol=crlf
+*.vcxproj text eol=crlf
+*.vcxproj.filters text eol=crlf
+```
+
 올바른 예:
 
 ```text
@@ -774,11 +784,12 @@ word_count.c: C source, ASCII text
 ```
 
 ```gitattributes
-* text=auto eol=lf
+* text eol=lf
 *.sln text eol=crlf
 *.slnx text eol=crlf
 *.vcxproj text eol=crlf
 *.vcxproj.filters text eol=crlf
+*.png binary
 ```
 
 ### 4.3. 문자 집합
