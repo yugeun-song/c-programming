@@ -1,24 +1,27 @@
 #include <stdio.h>
 
-static int scale(double *restrict dst, double *restrict src, double factor, int n)
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
+
+static int scale(double *const restrict mut_dst, const double *const restrict src, double factor,
+                 size_t count)
 {
-    if (n <= 0) {
+    if (count == 0) {
         return -1;
     }
 
-    for (int i = 0; i < n; ++i) {
-        dst[i] = src[i] * factor;
+    for (size_t i = 0; i < count; ++i) {
+        mut_dst[i] = src[i] * factor;
     }
 
     return 0;
 }
 
-static void set_value(int *restrict p, int *q)
+static void set_value(int *const restrict mut_p, int *const mut_q)
 {
-    *p = 1;
-    *q = 2;
+    *mut_p = 1;
+    *mut_q = 2;
 
-    printf("*p is %d\n", *p);
+    printf("*p is %d\n", *mut_p);
 }
 
 int main(void)
@@ -30,9 +33,9 @@ int main(void)
     int *ptr_aliased = &x;
     *ptr_aliased = 100;
 
-    scale(dst, src, 10, 5);
-    for (int i = 0; i < 5; ++i) {
-        printf("dst[%d] = %lf\n", i, dst[i]);
+    scale(dst, src, 10.0, ARRAY_SIZE(src));
+    for (size_t i = 0; i < ARRAY_SIZE(dst); ++i) {
+        printf("dst[%zu] = %lf\n", i, dst[i]);
     }
 
     /* UB: violates the restrict contract */
