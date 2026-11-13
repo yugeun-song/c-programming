@@ -6364,9 +6364,9 @@ static void push_item(struct stack *const mut_stack, int item)
 
 ### 13.7. Static assertions
 
-C99 has no `_Static_assert`. Only projects that choose C11 or later use `_Static_assert`. C99 projects use a run-time `assert` or a check in the build system instead.
+`_Static_assert` exists from C11 on. A project that chooses C11 or later checks a constant condition at compile time with `_Static_assert`. A project that chooses a standard before C11 checks it with a run-time `assert` or in the build system instead.
 
-Correct in a C11 project:
+Correct (C11 and later):
 
 ```c
 struct record_header {
@@ -6378,7 +6378,7 @@ struct record_header {
 _Static_assert(sizeof(struct record_header) == 8, "record_header must stay 8 bytes");
 ```
 
-Correct in a C99 project:
+Correct (before C11):
 
 ```c
 struct record_header {

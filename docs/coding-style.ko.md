@@ -6364,9 +6364,9 @@ static void push_item(struct stack *const mut_stack, int item)
 
 ### 13.7. static assertion
 
-C99에는 `_Static_assert`가 없다. C11 이상을 고른 프로젝트만 `_Static_assert`를 쓴다. C99 프로젝트는 런타임 `assert`나 빌드 시스템의 검사로 대신한다.
+`_Static_assert`는 C11부터 있다. C11 이후를 고른 프로젝트는 상수 조건을 `_Static_assert`로 컴파일할 때 검사한다. C11 이전 표준을 고른 프로젝트는 런타임 `assert`나 빌드 시스템의 검사로 대신한다.
 
-C11 프로젝트의 올바른 예:
+올바른 예(C11 이후):
 
 ```c
 struct record_header {
@@ -6378,7 +6378,7 @@ struct record_header {
 _Static_assert(sizeof(struct record_header) == 8, "record_header must stay 8 bytes");
 ```
 
-C99 프로젝트의 올바른 예:
+올바른 예(C11 이전):
 
 ```c
 struct record_header {
