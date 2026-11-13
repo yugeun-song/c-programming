@@ -121,10 +121,10 @@ Every argument must parse: a path other than `<topic>/<name>.c`, an unknown, rep
 ## Build and run
 
 ```bash
-make [verb ...] [PRESET=<target>] [CC=gcc|clang] [SANITIZE=<list>]   # Linux
-./build.sh [verb ...] [target] [SANITIZE=<list>]                       # Linux
-./build.ps1 [verb ...] [target] [SANITIZE=<list>]                      # Windows
-cmake -P build.cmake -- [verb ...] [target] [SANITIZE=<list>]          # either
+make [verb ...] [PRESET=<target>] [CC=gcc|clang] [PROFILE=debug|release] [SANITIZE=<list>]   # Linux
+./build.sh [verb ...] [target] [PROFILE=debug|release] [SANITIZE=<list>]                       # Linux
+./build.ps1 [verb ...] [target] [PROFILE=debug|release] [SANITIZE=<list>]                      # Windows
+cmake -P build.cmake -- [verb ...] [target] [PROFILE=debug|release] [SANITIZE=<list>]          # either
 
 cmake --preset aarch64-linux-gcc && cmake --build build/aarch64-linux-gcc --config Release
 qemu-aarch64 -L /usr/aarch64-linux-gnu ./bin/aarch64-linux-gcc-release/<dir>/<name>
@@ -132,14 +132,19 @@ qemu-aarch64 -L /usr/aarch64-linux-gnu ./bin/aarch64-linux-gcc-release/<dir>/<na
 
 | verb | effect |
 |---|---|
-| `all` | `debug` and `sanitize`; the default |
+| `all` | `debug` and `sanitize`, or `release` with `PROFILE=release`; the default |
 | `debug`, `sanitize`, `release` | configure `build/<target>/` and build that config into `bin/<target>-<config>/` |
-| `index` | `compile_commands.json` with the Debug entries of the target, `tags` and `cscope.out`, in the root |
+| `index` | `compile_commands.json` with the entries of the `PROFILE` config, `tags` and `cscope.out`, in the root |
 | `clean-index` | remove the index files |
 | `clean` | remove `bin/` and the build products of every configured tree; the configuration stays |
 | `distclean` | `clean`, `clean-index`, `build/`, tool outputs (`gmon.out`, `perf.data`, `uftrace.data`, core files) and `.cache/` |
+| `unused` | unused diagnostics of every source (clang) and unused functions (cppcheck), with the `PROFILE` definitions |
+| `check` | build every config the target can link and run its tests |
+| `tidy` | clang-tidy over every source with the `PROFILE` flags |
+| `lsp-check` | clangd parses every source and header and prints its errors |
+| `help`, `-h` | the verbs, the variables and the presets the host can build |
 
-All four entry points parse the same words, from any working directory: verbs in any case run in the order given, and the target and the `SANITIZE` list come once. Anything else, or a target the host cannot build, stops before any work. No verb means `all`, and no target means the host default, `<arch>-linux-gcc` on Linux or `x86_64-windows-clang` on Windows. The `Makefile` runs its goals one at a time and maps `CC=gcc`, `CC=clang` and the cross gcc names to their presets; `PRESET=` names any preset.
+All four entry points parse the same words, from any working directory: verbs in any case run in the order given, and the target, `PROFILE` and the `SANITIZE` list come once. Anything else, or a target the host cannot build, stops before any work. No verb means `all`, and no target means the host default, `<arch>-linux-gcc` on Linux or `x86_64-windows-clang` on Windows. The `Makefile` runs its goals one at a time and maps `CC=gcc`, `CC=clang` and the cross gcc names to their presets; `PRESET=` names any preset. Each verb ends with a `=>` line that names what it produced, and configure reports the probed flags in the same form whenever they change.
 
 Visual Studio 2022+: "Open a local folder" on the root, choose `x86_64-windows-msvc` or `x86_64-windows-clang` from the preset list, pick a program from **Select Startup Item**, F5. Breakpoints, Memory View and `.pdb` work without a `.sln`.
 
