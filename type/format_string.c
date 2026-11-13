@@ -9,49 +9,50 @@
 
 int main(void)
 {
-    char c_min = (char)((char)-1 < 0 ? SIGNED_MIN(char, unsigned char) : 0);
-    char c_max = (char)((char)-1 < 0 ? SIGNED_MAX(char, unsigned char) : UNSIGNED_MAX(unsigned char));
-    unsigned char uc_max = UNSIGNED_MAX(unsigned char);
+    char char_min = (char)(((char)-1 < 0) ? SIGNED_MIN(char, unsigned char) : 0);
+    char char_max =
+        (char)(((char)-1 < 0) ? SIGNED_MAX(char, unsigned char) : UNSIGNED_MAX(unsigned char));
+    unsigned char uchar_max = UNSIGNED_MAX(unsigned char);
 
-    short s_min = SIGNED_MIN(short, unsigned short);
-    short s_max = SIGNED_MAX(short, unsigned short);
-    unsigned short us_max = UNSIGNED_MAX(unsigned short);
+    short short_min = SIGNED_MIN(short, unsigned short);
+    short short_max = SIGNED_MAX(short, unsigned short);
+    unsigned short ushort_max = UNSIGNED_MAX(unsigned short);
 
-    int i_min = SIGNED_MIN(int, unsigned int);
-    int i_max = SIGNED_MAX(int, unsigned int);
-    unsigned int ui_max = UNSIGNED_MAX(unsigned int);
+    int int_min = SIGNED_MIN(int, unsigned int);
+    int int_max = SIGNED_MAX(int, unsigned int);
+    unsigned int uint_max = UNSIGNED_MAX(unsigned int);
 
-    long l_min = SIGNED_MIN(long, unsigned long);
-    long l_max = SIGNED_MAX(long, unsigned long);
-    unsigned long ul_max = UNSIGNED_MAX(unsigned long);
+    long long_min = SIGNED_MIN(long, unsigned long);
+    long long_max = SIGNED_MAX(long, unsigned long);
+    unsigned long ulong_max = UNSIGNED_MAX(unsigned long);
 
-    long long ll_min = SIGNED_MIN(long long, unsigned long long);
-    long long ll_max = SIGNED_MAX(long long, unsigned long long);
-    unsigned long long ull_max = UNSIGNED_MAX(unsigned long long);
+    long long llong_min = SIGNED_MIN(long long, unsigned long long);
+    long long llong_max = SIGNED_MAX(long long, unsigned long long);
+    unsigned long long ullong_max = UNSIGNED_MAX(unsigned long long);
 
-    float f = 3.141592f;
+    float f = 3.141592F;
     double d = 2.718282;
     long double ld = 1.618034L;
 
-    char *str = "Hello, Architecture!";
-    size_t sz = sizeof(void *);
+    const char *str = "Hello, Architecture!";
+    size_t pointer_size = sizeof(void *);
 
 #if defined(_WIN32) || defined(_WIN64)
-#define TARGET_OS_NAME "Windows"
+# define TARGET_OS_NAME "Windows"
 #elif defined(__linux__)
-#define TARGET_OS_NAME "Linux"
+# define TARGET_OS_NAME "Linux"
 #elif defined(__APPLE__) && defined(__MACH__)
-#define TARGET_OS_NAME "macOS"
+# define TARGET_OS_NAME "macOS"
 #elif defined(__FreeBSD__)
-#define TARGET_OS_NAME "FreeBSD"
+# define TARGET_OS_NAME "FreeBSD"
 #elif defined(__NetBSD__)
-#define TARGET_OS_NAME "NetBSD"
+# define TARGET_OS_NAME "NetBSD"
 #elif defined(__OpenBSD__)
-#define TARGET_OS_NAME "OpenBSD"
+# define TARGET_OS_NAME "OpenBSD"
 #elif defined(__DragonFly__)
-#define TARGET_OS_NAME "DragonFly BSD"
+# define TARGET_OS_NAME "DragonFly BSD"
 #else
-#define TARGET_OS_NAME "unknown"
+# define TARGET_OS_NAME "unknown"
 #endif
     printf("Current OS           : %s\n", TARGET_OS_NAME);
 
@@ -67,25 +68,28 @@ int main(void)
 
     printf("%-20s (%%d,   %2zu bytes)   MIN: %-22d   MAX: %-20d\n"
            "%-20s (%%hhu, %2zu bytes)   MIN: %-22hhu   MAX: %-20hhu\n\n",
-           "char", sizeof(c_min), (int)c_min, (int)c_max, "unsigned char", sizeof(uc_max),
-           (unsigned char)0, uc_max);
+           "char", sizeof(char_min), (int)char_min, (int)char_max, "unsigned char",
+           sizeof(uchar_max), (unsigned char)0, uchar_max);
 
     printf("%-20s (%%hd,  %2zu bytes)   MIN: %-22hd   MAX: %-20hd\n"
            "%-20s (%%hu,  %2zu bytes)   MIN: %-22hu   MAX: %-20hu\n\n",
-           "short", sizeof(s_min), (short)s_min, (short)s_max, "unsigned short", sizeof(us_max),
-           (unsigned short)0, us_max);
+           "short", sizeof(short_min), (short)short_min, (short)short_max, "unsigned short",
+           sizeof(ushort_max), (unsigned short)0, ushort_max);
 
     printf("%-20s (%%d,   %2zu bytes)   MIN: %-22d   MAX: %-20d\n"
            "%-20s (%%u,   %2zu bytes)   MIN: %-22u   MAX: %-20u\n\n",
-           "int", sizeof(i_min), i_min, i_max, "unsigned int", sizeof(ui_max), 0U, ui_max);
+           "int", sizeof(int_min), int_min, int_max, "unsigned int", sizeof(uint_max), 0U,
+           uint_max);
 
     printf("%-20s (%%ld,  %2zu bytes)   MIN: %-22ld   MAX: %-20ld\n"
            "%-20s (%%lu,  %2zu bytes)   MIN: %-22lu   MAX: %-20lu\n\n",
-           "long", sizeof(l_min), l_min, l_max, "unsigned long", sizeof(ul_max), 0UL, ul_max);
+           "long", sizeof(long_min), long_min, long_max, "unsigned long", sizeof(ulong_max), 0UL,
+           ulong_max);
 
     printf("%-20s (%%lld, %2zu bytes)   MIN: %-22lld   MAX: %-20lld\n"
            "%-20s (%%llu, %2zu bytes)   MIN: %-22llu   MAX: %-20llu\n\n",
-           "long long", sizeof(ll_min), ll_min, ll_max, "unsigned long long", sizeof(ull_max), 0ULL, ull_max);
+           "long long", sizeof(llong_min), llong_min, llong_max, "unsigned long long",
+           sizeof(ullong_max), 0ULL, ullong_max);
 
     printf("%-20s (%%f,   %2zu bytes)   VAL: %-20f\n"
            "%-20s (%%lf,  %2zu bytes)   VAL: %-20lf\n",
@@ -99,14 +103,16 @@ int main(void)
 
     printf("%-20s (%%s,   %2zu bytes)   VAL: %s\n"
            "%-20s (%%p,   %2zu bytes)   ADR: %p\n",
-           "char*", sizeof(str), str, "void*", sizeof(void *), (void *)&c_min);
+           "char*", sizeof(str), str, "void*", sizeof(void *), (void *)&char_min);
 
 #if SIZE_MAX == ULONG_MAX
-    printf("%-20s (%%lu,  %2zu bytes)   VAL: %lu\n", "size_t", sizeof(sz), (unsigned long)sz);
+    printf("%-20s (%%lu,  %2zu bytes)   VAL: %lu\n", "size_t", sizeof(pointer_size),
+           (unsigned long)pointer_size);
 #elif SIZE_MAX == ULLONG_MAX
-    printf("%-20s (%%llu, %2zu bytes)   VAL: %llu\n", "size_t", sizeof(sz), (unsigned long long)sz);
+    printf("%-20s (%%llu, %2zu bytes)   VAL: %llu\n", "size_t", sizeof(pointer_size),
+           (unsigned long long)pointer_size);
 #else
-    printf("%-20s (%%zu,  %2zu bytes)   VAL: %zu\n", "size_t", sizeof(sz), sz);
+    printf("%-20s (%%zu,  %2zu bytes)   VAL: %zu\n", "size_t", sizeof(pointer_size), pointer_size);
 #endif
 
     return 0;

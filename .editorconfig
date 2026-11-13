@@ -8,6 +8,9 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
+[*.{c,h}]
+insert_final_newline = true
+
 [{Makefile,*.mk}]
 indent_style = tab
 tab_width = 4

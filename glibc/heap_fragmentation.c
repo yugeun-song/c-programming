@@ -1,4 +1,5 @@
 #define _DEFAULT_SOURCE
+
 #include <fcntl.h>
 #include <limits.h>
 #include <stdint.h>
@@ -17,82 +18,93 @@ struct node {
     struct node *next;
 };
 
-static unsigned int hold = 10;
+static unsigned int gs_hold_seconds = 10;
 
-static int coin(void)
+static int flip_coin(void)
 {
-    static uint64_t state = 0x243f6a8885a308d3ULL;
-    uint64_t z = (state += 0x9e3779b97f4a7c15ULL);
+    static uint64_t s_state = 0x243F6A8885A308D3ULL;
 
-    z = (z ^ (z >> 30)) * 0xbf58476d1ce4e5b9ULL;
-    z = (z ^ (z >> 27)) * 0x94d049bb133111ebULL;
+    s_state += 0x9E3779B97F4A7C15ULL;
+
+    uint64_t z = s_state;
+
+    z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9ULL;
+    z = (z ^ (z >> 27)) * 0x94D049BB133111EBULL;
     return (int)((z ^ (z >> 31)) & 1);
 }
 
-static size_t rss(void)
+static size_t read_rss(void)
 {
     char buf[4096] = { 0 };
-    char *line = NULL;
-    int fd = open("/proc/self/smaps_rollup", O_RDONLY);
+    const char *line = NULL;
 
+    int fd = open("/proc/self/smaps_rollup", O_RDONLY);
     if (fd >= 0) {
         if (read(fd, buf, sizeof(buf) - 1) > 0) {
             line = strstr(buf, "\nRss:");
         }
         close(fd);
     }
-    return line ? (size_t)strtoull(line + 5, NULL, 10) * 1024 : 0;
+
+    return (line != NULL) ? (size_t)strtoull(line + 5, NULL, 10) * 1024 : 0;
 }
 
-static void report(const char *tag)
+static void report(const char *const tag)
 {
-    printf("%-14s rss %zu bytes\n", tag, rss());
+    printf("%-14s rss %zu bytes\n", tag, read_rss());
     fflush(stdout);
-    sleep(hold);
+    sleep(gs_hold_seconds);
 }
 
-static struct node *push(struct node **head, size_t size)
+static struct node *push_node(struct node **const mut_head, size_t size)
 {
-    struct node *n = malloc(size);
-
-    if (n) {
-        memset(n, 1, size);
-        n->next = *head;
-        *head = n;
+    struct node *node = malloc(size);
+    if (node != NULL) {
+        memset(node, 1, size);
+        node->next = *mut_head;
+        *mut_head = node;
     }
-    return n;
+
+    return node;
 }
 
-static void drop(struct node *n)
+static void free_nodes(struct node *const mut_head_nullable)
 {
-    while (n) {
-        struct node *next = n->next;
+    struct node *next = mut_head_nullable;
 
-        free(n);
-        n = next;
+    while (next != NULL) {
+        struct node *node = next;
+
+        next = node->next;
+        free(node);
+        node = NULL;
     }
 }
 
 int main(int argc, char *argv[])
 {
     unsigned long long mib = 4096;
-    unsigned long long secs = hold;
-    char *end;
-    int bad = argc > 3;
+    unsigned long long secs = gs_hold_seconds;
+    char *end = NULL;
+    int is_invalid = (argc > 3);
 
     if (argc > 1) {
         mib = strtoull(argv[1], &end, 10);
-        bad |= mib == 0 || *end != '\0';
+        if (mib == 0 || *end != '\0') {
+            is_invalid = 1;
+        }
     }
     if (argc > 2) {
         secs = strtoull(argv[2], &end, 10);
-        bad |= secs > UINT_MAX || *end != '\0';
+        if (secs > UINT_MAX || *end != '\0') {
+            is_invalid = 1;
+        }
     }
-    if (bad) {
+    if (is_invalid != 0) {
         fprintf(stderr, "usage: %s [total_mib] [hold_seconds]\n", argv[0]);
         return EXIT_FAILURE;
     }
-    hold = (unsigned int)secs;
+    gs_hold_seconds = (unsigned int)secs;
 
     size_t count = (size_t)(mib * 1024 * 1024 / SMALL);
 
@@ -102,15 +114,16 @@ int main(int argc, char *argv[])
     }
     prctl(PR_SET_THP_DISABLE, 1, 0, 0, 0);
     printf("%zu chunks of %d bytes, %zu bytes of heap, holding %u s per phase\n", count, SMALL,
-           count * CHUNK(SMALL), hold);
+           count * CHUNK(SMALL), gs_hold_seconds);
     report("start");
 
     struct node *live = NULL;
 
-    for (size_t i = 0; i < count; i++) {
-        if (!push(&live, SMALL)) {
+    for (size_t i = 0; i < count; ++i) {
+        if (push_node(&live, SMALL) == NULL) {
             fprintf(stderr, "allocation failed at chunk %zu\n", i);
-            drop(live);
+            free_nodes(live);
+            live = NULL;
             return EXIT_FAILURE;
         }
     }
@@ -119,15 +132,16 @@ int main(int argc, char *argv[])
     size_t freed = 0;
     size_t pos = 0;
 
-    for (struct node **link = &live; *link; pos++) {
-        struct node *n = *link;
+    for (struct node **link = &live; *link != NULL; ++pos) {
+        struct node *node = *link;
 
-        if (pos >= KEEP && coin()) {
-            *link = n->next;
-            free(n);
-            freed++;
+        if (pos >= KEEP && flip_coin() != 0) {
+            *link = node->next;
+            free(node);
+            node = NULL;
+            ++freed;
         } else {
-            link = &n->next;
+            link = &node->next;
         }
     }
 
@@ -139,22 +153,24 @@ int main(int argc, char *argv[])
     size_t want = holes / 4 / CHUNK(PROBE);
     size_t done = 0;
     struct node *probe = NULL;
-    size_t before = rss();
+    size_t before = read_rss();
 
-    while (done < want && push(&probe, PROBE)) {
-        done++;
+    while (done < want && push_node(&probe, PROBE) != NULL) {
+        ++done;
     }
 
-    size_t after = rss();
+    size_t after = read_rss();
     size_t asked = done * CHUNK(PROBE);
-    size_t grown = after > before ? after - before : 0;
+    size_t grown = (after > before) ? after - before : 0;
 
     printf("probe asked for %zu bytes of %d byte chunks\n", asked, PROBE);
     report("after probe");
     printf("verdict: %zu bytes reused from the free heap, %zu bytes taken from the OS\n",
-           asked > grown ? asked - grown : 0, grown);
-    drop(probe);
-    drop(live);
+           (asked > grown) ? asked - grown : 0, grown);
+    free_nodes(probe);
+    probe = NULL;
+    free_nodes(live);
+    live = NULL;
     report("after cleanup");
-    return EXIT_SUCCESS;
+    return 0;
 }

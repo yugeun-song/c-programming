@@ -137,13 +137,15 @@ Visual Studio 2022+: "Open a local folder" on the root, choose `x86_64-windows-m
 
 ## Conventions
 
-UTF-8 without BOM and LF via `.gitattributes`; 4-space indent, hard tabs in Makefiles and no final newline via `.editorconfig`. `.clang-format` is LLVM-based: right-aligned pointers, Allman function braces, K&R control flow, `{ a, b }` braced initializers, 100 soft columns (`PenaltyExcessCharacter: 1`).
+The sources follow the C coding style in [`docs/coding-style.md`](docs/coding-style.md) (Korean edition: [`docs/coding-style.ko.md`](docs/coding-style.ko.md)). `.clang-format` holds the formatting part of that style, as listed in its clang-format section; naming, declarations, pointer parameters and the other rules are kept by hand. `.editorconfig` and `.gitattributes` keep UTF-8 without BOM, LF, 4-space indent, hard tabs only in Makefiles, and a final newline only in C sources and headers.
 
-Include guards use the kernel form; `#pragma once` only in Windows-specific code.
+Include guards spell the path from the project root in uppercase, without a leading underscore, and repeat the name after `#endif`:
 
 ```c
-#ifndef _MODULE_NAME_H
-#define _MODULE_NAME_H
+#ifndef MODULE_NAME_H
+#define MODULE_NAME_H
 
-#endif /* _MODULE_NAME_H */
+#endif /* MODULE_NAME_H */
 ```
+
+`tricks/comma_operator.c` keeps the comma operator in its loop conditions and `gcc/statement_expression.c` keeps its labels and backward jumps inside the statement expression, because those constructs are what the two programs demonstrate.

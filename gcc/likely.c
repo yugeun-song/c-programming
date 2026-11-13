@@ -18,65 +18,63 @@
 /* Instruction Cache Displacement & Optimization Barriers */
 #if defined(__aarch64__)
 /* AArch64: 32 NOPs = 128 bytes. memory clobber to prevent CSEL/CINC */
-#define HEAVY_COLD_PATH()                                                                          \
-    __asm__ volatile(".rept 32\n\t"                                                                \
-                     "nop\n\t"                                                                     \
-                     ".endr")
-#define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
-#define TARGET_ARCH_NAME "ARM64 (AArch64)"
+# define HEAVY_COLD_PATH()           \
+     __asm__ volatile(".rept 32\n\t" \
+                      "nop\n\t"      \
+                      ".endr")
+# define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
+# define TARGET_ARCH_NAME "ARM64 (AArch64)"
 #elif defined(__x86_64__)
 /* x86_64: 128 NOPs = 128 bytes */
-#define HEAVY_COLD_PATH() __asm__ volatile(".fill 128, 1, 0x90")
-#define PREVENT_OPTIMIZE()
-#define TARGET_ARCH_NAME "x86_64"
+# define HEAVY_COLD_PATH() __asm__ volatile(".fill 128, 1, 0x90")
+# define PREVENT_OPTIMIZE()
+# define TARGET_ARCH_NAME "x86_64"
 #elif defined(__riscv) && (__riscv_xlen == 64)
-#define HEAVY_COLD_PATH()                                                                          \
-    __asm__ volatile(".option push\n\t"                                                            \
-                     ".option norvc\n\t"                                                           \
-                     ".rept 32\n\t"                                                                \
-                     "nop\n\t"                                                                     \
-                     ".endr\n\t"                                                                   \
-                     ".option pop")
-#define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
-#define TARGET_ARCH_NAME "RISC-V (RV64)"
+# define HEAVY_COLD_PATH()                \
+     __asm__ volatile(".option push\n\t"  \
+                      ".option norvc\n\t" \
+                      ".rept 32\n\t"      \
+                      "nop\n\t"           \
+                      ".endr\n\t"         \
+                      ".option pop")
+# define PREVENT_OPTIMIZE() __asm__ volatile("" : : : "memory")
+# define TARGET_ARCH_NAME "RISC-V (RV64)"
 #else
-#error "Unsupported architecture. This benchmark requires x86_64, AArch64, or RISC-V (RV64)."
+# error "Unsupported architecture. This benchmark requires x86_64, AArch64, or RISC-V (RV64)."
 #endif
 
-static inline double calc_diff(struct timespec start, struct timespec end)
+static inline double compute_elapsed_seconds(struct timespec start, struct timespec end)
 {
     return (double)(end.tv_sec - start.tv_sec) + (double)(end.tv_nsec - start.tv_nsec) / 1e9;
 }
 
 int main(void)
 {
-    int32_t *data;
-    uint64_t sum;
-    struct timespec start;
-    struct timespec end;
-    size_t i;
-    size_t j;
-
-    data = (int32_t *)malloc(ARR_SIZE * sizeof(int32_t));
+    int32_t *data = malloc(ARR_SIZE * sizeof(*data));
     if (data == NULL) {
-        fprintf(stderr, "[ERROR] %s:%d - Memory allocation failed: %s\n", __FILE__, __LINE__, strerror(errno));
+        fprintf(stderr, "[ERROR] %s:%d - Memory allocation failed: %s\n", __FILE__, __LINE__,
+                strerror(errno));
         return EXIT_FAILURE;
     }
 
-    for (i = 0; i < ARR_SIZE; ++i) {
-        data[i] = ((rand() % 100 < 95) ? 1 : 0); /* 95% true, 5% false */
+    for (size_t i = 0; i < ARR_SIZE; ++i) {
+        data[i] = (rand() % 100 < 95) ? 1 : 0; /* 95% true, 5% false */
     }
 
     printf("Benchmark: 'likely' vs 'Default' (L1 Hit Scenario)\n");
     printf("Target: %s\n", TARGET_ARCH_NAME);
     printf("--------------------------------------------------------\n");
 
+    struct timespec start;
+    struct timespec end;
+
     /* Test 1: Default Behavior */
-    sum = 0;
+    uint64_t sum = 0;
+
     clock_gettime(CLOCK_MONOTONIC, &start);
-    for (i = 0; i < OUTER_LOOPS; ++i) {
-        for (j = 0; j < ARR_SIZE; ++j) {
-            if (data[j]) {
+    for (size_t i = 0; i < OUTER_LOOPS; ++i) {
+        for (size_t j = 0; j < ARR_SIZE; ++j) {
+            if (data[j] != 0) {
                 ++sum;
                 PREVENT_OPTIMIZE();
             } else {
@@ -86,15 +84,16 @@ int main(void)
         }
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
-    printf("1. Default (No Hint) : %.6f sec (sum=%" PRIu64 ")\n", calc_diff(start, end), sum);
+    printf("1. Default (No Hint) : %.6f sec (sum=%" PRIu64 ")\n",
+           compute_elapsed_seconds(start, end), sum);
 
     /* Test 2: With likely() Hint */
     sum = 0;
     clock_gettime(CLOCK_MONOTONIC, &start);
-    for (i = 0; i < OUTER_LOOPS; ++i) {
-        for (j = 0; j < ARR_SIZE; ++j) {
+    for (size_t i = 0; i < OUTER_LOOPS; ++i) {
+        for (size_t j = 0; j < ARR_SIZE; ++j) {
             /* hint forces fall-through layout for the hot path */
-            if (likely(data[j])) {
+            if (likely(data[j] != 0)) {
                 ++sum;
                 PREVENT_OPTIMIZE();
             } else {
@@ -104,7 +103,8 @@ int main(void)
         }
     }
     clock_gettime(CLOCK_MONOTONIC, &end);
-    printf("2. Likely (Optimized): %.6f sec (sum=%" PRIu64 ")\n", calc_diff(start, end), sum);
+    printf("2. Likely (Optimized): %.6f sec (sum=%" PRIu64 ")\n",
+           compute_elapsed_seconds(start, end), sum);
 
     free(data);
     data = NULL;
