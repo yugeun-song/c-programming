@@ -1,4 +1,3 @@
-include(CheckPIESupported)
 include(CMakeCheckCompilerFlagCommonPatterns)
 check_compiler_flag_common_patterns(flag_fail_patterns)
 
@@ -27,8 +26,10 @@ set(gnu_debug
     -fkeep-static-functions
     -fkeep-persistent-storage-variables
     -grecord-gcc-switches
+    -fno-pie
 )
-set(gnu_debug_link "")
+set(gnu_debug_link -no-pie -rdynamic -Wl,--build-id)
+set(gnu_profile -pg)
 set(gnu_release
     -O2
     -g
@@ -43,13 +44,16 @@ set(gnu_release
     -mbranch-protection=standard
     -U_FORTIFY_SOURCE
     -D_FORTIFY_SOURCE=3
+    -fPIE
 )
 set(gnu_release_link
+    -pie
     -Wl,-z,relro
     -Wl,-z,now
     -Wl,-z,noexecstack
     -Wl,-z,pack-relative-relocs
     -Wl,--as-needed
+    -Wl,--build-id
 )
 set(gnu_optimized -O2)
 
@@ -61,16 +65,27 @@ set(msvc_debug_link /DEBUG /INCREMENTAL:NO)
 set(msvc_release /O2 /Zi /sdl /GS /guard:cf)
 set(msvc_release_link /DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF /guard:cf /CETCOMPAT)
 set(msvc_optimized /O2)
+set(msvc_profile "")
 
 option(ENABLE_LTO "Link-time optimization in Release" ON)
-option(ENABLE_GPROF "Instrument every config for gprof" OFF)
-set(SANITIZE "" CACHE STRING "Sanitizers for every config, e.g. address,undefined")
+set(SANITIZE address CACHE STRING "Sanitizers of the Sanitize config, e.g. address,undefined")
+if(SANITIZE STREQUAL "")
+    set(SANITIZE address CACHE STRING "Sanitizers of the Sanitize config, e.g. address,undefined" FORCE)
+endif()
+set(gnu_sanitize ${gnu_debug} -fsanitize=${SANITIZE} -fno-sanitize-recover=all)
+set(gnu_sanitize_link ${gnu_debug_link} -fsanitize=${SANITIZE})
+set(msvc_sanitize ${msvc_debug} /fsanitize=${SANITIZE})
+set(msvc_sanitize_link ${msvc_debug_link})
 
 function(probe_flags out config)
     cmake_parse_arguments(PARSE_ARGV 2 ARG "LINK" "" "CONTEXT;FLAGS")
     # try_compile forwards CMAKE_C_FLAGS_<config>; probe in that config with the defaults cleared
-    string(TOUPPER ${config} config_upper)
-    set(CMAKE_TRY_COMPILE_CONFIGURATION ${config})
+    set(try_config ${config})
+    if(NOT config MATCHES "^(Debug|Release)$")
+        set(try_config Debug)
+    endif()
+    string(TOUPPER ${try_config} config_upper)
+    set(CMAKE_TRY_COMPILE_CONFIGURATION ${try_config})
     set(CMAKE_C_FLAGS_${config_upper} "")
     set(accepted "")
     foreach(flag IN LISTS ARG_FLAGS)
@@ -98,14 +113,6 @@ function(report label)
     message(STATUS ">> ${label}: ${text}")
 endfunction()
 
-set(requested "")
-if(ENABLE_GPROF)
-    list(APPEND requested -pg)
-endif()
-if(SANITIZE)
-    list(APPEND requested -fsanitize=${SANITIZE})
-endif()
-set(granted ${requested})
 set(common ${${FLAG_SYNTAX}_common})
 set(OPTIMIZED_FLAGS ${${FLAG_SYNTAX}_optimized})
 foreach(config IN LISTS BUILD_CONFIGS)
@@ -125,7 +132,18 @@ foreach(config IN LISTS BUILD_CONFIGS)
     probe_flags(compile ${config} CONTEXT ${common} FLAGS ${${FLAG_SYNTAX}_${table}})
     probe_flags(link ${config} LINK FLAGS ${${FLAG_SYNTAX}_${table}_link})
     probe_flags(OPTIMIZED_FLAGS ${config} CONTEXT ${common} ${compile} FLAGS ${OPTIMIZED_FLAGS})
-    probe_flags(granted ${config} CONTEXT ${common} ${compile} FLAGS ${granted})
+    if(table STREQUAL "debug")
+        probe_flags(PROFILE_FLAGS ${config} CONTEXT ${common} ${compile} FLAGS ${${FLAG_SYNTAX}_profile})
+    endif()
+    if(table STREQUAL "sanitize")
+        set(sanitize_ok FALSE)
+        foreach(flag IN LISTS compile)
+            if(flag MATCHES "^[-/]fsanitize=")
+                set(sanitize_ok TRUE)
+            endif()
+        endforeach()
+        set(SANITIZE_OK ${sanitize_ok} CACHE INTERNAL "")
+    endif()
     list(JOIN compile " " CMAKE_C_FLAGS_${config_upper})
     list(JOIN link " " CMAKE_EXE_LINKER_FLAGS_${config_upper})
     set(dropped ${${FLAG_SYNTAX}_${table}} ${${FLAG_SYNTAX}_${table}_link})
@@ -140,7 +158,13 @@ foreach(config IN LISTS BUILD_CONFIGS)
 endforeach()
 add_compile_options(${common})
 add_compile_definitions($<$<CONFIG:Release>:NDEBUG>)
-report("Every config" ${common} ${granted})
+report("Every config" ${common})
+report("Debug and Sanitize, unless UNPROFILED" ${PROFILE_FLAGS})
+if(SANITIZE_OK)
+    report("Sanitize" "links -fsanitize=${SANITIZE}")
+else()
+    report("Sanitize" "${CMAKE_C_COMPILER} cannot link -fsanitize=${SANITIZE}; build.cmake skips this config")
+endif()
 set(dropped ${${FLAG_SYNTAX}_common} ${${FLAG_SYNTAX}_optimized})
 foreach(flag IN LISTS common OPTIMIZED_FLAGS)
     list(REMOVE_ITEM dropped "${flag}")
@@ -148,20 +172,6 @@ endforeach()
 if(dropped)
     report("Every config dropped" ${dropped})
 endif()
-if(NOT granted STREQUAL requested)
-    message(FATAL_ERROR "${CMAKE_C_COMPILER_ID} rejects part of: ${requested}")
-endif()
-if(granted)
-    # CMAKE_C_FLAGS also reaches the link step of gcc and clang, which -pg and -fsanitize need
-    list(JOIN granted " " granted)
-    string(APPEND CMAKE_C_FLAGS " ${granted}")
-endif()
-
-check_pie_supported(LANGUAGES C)
-if(CMAKE_C_LINK_PIE_SUPPORTED)
-    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-endif()
-
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE OFF)
 if(ENABLE_LTO)
     if(NOT DEFINED CACHE{LTO_SUPPORTED})
