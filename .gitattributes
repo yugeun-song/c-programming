@@ -1,4 +1,4 @@
-* text=auto eol=lf
+* text eol=lf
 
 *.exe binary
 *.dll binary
@@ -10,3 +10,11 @@
 *.pdb binary
 *.idb binary
 *.bin binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.xz binary
