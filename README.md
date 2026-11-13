@@ -39,13 +39,12 @@ Programs go to `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, with `.exe` and `.p
 | `aarch64-linux-clang` | Linux | `clang --target=aarch64-linux-gnu`, `lld` | glibc | Ninja Multi-Config |
 | `riscv64-linux-gcc` | Linux | `riscv64-linux-gnu-gcc` | glibc | Ninja Multi-Config |
 | `riscv64-linux-clang` | Linux | `clang --target=riscv64-linux-gnu`, `lld` | glibc | Ninja Multi-Config |
-| `x86_64-windows-gcc` | Linux, Windows | `x86_64-w64-mingw32-gcc` | MinGW-w64 | Ninja Multi-Config |
 | `x86_64-windows-msvc` | Windows | `cl` | UCRT | newest Visual Studio |
 | `x86_64-windows-clang` | Windows | `clang-cl`, toolset `ClangCL` | UCRT | newest Visual Studio |
 
 `-h` lists which presets the host can build and what the others miss. Clang cross presets reuse the gcc cross sysroot under `/usr/<triple>`. Presets blank `CFLAGS`, `LDFLAGS`, `CMAKE_TOOLCHAIN_FILE`, `CL`, `_CL_`, `LINK` and `_LINK_` and neutralize `CCC_OVERRIDE_OPTIONS`; `build.cmake` applies that environment to the build step too.
 
-Configure stops unless the compiler is GCC, Clang or MSVC, and a compiler CMake calls GNU must report through `-dumpfullversion` the version its macros carry. It also stops when the detected `<arch>-<os>-<compiler>` differs from the preset name.
+Configure stops unless the compiler is GCC, Clang or MSVC, and a compiler CMake calls GNU must report through `-dumpfullversion` the version its macros carry. It also stops when the detected `<arch>-<os>-<compiler>` differs from the preset name, and when a Linux target is built by anything but GCC or Clang or a Windows target by anything but MSVC or clang-cl.
 
 ## Build types
 
@@ -79,7 +78,7 @@ Release builds what distributions ship, at `-O2` with LTO: `-O2 -g -fasynchronou
 
 ## Portability
 
-Targets are Linux on x86_64, aarch64 and riscv64, and Windows on x86_64. CMake checks the OS, asks the compiler its architecture, and fails on anything else, macOS included.
+Targets are Linux on x86_64, aarch64 and riscv64 with GCC or Clang, and Windows on x86_64 with MSVC or clang-cl. CMake checks the OS, asks the compiler its architecture, and fails on anything else, macOS included.
 
 Baseline is C99, extensions off: `-std=c99` on gcc and clang; MSVC has no `/std:c99`, and its default covers C99 from 19.27 (VS 2019 16.7), the first to accept `restrict`. Past C99 is opt-in: `__extension__` and `__builtin_*` for GNU, feature-test macros for POSIX and glibc.
 
