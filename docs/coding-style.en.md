@@ -222,7 +222,7 @@ Keep code short, but do not write it to show off. Avoid anything open to more th
 
 Do not write code that is deliberately complicated, made to look difficult, or makes the reader think twice. Do not write code that leaves much room for deliberation or mistakes, either.
 
-Write code in widely used forms. Do not use a technique that departs far from conventional coding style, even if it reduces mistakes. For example, in a comparison with the constant on the left (`5 == value`), mistyping `==` as `=` causes a compile error. However, this form is not widely used, so it clashes with what readers are used to, and the burden of that clash may outweigh the gain. Techniques like this, whose side effects can outweigh their actual benefit, are left out of this coding style.
+Write code in widely used forms. Do not use a technique that departs far from conventional coding style, even if it reduces mistakes. For example, in a comparison with the constant on the left (`5 == value`), mistyping `==` as `=` causes a compile error. However, this form is not widely used, so it clashes with what readers are used to, and the burden of that clash may outweigh the gain. Techniques like this, whose side effects can outweigh their actual benefit, are left out of this coding style. Therefore, this is also why assignments are avoided in control statements and loops as much as possible.
 
 Incorrect:
 
