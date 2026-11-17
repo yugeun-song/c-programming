@@ -337,7 +337,7 @@ static size_t copy_string(char *const mut_dst, const char *const src, size_t dst
 
 ### 3.1. 언어 표준
 
-기본 표준은 C99이다. 프로젝트는 필요하면 다른 표준이나 GNU 방언을 골라도 된다. 고른 표준은 빌드 설정에 명시한다.
+기본 표준은 C99이다. 프로젝트는 필요하면 다른 표준이나 GNU 방언을 골라도 된다. 고른 표준은 빌드 설정에 명시한다. 컴파일러 기본값에 의존하지 않고 명시적인 설정을 한다.
 
 - GCC와 Clang에서는 `-std`로 고른다(`-std=c99`, `-std=c11`, `-std=c17`, `-std=c23`, `-std=gnu99`).
 - MSVC에는 C99 모드가 없다. `/std`를 주지 않은 기본 모드는 C89에 Microsoft 확장을 더한 것이다. 그 확장 가운데 일부가 C99 기능이다. C11 이상은 `/std:c11`, `/std:c17`, `/std:clatest`로 고른다. 기본 모드에서는 traditional preprocessor가 동작한다. C99에 맞는 preprocessor는 `/Zc:preprocessor`로 고른다. `/std:c11`이나 `/std:c17`을 주면 이 preprocessor가 함께 켜진다.

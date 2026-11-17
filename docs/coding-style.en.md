@@ -337,7 +337,7 @@ static size_t copy_string(char *const mut_dst, const char *const src, size_t dst
 
 ### 3.1. Language standard
 
-The default standard is C99. A project may choose another standard or a GNU dialect if needed. State the chosen standard explicitly in the build configuration.
+The default standard is C99. A project may choose another standard or a GNU dialect if needed. State the chosen standard explicitly in the build configuration. Make the settings explicit instead of relying on compiler defaults.
 
 - With GCC and Clang, select it with `-std` (`-std=c99`, `-std=c11`, `-std=c17`, `-std=c23`, `-std=gnu99`).
 - MSVC has no C99 mode. Its default mode, without `/std`, is C89 plus Microsoft extensions. Some of those extensions are C99 features. Select C11 or later with `/std:c11`, `/std:c17`, or `/std:clatest`. The default mode runs the traditional preprocessor. Select the preprocessor that conforms to C99 with `/Zc:preprocessor`. Passing `/std:c11` or `/std:c17` turns this preprocessor on as well.
