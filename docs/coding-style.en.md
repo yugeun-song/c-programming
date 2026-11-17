@@ -4093,7 +4093,7 @@ static void skip_spaces(const char **const mut_cursor)
 
 ### 8.3. sizeof
 
-- Derive the size passed to allocation functions or to functions such as `memset` and `memcpy` from the target variable (`sizeof(*p)`, `sizeof(var)`).
+- Derive the size passed to dynamic allocation functions or to functions such as `memset` and `memcpy` from the target variable (`sizeof(*p)`, `sizeof(var)`).
 - Get the number of elements of an array with the `ARRAY_SIZE()` macro. Use this macro only on objects of array type. Dynamically allocated memory and array parameters are handled through pointers, so pass their element counts separately.
 
 Incorrect:
@@ -6365,7 +6365,7 @@ out_close_file:
 
 ### 13.5. Dynamic memory
 
-- Avoid modifying the base value of an allocated pointer as far as possible, unless the structure leaves no alternative. Use a separate pointer for iteration.
+- Avoid modifying the base value of a dynamically allocated pointer as far as possible, unless the structure leaves no alternative. Use a separate pointer for iteration.
 - After calling `free`, assign `NULL` to the pointer. Unless there is a specific reason, assign it even if the pointer is not used again. The same applies after calling another function that releases its target, such as `fclose`.
 
 Incorrect:
