@@ -6812,8 +6812,8 @@ gcc -std=c99 -Wall -Wextra -pedantic -Wshadow -c foo.c
 Correct (MSVC and clang-cl):
 
 ```bat
-cl /W4 /c foo.c
-clang-cl /W4 -Wshadow /clang:-pedantic /c foo.c
+cl /Zc:preprocessor /W4 /c foo.c
+clang-cl /clang:-std=c99 /W4 -Wshadow /clang:-pedantic /c foo.c
 ```
 
 Correct (`Directory.Build.targets` at the root of a Visual Studio tree):
@@ -6823,11 +6823,12 @@ Correct (`Directory.Build.targets` at the root of a Visual Studio tree):
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
+      <UseStandardPreprocessor Condition="'$(PlatformToolset)' != 'ClangCL'">true</UseStandardPreprocessor>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(PlatformToolset)' == 'ClangCL'">
     <ClCompile>
-      <AdditionalOptions>-Wshadow /clang:-pedantic %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/clang:-std=c99 -Wshadow /clang:-pedantic %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
 </Project>
@@ -6838,7 +6839,7 @@ Correct (reviewing only the unused diagnostics):
 ```sh
 gcc -std=c99 -Wall -Wextra -Wunused-macros -c -o /dev/null foo.c 2>&1 | grep -- '-Wunused'
 clang -std=c99 -fsyntax-only -Wno-everything -Wunused -Wunused-parameter -Wunused-macros foo.c
-cppcheck --enable=unusedFunction --quiet src/
+cppcheck --std=c99 --enable=unusedFunction --quiet src/
 ```
 
 ### 14.4. Editor settings
