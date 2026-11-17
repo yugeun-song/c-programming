@@ -128,19 +128,19 @@ Contents
 
 ### 1.1. Applicability
 
-This coding style is the convention for code on the Linux platform and for cross-platform code whose targets include Linux. It covers C sources (`.c`, `.h`) and the inline assembly in them.
+This coding style is the set of conventions for code that targets the Linux platform and for cross-platform code whose targets include Linux. It covers C sources (`.c`, `.h`) and the inline assembly in them.
 
-Your own Linux kernel modules and drivers may use this coding style, independently of the original kernel source. However, when customizing the Linux kernel source itself, follow the kernel coding style as it is. This keeps different styles from mixing within the kernel source.
+Linux kernel modules and drivers that you write yourself may follow this coding style, separately from the original kernel source. However, when customizing the Linux kernel source itself, follow the kernel coding style as it is. This keeps different styles from mixing within the kernel source.
 
-A project that targets only a specific OS or architecture, such as a Windows-only, FreeBSD-only, or macOS-only project, follows the coding style of that OS or architecture. In a cross-platform project, by contrast, apply this coding style to OS-specific code as well. Trees that each have their own structure and binaries for one platform are not a cross-platform project, and each such tree follows the style of its own platform.
+A project that targets only a specific OS or architecture, such as a Windows-only, FreeBSD-only, or macOS-only project, follows the coding style of that OS or architecture. In a cross-platform project, by contrast, apply this coding style to OS-specific code as well. A project split into independent trees for each platform, each with its own structure and binaries, is not a cross-platform project. Each tree follows the style of its own platform.
 
-This coding style is also a collection of conventions that AI agents must follow when they generate C code. It was written with the intent that AI agents, too, follow these conventions.
+This coding style is also the set of conventions that AI agents must follow when they generate C code. AI agents can generate and review code against these conventions. Even in areas that a format configuration such as `.clang-format` cannot check, AI agents can check code against these conventions and propose fixes.
 
 ### 1.2. Coding style differences between project and dependencies
 
-Bring all code written by the project itself, including existing code, into line with these rules. In contrast, dependency code imported from outside keeps its original style.
+Bring all code written within the project, including existing code, into line with these rules. Dependency code imported from outside, by contrast, keeps its original style.
 
-Draw a clear boundary between dependency code and project code. Keep dependency code in a directory separate from project code where possible. If it must share a directory, draw the boundary at the file level. In either case, do not apply the project's coding style to dependency code files. When dependency code needs a change, make it in the file's original style. This way, even when two styles coexist in a project, each file holds only one style. When different styles mix in one file, readers are unsure which rules to follow, and when the dependency code is updated to a new version, the changed parts are hard to pick out.
+Draw a clear boundary between dependency code and project code. Keep dependency code in a directory separate from project code where possible. If it must share a directory, draw the boundary at the file level. In either case, do not apply the project's coding style to dependency code files. When dependency code needs a change, make the change in the original style of that file. Then, even when two styles coexist in a project, each file holds only one style. When different styles mix in one file, readers cannot tell which rules to follow. It also becomes hard to pick out the changed parts when the dependency code is updated to a new version.
 
 Incorrect (a project function added to the dependency code `third_party/tinyini/ini.c`):
 
@@ -213,15 +213,15 @@ static size_t count_sections(const char *const text)
 
 ## 2. Principles
 
-This coding style is built on the Linux kernel coding style and on some ideas from the MISRA C rules. The shape of braces, names, declarations, and comments follows the kernel, but indentation uses four spaces instead of tabs. From MISRA C, it adopts rules that leave less room for mistakes, such as mandatory braces, restrictions on the comma operator and on assignment in conditions, and explicit comparison of integers and pointers.
+This coding style is based on the Linux kernel coding style and on some ideas from the MISRA C rules. Braces, names, declarations, and comments take their shape from the kernel, but indentation uses four spaces instead of tabs. From MISRA C come rules that leave less room for mistakes, such as mandatory braces, restrictions on the comma operator and on assignment in conditions, and explicit comparison of integers and pointers.
 
 ### 2.1. Simple, intuitive, conventional code
 
-Keep code short, but do not write it to show off. Avoid anything open to more than one reading as far as possible, and build the implementation from very simple, clear lines, one at a time. Write each line so that it maps to assembly instructions as close to 1:1 as possible.
+Keep code short, but do not write it to show off. Avoid anything open to more than one reading as far as possible, and build the implementation by stacking very simple, clear lines one at a time. Write each line so that it maps to assembly instructions as close to 1:1 as possible.
 
-Do not write code that is deliberately complicated, made to look difficult, or makes the reader think twice. Do not write code that leaves much room for thought or mistakes, either.
+Do not write code that is deliberately complicated, made to look difficult, or makes the reader think twice. Do not write code that leaves much room for deliberation or mistakes, either.
 
-Write code in widely used forms. Do not use a technique that departs far from conventional coding style, even if it reduces mistakes. For example, a comparison with the constant on the left (`5 == value`) turns `==` mistyped as `=` into a compile error. However, it is not a widely used form, so it clashes with what readers are used to, and the burden of that clash may outweigh the gain. Techniques like this, whose side effects can outweigh their actual benefit, are not part of this coding style.
+Write code in widely used forms. Do not use a technique that departs far from conventional coding style, even if it reduces mistakes. For example, in a comparison with the constant on the left (`5 == value`), mistyping `==` as `=` causes a compile error. However, this form is not widely used, so it clashes with what readers are used to, and the burden of that clash may outweigh the gain. Techniques like this, whose side effects can outweigh their actual benefit, are left out of this coding style.
 
 Incorrect:
 
@@ -236,7 +236,7 @@ static long sum_clamped(size_t *clipped, const int *v, int n, int lo, int hi)
 }
 ```
 
-This function clips each of the `n` elements that `v` points to so that it lies between `lo` and `hi`, adds them up, and leaves the number of clipped elements in `*clipped`. The code is syntactically valid in every standard from C89 to the current one and has no undefined behavior. Its result also matches the correct example below. However, within a single line, an element read, two comparisons, an increment, and an addition are tangled together through the comma operator and nested conditional operators. The reader has to work out one by one how the conditional operators group, when `n--` and `++v` execute, and in what order `sum = *clipped = 0` assigns. Do not write such code: even when it is syntactically sound, it adds things to think about and wastes time in reading and changing it.
+This function clips each of the `n` elements that `v` points to into the range from `lo` to `hi`, adds them up, and leaves the number of clipped elements in `*clipped`. The code is syntactically valid in every standard from C89 to the current one. It has no undefined behavior either. Its result also matches the correct example below. However, a single line tangles an element read, two comparisons, an increment, and an addition together through the comma operator and nested conditional operators. The reader has to work out, one by one, how the conditional operators group, when `n--` and `++v` execute, and in what order `sum = *clipped = 0` assigns. Even when code is syntactically sound, do not write code that adds things to think about and so wastes time in reading and changing it.
 
 Correct:
 
@@ -269,16 +269,16 @@ static long sum_clamped(size_t *const mut_clipped, const int *const samples, siz
 Each line does only one of reading, comparing, assigning, or incrementing, so it maps directly to a few assembly instructions. The changes from the incorrect example are as follows.
 
 - Read elements through the subscript `samples[i]` instead of advancing the pointer parameter. Fix the pointer parameter itself with `*const`.
-- Take the element count as `size_t`. Declare the loop variable `i` in the init clause of the `for` statement and change it only in the increment expression. Do not change values in the condition, as `n--` does.
+- Take the element count as `size_t`. Declare the loop variable `i` in the init clause of the `for` statement, and change it only in the increment expression. Do not change values in the condition, as `n--` does.
 - Unfold the comma operator and the nested conditional operators into `if` and `else if`, so that each line does only one thing.
 - Split the chained assignment `sum = *clipped = 0` into a declaration with an initializer for each variable.
-- Count the clipped elements in the local variable `clipped`, and write the count to `*mut_clipped` only once, at the end. The name of a pointer parameter through which the target is modified starts with `mut_`.
+- Count the clipped elements in the local variable `clipped`, and write the count to `*mut_clipped` only once, at the end. The name of a pointer parameter whose target the function modifies starts with `mut_`.
 - Wrap the body of the `for` statement in braces.
-- Use descriptive names (`samples`, `low`, `high`) instead of abbreviated names (`v`, `lo`, `hi`).
+- Use names that convey their meaning (`samples`, `low`, `high`) instead of abbreviated names (`v`, `lo`, `hi`).
 
 ### 2.2. Avoiding name collisions
 
-Do not use names that are likely to collide with names from widely used standards such as the C standard and POSIX, or with C keywords. Even if a name does not collide today, the build breaks once a new standard or library adds the same name. For example, C23 made `bool`, `true`, `false`, `nullptr`, and `typeof` keywords, and POSIX.1-2024 added `strlcpy` and `strlcat` as standard functions.
+Do not use names that are likely to collide with names from widely used standards such as the C standard and POSIX, or with C keywords. Even if a name does not collide today, the build breaks once a new standard or library adds the same name. For example, `bool`, `true`, `false`, `nullptr`, and `typeof` became keywords in the C23 standard. Also, `strlcpy` and `strlcat` became standard functions in POSIX.1-2024.
 
 Incorrect:
 
@@ -338,12 +338,12 @@ static size_t copy_string(char *const mut_dst, const char *const src, size_t dst
 
 The default standard is C99. A project may choose another standard or a GNU dialect if needed. State the chosen standard explicitly in the build configuration.
 
-- For GCC and Clang, select it with `-std` (`-std=c99`, `-std=c11`, `-std=c17`, `-std=c23`, `-std=gnu99`).
-- MSVC has no C99 mode. Its default mode, without `/std`, is C89 plus Microsoft extensions, and some of those extensions are C99 features. Select C11 or later with `/std:c11`, `/std:c17`, or `/std:clatest`. The default mode keeps the traditional preprocessor. `/Zc:preprocessor` selects the preprocessor that conforms to C99, and `/std:c11` and `/std:c17` select it on their own.
+- With GCC and Clang, select it with `-std` (`-std=c99`, `-std=c11`, `-std=c17`, `-std=c23`, `-std=gnu99`).
+- MSVC has no C99 mode. Its default mode, without `/std`, is C89 plus Microsoft extensions. Some of those extensions are C99 features. Select C11 or later with `/std:c11`, `/std:c17`, or `/std:clatest`. The default mode runs the traditional preprocessor. Select the preprocessor that conforms to C99 with `/Zc:preprocessor`. Passing `/std:c11` or `/std:c17` turns this preprocessor on as well.
 - In a Visual Studio project, select them with the `LanguageStandard_C` (`stdc11`, `stdc17`, `stdclatest`) and `UseStandardPreprocessor` properties.
-- For CMake, select it with `CMAKE_C_STANDARD`. With MSVC 19.27 or later, `CMAKE_C_STANDARD 99` passes no standard option, so the build uses the default mode.
+- In CMake, select it with `CMAKE_C_STANDARD`. With MSVC 19.27 or later, CMake passes no standard option when `CMAKE_C_STANDARD` is 99. Therefore, the build uses the default mode.
 
-The standard documents and their WG14 public drafts are as follows. The mapping follows the [WG14 projects page](https://www.open-std.org/jtc1/sc22/wg14/www/projects).
+The standard documents and their WG14 public drafts are listed below. The correspondence follows the [WG14 projects page](https://www.open-std.org/jtc1/sc22/wg14/www/projects).
 
 - C99: [ISO/IEC 9899:1999](https://www.iso.org/standard/29237.html), draft [N1256](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf)
 - C11: [ISO/IEC 9899:2011](https://www.iso.org/standard/57853.html), draft [N1570](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf)
@@ -378,9 +378,9 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 ### 3.2. Platform APIs
 
-For features whose implementation differs by platform, such as threads, synchronization, and atomic operations, prefer the APIs that the platform and the compiler provide directly. Use POSIX threads (pthread) on Linux and the Win32 API on Windows. For atomic operations, use the `__atomic` builtins with GCC/Clang and the Interlocked functions of the Win32 API on Windows. Avoid standard libraries that add another layer on top of the platform APIs, such as C11 `<threads.h>` and `<stdatomic.h>`.
+For features whose implementation differs by platform, such as threads, synchronization, and atomic operations, prefer the native APIs of the platform and the compiler. Use POSIX threads (pthread) on Linux and the Win32 API on Windows. For atomic operations, use the `__atomic` builtins with GCC/Clang and the Interlocked functions of the Win32 API on Windows. Avoid standard libraries that add another layer on top of the platform APIs, such as C11 `<threads.h>` and `<stdatomic.h>`.
 
-C is chosen even though languages such as C++ and Rust exist, because it offers transparency that maps almost 1:1 to assembly and the platform, with only minimal abstraction on top. Calling platform APIs directly avoids needless abstraction layers and allows precise, transparent control of behavior.
+C is used even though languages such as C++ and Rust exist, because the aim is a setup that puts only minimal abstraction on top of transparency that maps almost 1:1 to assembly and the platform. Calling platform APIs directly avoids needless abstraction layers and allows precise, transparent control of behavior.
 
 Discouraged:
 
@@ -467,10 +467,10 @@ static void record_hit(void)
 
 ### 3.3. Marking extensions
 
-Make the use of features outside the chosen language standard visible.
+Make features outside the chosen language standard visible in the code.
 
-- Wrap GNU extension syntax with `__extension__`.
-- Spell extension keywords with underscores, as in `__asm__` and `__typeof__`. In ISO standard modes such as `-std=c99`, `asm` is not a keyword, and `typeof` is reserved as a keyword only from the C23 standard. Therefore, in those modes the spellings without underscores do not compile.
+- Wrap GNU extension syntax in `__extension__`.
+- Spell extension keywords with underscores, as in `__asm__` and `__typeof__`. In ISO standard modes such as `-std=c99`, `asm` is not a keyword, and `typeof` is reserved as a keyword only from the C23 standard on. Therefore, the spellings without underscores do not compile in those modes.
 
 Incorrect:
 
@@ -524,7 +524,7 @@ static inline void compiler_barrier(void)
 
 ### 3.4. Implementation-defined behavior
 
-Do not depend on implementation-defined behavior, such as integer widths, the signedness of `char`, endianness, alignment, and padding, or on platform-specific internal behavior. If code must depend on it, state so in a comment. However, code with a clearly defined target platform may assume that platform's behavior with certainty.
+Do not depend on implementation-defined behavior, such as integer widths, the signedness of `char`, endianness, alignment, and padding, or on platform-specific internal behavior. If code must depend on it, state the dependency in a comment. However, code with a clearly defined target platform may firmly assume the behavior of that platform.
 
 Incorrect:
 
@@ -542,7 +542,7 @@ static void read_dns_header(struct dns_header *const mut_header, const unsigned 
 }
 ```
 
-DNS header fields are transmitted in big-endian order. On little-endian x86-64 and AArch64 Linux, this code reads every field with its bytes reversed. It also relies on the assumption that the structure has no padding.
+DNS header fields are transmitted in big-endian order. On little-endian x86-64 and AArch64 Linux, this code reads every field with its bytes reversed. It also assumes that the structure has no padding.
 
 Correct:
 
@@ -598,9 +598,9 @@ static void read_sensor_sample(struct sensor_sample *const mut_sample,
 
 ### 3.5. Choosing standard functions
 
-Use C standard functions, string functions in particular, after weighing the trade-offs in implementation, string and memory safety, and performance. When batch processing, parallel processing, thread safety, or similar properties must be guaranteed, write that functionality yourself.
+Use C standard functions after weighing the trade-offs among implementations, string and memory safety, and performance. This applies to string functions in particular. When batch processing, parallel processing, thread safety, or similar properties must be guaranteed, write that functionality yourself.
 
-For example, `strtok` saves internally the position where the next search starts and resumes from it on the next call. C11 states that `strtok` need not avoid data races with other calls to `strtok` (C11 §7.24.5.8 ¶6). Also, `strncat` searches for the end of the destination string from the beginning on every call. Therefore, appending many strings one after another takes time proportional to the square of the concatenated length.
+For example, `strtok` stores inside the function the position where the next search starts, and resumes from it on the next call. Under the C11 standard, `strtok` need not avoid data races with other calls to `strtok` (C11 §7.24.5.8 ¶6). Also, `strncat` searches for the end of the destination string from the beginning on every call. Therefore, appending many strings one after another takes time proportional to the square of the concatenated length.
 
 Incorrect:
 
@@ -707,7 +707,7 @@ static void join_words(char *const mut_dst, size_t dst_size, const char *const *
 
 ### 3.6. Standard functions not to use
 
-Do not use `gets`. It takes no buffer size, so it cannot prevent overflow, and it was removed in the C11 standard.
+Do not use `gets`. It takes no buffer size, so it cannot prevent buffer overflow. It was also removed in the C11 standard.
 
 Incorrect:
 
@@ -739,7 +739,7 @@ static int read_command(char *const mut_line, size_t line_size)
 
 ### 4.1. File names
 
-C source files end in `.c`, and headers end in `.h`. Write names in lowercase snake_case. Do not use Windows reserved names (`CON`, `PRN`, `AUX`, `NUL`, `COM1`, `LPT1`, and so on), even with an extension.
+The name of a C source file ends in `.c`, and the name of a header file ends in `.h`. Write names in lowercase snake_case. Do not use Windows reserved names (`CON`, `PRN`, `AUX`, `NUL`, `COM1`, `LPT1`, and so on), even with an extension.
 
 Incorrect:
 
@@ -777,11 +777,11 @@ printer.c
 
 ### 4.2. Encoding and line endings
 
-Use UTF-8 without a BOM and LF line endings in files. Use CRLF only in Visual Studio project files (`.sln`, `.slnx`, `.vcxproj`, `.vcxproj.filters`, `.props`, `.targets`). `.gitattributes` and `.editorconfig` can enforce this rule.
+Encode files in UTF-8 without a BOM, and use LF line endings. Use CRLF only in Visual Studio project files (`.sln`, `.slnx`, `.vcxproj`, `.vcxproj.filters`, `.props`, `.targets`). This rule can be enforced with `.gitattributes` and `.editorconfig`.
 
-Do not use Git's `core.autocrlf`. `core.autocrlf` is a local setting that each person can set differently, so it cannot pin down the project's line endings. Set line endings with the `.gitattributes` that is part of the project. A file whose `eol` is set in `.gitattributes` is checked out with that line ending regardless of the `core.autocrlf` value.
+Do not use Git's `core.autocrlf`. `core.autocrlf` is a local setting that each person can set differently. Therefore, this setting cannot pin down the line endings of the project. Set line endings with the `.gitattributes` that is part of the project. A file whose `eol` is set in `.gitattributes` is checked out with that line ending regardless of the `core.autocrlf` value.
 
-Do not use settings such as `text=auto` that let Git decide by itself whether a file is text, either. Automatic detection decides from the contents of each file, so the path alone does not tell which line ending a file gets. Set `text` and `eol` explicitly for each path, and mark binary files with `binary`.
+Do not use settings such as `text=auto` that let Git decide by itself whether a file is text, either. With automatic detection, Git decides from the contents of a file whether it is text. Therefore, the path alone does not tell which line ending a file gets. Set `text` and `eol` explicitly for each path, and mark binary files with `binary`.
 
 Incorrect:
 
@@ -824,7 +824,7 @@ word_count.c: C source, ASCII text
 
 ### 4.3. Character set
 
-Write code and comments in ASCII. Use characters outside ASCII in output strings only when a meaningful symbol is needed. Quotation marks in messages are the ASCII `'` and `"`.
+Write code and comments in ASCII. Use characters outside ASCII in output strings only when a meaningful symbol is needed. Use the ASCII `'` and `"` as quotation marks in messages.
 
 Incorrect:
 
@@ -871,7 +871,7 @@ For C source files, the C standard requires this. C99, the default standard, con
 
 > A source file that is not empty shall end in a new-line character, which shall not be immediately preceded by a backslash character before any such splicing takes place.
 
-Violating this requirement is undefined behavior under C99 §4 ¶2. C99 Annex J.2 also lists this case as undefined behavior. C11 and C23 contain the same sentence.
+Violating this requirement results in undefined behavior under C99 §4 ¶2. The list of undefined behavior in C99 Annex J.2 also includes this case. C11 and C23 contain the same sentence.
 
 Incorrect:
 
@@ -1021,15 +1021,15 @@ In a project that separates headers and sources, an exception is allowed only wh
 
 ### 4.7. Feature test macros
 
-In a file that uses POSIX or glibc features, enable them with a feature test macro. A feature test macro determines which declarations the system headers expose. Define it in the source file before any `#include`, and put one blank line below it. Do not define it inside a header, because it has no effect on headers included before that header.
+In a file that uses POSIX or glibc features, enable them with a feature test macro. The declarations that system headers expose depend on feature test macros. Define the macro in the source file before any `#include`, and put one blank line below it. Do not define it inside a header, because it has no effect on headers included before that header.
 
 Choose the narrowest macro that covers the features needed. Do not define one in a file that uses only standard C features.
 
-- `_POSIX_C_SOURCE`: Define it when using POSIX interfaces. The default value is `200809L`, for POSIX.1-2008. The value for POSIX.1-2024 is `202405L`.
+- `_POSIX_C_SOURCE`: Define it when using POSIX interfaces. By default, use `200809L`, the value for POSIX.1-2008. The value for POSIX.1-2024 is `202405L`.
 - `_XOPEN_SOURCE`: Define it when also using the POSIX XSI extension. The value is `700` for POSIX.1-2008 and `800` for POSIX.1-2024.
-- `_DEFAULT_SOURCE`: Define it when using the default glibc feature set. This set is POSIX.1-2008 plus some BSD and SVID features. glibc turns this set off when another feature test macro is defined or when compiling in a standard mode such as `-std=c99`.
-- `_GNU_SOURCE`: It turns on all glibc features and GNU extensions. `_POSIX_C_SOURCE 200809L` and `_XOPEN_SOURCE 700` are turned on as well. Use it only in Linux-only files.
-- `WIN32_LEAN_AND_MEAN`, `_WIN32_WINNT`: These are not feature test macros, but put them in the same place. `WIN32_LEAN_AND_MEAN` excludes APIs such as Cryptography, DDE, RPC, Shell, and Windows Sockets from `<windows.h>`. `_WIN32_WINNT` sets the lowest Windows version to support. For Windows 10, it is `0x0A00`.
+- `_DEFAULT_SOURCE`: Define it when using the default glibc feature set. This set contains the highest level of POSIX features that the glibc supports, and some BSD and SVID features. glibc turns this set off when another feature test macro is defined or when compiling in an ISO standard mode such as `-std=c99`.
+- `_GNU_SOURCE`: Defining it turns on all glibc features and GNU extensions. `_POSIX_C_SOURCE` and `_XOPEN_SOURCE` are defined as well, to the highest values that the glibc supports. In glibc 2.44 these are `202405L` and `800`. Use it only in Linux-only files.
+- `WIN32_LEAN_AND_MEAN`, `_WIN32_WINNT`: These are not feature test macros, but put them in the same place. Defining `WIN32_LEAN_AND_MEAN` removes APIs such as Cryptography, DDE, RPC, Shell, and Windows Sockets from `<windows.h>`. Define `_WIN32_WINNT` as the lowest Windows version to support. The value for Windows 10 is `0x0A00`.
 
 Incorrect:
 
@@ -1228,13 +1228,13 @@ Correct (Windows):
 
 ### 4.8. Include order
 
-Divide `#include` directives into three categories. Sort them alphabetically within each category. However, headers with include-order dependencies on each other follow that order. Put one blank line between categories.
+Divide `#include` directives into three categories. Sort them alphabetically within each category. However, headers that depend on each other's include order keep that order. Put one blank line between categories.
 
 1. Main header: the header that the source file implements (`"foo.h"` for `foo.c`)
 2. `<...>` form: standard headers, system headers, and external library headers
 3. `"..."` form: headers within the project
 
-Place a header that has a dependency after the headers it needs, at the end of the same group. For example, GNU Readline's `<readline/readline.h>` uses `FILE` but does not include `<stdio.h>` itself. It comes before `<stdio.h>` alphabetically, so leaving it there causes a compile error.
+Place a header with a dependency at the end of its group, so that it comes after the headers it needs. For example, GNU Readline's `<readline/readline.h>` uses `FILE` but does not include `<stdio.h>` itself. Alphabetically, it comes before `<stdio.h>`, so leaving it there causes a compile error.
 
 Incorrect:
 
@@ -1276,13 +1276,13 @@ Correct:
 
 ### 4.9. Include guards
 
-Wrap every header in an include guard. Build the guard name from the path relative to the project root by converting it to uppercase and replacing every character other than a letter or digit with `_`. Do not use `#pragma once`.
+Wrap every header in an include guard. Build the guard name from the path relative to the project root: convert it to uppercase, and replace every character other than a letter or digit with `_`. Do not use `#pragma once`.
 
-Always put the guard name in a comment after `#endif`, because in a long header it is not obvious which `#ifndef` the `#endif` pairs with.
+Always add the guard name as a comment after `#endif`. In a long header, it is not immediately visible which `#ifndef` an `#endif` pairs with.
 
-Do not start a guard name with `_`. The C standard reserves names that start with `_` followed by an uppercase letter for the implementation, and system headers use them often. Indeed, glibc's `<net/if.h>` uses `_NET_IF_H` as its guard. If a project has a header named `net/if.h` and uses the same name as its guard, the contents of whichever of the two headers is included later are dropped. The compiler reports this with neither an error nor a warning.
+Do not start a guard name with `_`. The C standard reserves names that start with `_` followed by an uppercase letter for the implementation. System headers also use such names often. Indeed, glibc's `<net/if.h>` uses `_NET_IF_H` as its guard. If a project has a header named `net/if.h` and uses the same name as its guard, the contents of whichever of the two headers is included later are dropped. The compiler reports this problem with neither an error nor a warning.
 
-Incorrect (the guard name of `util/text.h` not derived from its path):
+Incorrect (`util/text.h`):
 
 ```c
 #ifndef TEXT_H
@@ -1344,9 +1344,9 @@ Put only declarations, type definitions, macros, and inline functions in headers
 
 Do not put the following definitions in headers.
 
-- Variable definitions: Every translation unit that includes the header gets a definition, which causes a `multiple definition` error at link time.
+- Variable definitions: Every translation unit that includes the header gets a definition, so linking fails with a `multiple definition` error.
 - `static` variables: Every translation unit that includes the header gets a separate variable. A value changed in one file is not visible in other files.
-- `static` functions: Like `static inline` functions, they produce a copy in every translation unit. However, GCC and Clang issue a `-Wunused-function` warning for every file that does not use the function. They do not issue this warning for `static inline`.
+- `static` functions: Like `static inline` functions, they produce a copy in every translation unit. However, GCC and Clang issue a `-Wunused-function` warning in every file that does not use the function. They issue no such warning for `static inline` functions.
 
 Incorrect (`store/inventory.h`):
 
@@ -1437,7 +1437,7 @@ int add_item(const char *const name, size_t quantity)
 
 ### 5.1. Indentation
 
-Indent with four spaces. Do not indent with tabs.
+Indentation is four spaces. Do not indent with tabs.
 
 Incorrect:
 
@@ -1471,7 +1471,7 @@ static const char *describe_temperature(int celsius)
 
 ### 5.2. Line length
 
-As a rule, keep lines within 100 columns. However, a line may exceed this if the excess is small.
+As a rule, a line stays within 100 columns. However, a line may exceed the limit when the excess is small.
 
 Incorrect:
 
@@ -1495,11 +1495,11 @@ static void print_order_summary(const char *const customer, size_t item_count,
 
 ### 5.3. Breaking long expressions
 
-When breaking a line, use the following layout.
+Break lines in the following forms.
 
-- When breaking inside parentheses, start the next line in the column right after the innermost opening parenthesis that is still unclosed. That is, the first character of the next line and the first character after that parenthesis sit in the same column. This applies to function call arguments, function declaration parameters, and the conditions of `if` and `while`.
+- When breaking inside parentheses, start the next line in the column right after the innermost parenthesis that is still open. That is, the first character of the next line sits in the same column as the character right after that parenthesis. This applies to function call arguments, function declaration parameters, and the conditions of `if` and `while`.
 - When breaking an expression outside parentheses after an operator, start the next line in the same column as the first operand of that expression.
-- By default, break an assignment inside the parentheses of the right-hand side, not after the assignment operator. Only when the right-hand side is so long that breaking inside its parentheses leaves no room for the next line, break right after the assignment operator, and indent the next line four spaces more than the first line of the statement.
+- By default, break an assignment inside the parentheses of the right-hand side, not after the assignment operator. Break right after the assignment operator only when the right-hand side is so long that breaking inside its parentheses leaves no room for the next line. In that case, indent the next line four spaces more than the first line of the statement.
 - Leave binary operators and commas at the end of the line.
 
 Incorrect:
@@ -1597,7 +1597,7 @@ static unsigned long report_remaining_time(unsigned long first_job, unsigned lon
 
 ### 5.4. User-visible strings
 
-Do not split output message strings, even when they exceed the line length. Messages must remain findable with string search tools such as grep. A string that prints several lines may be split at output line boundaries and concatenated.
+Do not split output message strings, even when they exceed the line length limit. Messages must stay findable with string search tools such as grep. However, a string that prints several lines may be split at output line boundaries and concatenated.
 
 Incorrect:
 
@@ -1631,7 +1631,7 @@ static void show_help(const char *const program_name)
 
 ### 5.5. Function headers
 
-Write the return type, function name, and parameter list on one line. If the line is too long, break it inside the parameter list.
+Write the return type, the function name, and the parameter list on one line. If that line is too long, break it inside the parameter list.
 
 Incorrect:
 
@@ -1685,7 +1685,7 @@ static void blend_rows(uint8_t *const restrict mut_dst, const uint8_t *const res
 
 ### 5.6. Function braces
 
-Put the opening and closing braces of a function body each on a new line. Their indentation matches the function header.
+Put the opening and closing braces of a function body each on a new line. They have the same indentation as the function header.
 
 Incorrect:
 
@@ -1706,9 +1706,9 @@ static int is_leap_year(int year)
 
 ### 5.7. Control statement and loop braces
 
-Put the opening brace of `if`, `else`, `for`, `while`, `do`, and `switch` at the end of the same line. Put the closing brace on a new line. If the same statement continues, write it right after the closing brace (`} else {`, `} while (...);`).
+Put the opening brace of `if`, `else`, `for`, `while`, `do`, and `switch` at the end of the same line. Put the closing brace on a new line. When the same statement continues, write the continuation right after the closing brace (`} else {`, `} while (...);`).
 
-In Windows-only projects, however, follow the Windows convention and use the Allman style, which puts the opening brace on a new line.
+However, Windows-only projects follow the Windows convention and use the Allman style, which puts the opening brace on a new line.
 
 Incorrect:
 
@@ -1796,9 +1796,9 @@ static int adjust_level(int level, const int *const history, size_t count)
 
 ### 5.8. Mandatory braces
 
-Always wrap the body of every control statement in braces. This applies to `if`, `else`, `for`, `while`, and `do`. It applies even when the body is a single statement.
+Always wrap the body of every control statement in braces. This covers `if`, `else`, `for`, `while`, and `do`. Wrap the body even when it is a single statement.
 
-Omitting braces makes it easy to introduce a bug when adding a statement to the body. For example, if `do_after();` is added to the body of `if (cond) do_something();` at the same indentation, both statements look as if they belong to the `if`. However, only `do_something();` belongs to the `if`, and `do_after();` always runs regardless of the condition. Braces are always used to prevent such bugs.
+Without braces, code easily goes wrong when a statement is added to the body. For example, if `do_after();` is added to the body of `if (cond) do_something();` at the same indentation, both statements look as if they belong to the `if`. However, only `do_something();` belongs to the `if`, and `do_after();` always runs regardless of the condition. Braces are always required to prevent such bugs.
 
 Incorrect:
 
@@ -1965,7 +1965,7 @@ union float_bits {
 
 ### 5.10. Scope-narrowing blocks
 
-For a block made to narrow a scope, put the opening and closing braces each on a new line.
+In a block made to narrow a scope, put the opening and closing braces each on a line of their own, with no other code.
 
 Incorrect:
 
@@ -1996,7 +1996,7 @@ static void print_totals(long online_sales, long store_sales, long returns)
 
 ### 5.11. Brace initialization
 
-Put spaces just inside the braces of an initializer list. Put a comma after the last element only in a list that may grow. In a list that will grow, such as an enum or a table, put each element on its own line and put a comma after the last element as well. Adding or removing an element then changes only one line in the diff.
+In a brace initializer list, put spaces just inside the braces. Put a comma after the last element only in a list that may gain more elements. In a list that will grow, such as an enum or a table, put each element on its own line and put a comma after the last element too. Adding or removing an element then changes only one line in the diff.
 
 When initializing a structure with a designated initializer, put each member on its own line by default.
 
@@ -2055,7 +2055,7 @@ static const struct window_size gs_default_size = {
 
 ### 5.12. switch and case
 
-Put `case` and `default` labels in the same column as `switch`. Do not squeeze a `case` body onto one line.
+Put the `case` and `default` labels in the same column as `switch`. Do not cram a `case` body onto one line.
 
 Incorrect:
 
@@ -2120,7 +2120,7 @@ static int convert_grade(char grade)
 
 ### 5.13. goto labels
 
-Put a goto label in the same column as the braces of the enclosing block. A label in a function body goes in column 0.
+Put a goto label in the same column as the braces of the enclosing block. A label directly inside a function body therefore goes at the start of the line.
 
 Incorrect:
 
@@ -2224,7 +2224,7 @@ static size_t count_rows_without_zero(const int *const cells, size_t row_count, 
 - Put a space after keywords such as `if`, `for`, `while`, `switch`, and `return`.
 - Do not put a space between a function name and `(`, or between `sizeof` and `(`.
 - Put spaces on both sides of binary operators and the conditional operator.
-- Do not put spaces between unary operators, `.`, `->`, or increment and decrement operators and their operands.
+- Attach unary operators and the increment and decrement operators directly to their operands. Do not put spaces on either side of `.` or `->` either.
 - Put a space after a comma, but not before it.
 - Do not put spaces just inside parentheses or after a cast.
 
@@ -2310,7 +2310,7 @@ static int sum_distances(const struct point *const points, size_t count, bool is
 
 ### 5.15. Pointer notation
 
-Attach `*` to the name. The same applies to functions that return pointers. In Windows-only projects, however, follow the Windows convention and attach `*` to the type.
+In a pointer declaration, attach `*` to the name. The same applies to functions that return pointers. However, Windows-only projects follow the Windows convention and attach `*` to the type.
 
 Incorrect:
 
@@ -2365,7 +2365,7 @@ static void reset_size(struct size *const mut_size)
 
 ### 5.17. Blank lines
 
-Insert blank lines as appropriate between chunks where the task or context changes.
+Put blank lines as appropriate between chunks where the task or context changes.
 
 Correct:
 
@@ -2400,9 +2400,9 @@ static long count_long_lines(const char *const path, size_t limit)
 
 ### 5.18. Alignment
 
-Do not align consecutive assignments, declarations, macros, or trailing comments in columns, because editing one line would then require realigning the neighboring lines.
+Do not align consecutive assignments, declarations, macros, or trailing comments in columns. Editing even one line would then require realigning the neighboring lines.
 
-However, align the line-ending `\` of a multi-line macro in one column. Write the `\` one space after the last character of the longest line, and put the `\` of every other line in that column. When each `\` sits right next to the code at a different position on every line, the code is hard to read, and it is hard to see at a glance that the block is a macro. When the `\` characters line up in one column, the extent of the macro is visible at once, and a missing `\` stands out immediately.
+However, align the line-ending `\` of a multi-line macro in one column. On the longest line, write the `\` one space after the last character. Put the `\` of every other line in that column. When each `\` sits right after the code at a different column on every line, the code is hard to read, and it is hard to tell at a glance that the block is a macro. In contrast, when the `\` characters line up in one column, the extent of the macro is visible at once, and a missing `\` is easy to spot.
 
 Incorrect:
 
@@ -2460,13 +2460,13 @@ static void open_account(struct account *const mut_account)
 
 ### 5.19. Preprocessing directives
 
-- Always put the `#` of a preprocessing directive at the very start of the line. The same applies to directives inside a function or another brace block.
-- For a directive inside a conditional compilation block, put one space between `#` and the directive name for each level of depth: one space at depth 1, two at depth 2, and three at depth 3.
+- Always put the `#` of a preprocessing directive at the very start of the line. This also applies to directives inside a function or another brace block.
+- For a directive inside a conditional compilation block, put as many spaces between `#` and the directive name as the nesting depth. Depth 1 takes one space, depth 2 two spaces, and depth 3 three spaces.
 - Put `#elif`, `#else`, and `#endif` at the same depth as the matching `#if`, `#ifdef`, or `#ifndef`.
-- The include guard does not count toward the depth.
-- C code inside a conditional compilation block keeps the indentation it would have without the directives, whatever the directive depth.
+- The include guard does not count toward the nesting depth.
+- C code inside a conditional compilation block keeps the indentation it would have without the directives, regardless of the directive depth.
 
-With `#` always at the start of the line, directives stand apart from code, and the spaces after `#` show the nesting depth.
+With `#` always at the start of the line, directives stand apart from code. In addition, the nesting depth can be read from the number of spaces after `#`.
 
 Incorrect:
 
@@ -2549,7 +2549,7 @@ Correct (`platform/paths.h`):
 
 In inline assembly, write one instruction per string. End every string except the last with `\n\t`.
 
-`\n\t` is the separator that the Extended Asm section of the GCC manual recommends. `\n` breaks the line between instructions, and `\t` indents each instruction to the instruction field in the assembly that the compiler emits. The compiler itself breaks the line after the last instruction of an asm statement. So appending `\n\t` to the last string adds an extra line that holds only a tab.
+`\n\t` is the separator recommended in the Extended Asm section of the GCC manual. `\n` is the line break between instructions. `\t` is the tab that indents each instruction to the instruction field in the assembly the compiler emits. The compiler itself breaks the line after the last instruction of an asm statement. Therefore, appending `\n\t` to the last string adds an extra line that holds only a tab.
 
 Incorrect:
 
@@ -2586,7 +2586,7 @@ static inline uint32_t read_max_cpuid_leaf(void)
 
 ### 6.1. Function and variable names
 
-Name functions, variables, parameters, struct/union/enum tags, and goto labels in lowercase snake_case. In cross-platform projects, Windows-specific code follows this rule too.
+Name functions, variables, parameters, struct/union/enum tags, and goto labels in lowercase snake_case. In a cross-platform project, Windows-specific code also follows this rule.
 
 Incorrect:
 
@@ -2666,7 +2666,7 @@ out_unlock:
 
 ### 6.2. Macro and enumeration constant names
 
-Name macros and enumeration constants in uppercase snake_case. Prefixing enumeration constants with the enumeration name is not mandatory.
+Name macros and enumeration constants in uppercase snake_case. Enumeration constants are not required to carry the enumeration name as a prefix.
 
 Incorrect:
 
@@ -2703,7 +2703,7 @@ enum direction {
 
 ### 6.3. Function-like macros
 
-Name function-like macros in uppercase too. As an exception, lowercase is allowed for conventional names that wrap compiler builtins, such as `likely` and `unlikely`.
+Name function-like macros in uppercase too. However, conventional names that wrap compiler builtins, such as `likely` and `unlikely`, may be lowercase as an exception.
 
 Incorrect:
 
@@ -2726,7 +2726,7 @@ Correct (conventional names that wrap compiler builtins):
 
 ### 6.4. Names of const objects
 
-The variable rules apply to const objects too. Use uppercase names only for macros and enumeration constants.
+Names of const objects follow the variable naming rules as well. Use uppercase names only for macros and enumeration constants.
 
 Incorrect:
 
@@ -2743,10 +2743,10 @@ static const int gs_days_in_month[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 
 ### 6.5. Name length and content
 
 - Make names with external linkage and names at file scope descriptive.
-- A local variable with a narrow scope may take a short name whose conventional use is well established (`i`, `n`, `tmp`, `iter`, and so on).
-- Do not attach type-indicating prefixes or suffixes to names (Hungarian notation). A name expresses the meaning of the value.
+- A local variable with a narrow scope may take a short name whose use is settled by convention (`i`, `n`, `tmp`, `iter`, and so on).
+- Do not add type-indicating prefixes or suffixes to names, as Hungarian notation does. A name expresses the meaning of the value.
 - Use only widely used abbreviations.
-- Do not use single-letter names that are easily confused with digits, such as `l` and `O`, or names that differ only in case.
+- Do not use single-letter names that are easily confused with digits, such as `l` and `O`. Do not use names that differ only in case either.
 
 Incorrect:
 
@@ -2799,7 +2799,7 @@ static void fill_bytes(unsigned char *const mut_buffer, size_t size, unsigned ch
 
 ### 6.6. First word of function names
 
-Start function names with a verb. This applies to functions that return a value too. If there is a module prefix, the word after the prefix is the verb.
+Start function names with a verb. The same applies to functions that return a value. If there is a module prefix, the word after the prefix is the verb.
 
 Incorrect:
 
@@ -2832,7 +2832,7 @@ int cart_add_item(const char *const name);
 Name functions and function-like macros that return a truth value, and variables, parameters, and struct members that hold one, in one of the following two forms.
 
 - Start with the verb be or a verb that forms questions. After `is_`, put a noun or adjective as the complement; after `has_`, a noun or past participle; after `can_` and `should_`, a verb in its base form (`is_empty`, `is_directory`, `has_children`, `has_found`, `can_retry`, `should_flush`).
-- Start with a third-person verb that describes a state (`exists`, `contains_key`, `matches_pattern`).
+- Start with a third-person singular verb that describes a state (`exists`, `contains_key`, `matches_pattern`).
 
 Incorrect:
 
@@ -2953,7 +2953,7 @@ The prefix of a variable name depends on whether the variable has file scope and
 - A `static` variable inside a function starts with `s_`.
 - A local variable without `static` takes no prefix.
 
-Variables with `g_`, `gs_`, or `s_` all have static storage duration, so they live until the program ends and are initialized only once, before program startup. They differ in scope and linkage. A `g_` variable is visible from other files too, while a `gs_` variable is visible only within its file. An `s_` variable is visible only within its function, but its value persists between calls. The prefix reveals this lifetime and scope wherever the variable is used.
+Variables with `g_`, `gs_`, or `s_` are all objects with static storage duration. Therefore, they live until the program ends and are initialized only once, before program startup. They differ in scope and linkage. A `g_` variable is visible from other files too, while a `gs_` variable is visible only within the file that defines it. An `s_` variable is visible only within the function that defines it, but its value persists between calls. The prefix makes this lifetime and scope visible wherever the variable is used.
 
 Incorrect:
 
@@ -3034,13 +3034,13 @@ audio_device *open_audio_device(const char *const name, sample_callback on_sampl
 
 ### 6.10. Reserved identifiers
 
-The C standard reserves some names for the implementation. The implementation is the C standard's term for the compiler and the standard library together. Standard headers and compilers use such names for internal macros and functions. Declaring or defining a reserved identifier in a program is undefined behavior (C99 §7.1.3 ¶2).
+The C standard reserves some names for use by the implementation. The implementation is the C standard's term for the compiler and the standard library together. Standard headers and compilers use such names for internal macros and functions. Declaring or defining a reserved identifier in a program is undefined behavior (C99 §7.1.3 ¶2).
 
 Do not use the following names.
 
 - Names that start with `_` and an uppercase letter (`_STORE_CART_H`) and names that start with `__` (`__retry_count`): They are reserved for any use (C99 §7.1.3 ¶1).
 - Names that start with `_` at file scope (`_buffer_size`): They are reserved for use as identifiers with file scope (C99 §7.1.3 ¶1).
-- Names that end in `_t` (`item_id_t`): POSIX allows the implementation to add such names to any header (POSIX.1-2024 XSH 2.2.2). glibc also reserves such names for type names (glibc manual: Reserved Names).
+- Names that end in `_t` (`item_id_t`): Under POSIX, the implementation may add such names to any header (POSIX.1-2024 XSH 2.2.2). glibc also reserves such names for type names (glibc manual: Reserved Names).
 
 Feature test macros that a standard tells the user to define, such as `_POSIX_C_SOURCE`, are an exception.
 
@@ -3092,7 +3092,7 @@ static size_t gs_buffer_size;
 
 ### 6.11. Win32 API symbols and types
 
-When developing cross-platform code, write the names of the Win32 API and its symbols (`CreateFileW`, `HANDLE`, `SOCKET`) in their original spelling. Do not wrap Win32 API names in other names, and do not imitate the Win32 API notation in names of your own.
+When developing cross-platform code, write the names of Win32 API symbols and types (`CreateFileW`, `HANDLE`, `SOCKET`) in their original spelling. Do not wrap Win32 API names in other names. Do not imitate the Win32 API notation in names of your own.
 
 Incorrect:
 
@@ -3136,7 +3136,7 @@ static void close_log_file(HANDLE file)
 
 ### 7.1. One declaration per line
 
-Declare only one variable per line. However, in the init clause of a `for` statement, one declaration may hold several loop variables that are handled together.
+Put only one variable on each declaration line. However, in the init clause of a `for` statement, one declaration may hold several loop variables that are handled together.
 
 Incorrect:
 
@@ -3228,7 +3228,7 @@ static long sum_unpaid(const struct order *const orders, size_t count)
 }
 ```
 
-However, projects that choose C89 are an exception. C89 does not allow declarations after statements or inside a `for` init clause. So declare a variable at the start of the narrowest block that uses it, and declare a loop variable at the start of the block that encloses the loop.
+However, projects that choose C89 are an exception. C89 does not allow declarations after statements or inside a `for` init clause. Therefore, declare a variable at the start of the narrowest block that uses it, and declare a loop variable at the start of the block that encloses the loop.
 
 Correct in a C89 project:
 
@@ -3257,9 +3257,9 @@ static long sum_unpaid(const struct order *const orders, size_t count)
 
 ### 7.3. Scope and shadowing
 
-Keep a variable used by only one function inside that function.
+Keep a variable that only one function uses inside that function.
 
-Declare functions and file scope variables `static` by default. Leave out `static` only when there is a specific reason, such as use from another file. A name declared `static` is not visible to other files. Therefore, linking does not break even if another file has the same name, and the compiler warns about unused functions.
+Declare functions and file scope variables `static` by default. Omit `static` only when there is a specific reason, such as use from another file. A name declared `static` is not visible to other files. Therefore, linking does not break even if another file has the same name, and the compiler warns about unused functions.
 
 Do not declare a name in an inner scope that is already declared in an outer scope. `-Wshadow` warns about such shadowing.
 
@@ -3312,7 +3312,7 @@ static size_t count_errors(const int *const codes, size_t count)
 
 ### 7.4. Pointers to objects whose lifetime has ended
 
-If the object a pointer points to goes out of scope and its lifetime ends while the pointer variable remains, assign `NULL` to the pointer variable. Assign it even if the pointer will not be used for access again. Then, if the pointer is reused by mistake, the code handles `NULL` instead of the vanished object, so a `NULL` check catches it or, in most cases, it fails on the spot.
+If the object a pointer points to goes out of scope and its lifetime ends while the pointer variable remains, assign `NULL` to the pointer variable. Assign it even if the pointer will no longer be used for access. Then, even if the pointer is reused by mistake, the code handles `NULL` instead of the vanished object. Therefore, a `NULL` check catches the mistake or, in most cases, the code fails on the spot.
 
 Incorrect:
 
@@ -3401,7 +3401,7 @@ static void print_greeting(const char *const name, bool is_formal)
 ### 7.5. Integer types
 
 - Use `size_t` for sizes, counts, and indices.
-- When the size of a type must be exact, use the exact-width integer types from `<stdint.h>`. However, code where return types and parameters are mostly basic types, as with the POSIX APIs on Linux, may follow the API's types instead of using `<stdint.h>`.
+- When the size of a type must match exactly, use the exact-width integer types from `<stdint.h>`. However, code that uses APIs whose return types and parameters are mostly basic types, such as the POSIX APIs on Linux, may follow the API's types instead of `<stdint.h>`.
 - Handle byte data as `unsigned char` or `uint8_t`.
 - Cast explicitly when an operation mixes signed and unsigned values.
 
@@ -3468,7 +3468,7 @@ static int read_exactly(int fd, unsigned char *const mut_buffer, size_t size)
 
 ### 7.6. Truth values
 
-Truth values may be handled with `bool`, `true`, and `false` from `<stdbool.h>`, or with an integer type such as `int` and the values `1` and `0`. However, prefer `int` in code where return types and parameters are mostly basic types, as with the POSIX APIs on Linux. Other code may use `bool`.
+Truth values may be handled with `bool`, `true`, and `false` from `<stdbool.h>`, or with an integer type such as `int` and the values `1` and `0`. However, prefer `int` in code that uses APIs whose return types and parameters are mostly basic types, such as the POSIX APIs on Linux. Other code may use `bool`.
 
 When truth values are handled as integers, true is `1` and false is `0`. Every value other than `0` is interpreted as true, but prefer `1` in code that sets a true state directly.
 
@@ -3518,7 +3518,7 @@ static int is_dirty(unsigned int flags)
 }
 ```
 
-Projects that choose C89 have no `<stdbool.h>`, so they use an integer type. Do not define `bool`, `true`, and `false` yourself in that case, because these names became keywords in C23 and would collide.
+C89 has no `<stdbool.h>`. Therefore, projects that choose C89 handle truth values with an integer type. Do not define `bool`, `true`, and `false` yourself in that case, because all three names became keywords in the C23 standard and would collide.
 
 Incorrect in a C89 project:
 
@@ -3543,7 +3543,7 @@ static int gs_is_running = 1;
 - Define a standalone constant with `#define`.
 - Define a constant whose type matters as a `static const` object.
 
-Always give the first enumeration constant of an enum an explicit value. The first value is 0 even when omitted (C99 §6.7.2.2 ¶3), but the explicit value shows in the declaration that starting at 0 is intended.
+Always give the first enumeration constant of an enum an explicit value. The first value is 0 even when omitted (C99 §6.7.2.2 ¶3), but an explicit value shows in the declaration that starting at 0 is intended.
 
 Incorrect:
 
@@ -3560,9 +3560,9 @@ static long long convert_days_to_ms(int days)
 }
 ```
 
-`MILLISECONDS_PER_DAY` is an `int`, so `days * MILLISECONDS_PER_DAY` is also computed as `int`. Therefore, when `days` is 25 or more, the result exceeds the range of `int` before it is converted to `long long`.
+`MILLISECONDS_PER_DAY` is an `int` constant, so `days * MILLISECONDS_PER_DAY` is also computed as `int`. Therefore, when `days` is 25 or more, the product exceeds the range of `int` before it is converted to `long long`.
 
-Incorrect (without an explicit first value):
+Incorrect (omitting the first value of an enum):
 
 ```c
 enum color {
@@ -3594,7 +3594,7 @@ static long long convert_days_to_ms(int days)
 ### 7.8. const
 
 - `const` is not required on ordinary variables, including variables of basic types, or on value parameters.
-- A pointer to a string literal is a `const char *`.
+- Declare a pointer to a string literal as `const char *`.
 - Do not add `const` to a return type returned by value.
 
 Incorrect:
@@ -3632,7 +3632,7 @@ static double convert_to_inches(double centimeters)
 - Benchmark sinks that must not be optimized away
 - Inline assembly that must execute even if its result is unused, or must execute again on every call (`__asm__ volatile`)
 
-For synchronization between threads, use a mutex or atomic operations, not `volatile`.
+For synchronization between threads, use a mutex or atomic operations instead of `volatile`.
 
 Incorrect:
 
@@ -3777,7 +3777,7 @@ static inline int read_hardware_random(uint64_t *const mut_value)
 
 ### 7.10. VLA
 
-Do not use VLAs (variable length arrays). When a size is determined at run time, use dynamic allocation, or have the caller pass in an array prepared in advance.
+Do not use VLAs (variable length arrays). When a size is determined at run time, use dynamic allocation, or take an array that the caller prepared in advance as a parameter.
 
 Incorrect:
 
@@ -3843,7 +3843,7 @@ static void print_histogram(size_t *const mut_buckets, size_t bucket_count,
 ### 7.11. Initialization
 
 - Initialize a variable in its declaration when its initial value is meaningful.
-- To zero-fill an array in its declaration, initialize it with `{ 0 }`. The omitted remaining elements are initialized to zero, like objects with static storage duration (C99 §6.7.8 ¶21).
+- To fill an array with zeros in its declaration, initialize it with `{ 0 }`. The omitted remaining elements are initialized to zero, as for objects with static storage duration (C99 §6.7.8 ¶21).
 - Prefer designated initializers for structures.
 
 Incorrect:
@@ -3935,7 +3935,7 @@ static void print_default_window(void)
 }
 ```
 
-Initialize file scope variables whose values are determined at run time early in the program where possible, that is, at the beginning of `main` or in an initialization function. This covers structures filled at run time, dynamically allocated memory, and values obtained from a library or the OS. The initializer of an object with static storage duration must be a constant expression (C99 §6.7.8 ¶4), so such values cannot be initialized at definition. Initialize constants and const tables whose values are fixed at compile time in their definitions.
+Initialize file scope variables whose values are determined at run time early in the program where possible. That is, initialize them at the beginning of `main` or in an initialization function. This covers structures filled at run time, dynamically allocated memory, and values obtained from a library or the OS. The initializer of an object with static storage duration must be a constant expression (C99 §6.7.8 ¶4), so such values cannot serve as initializers at definition. In contrast, initialize a constant or const table whose value is fixed at compile time where it is defined.
 
 Correct:
 
@@ -3967,10 +3967,10 @@ int main(void)
 
 ### 8.1. Literal notation
 
-- In hexadecimal literals, write the `0x` prefix in lowercase and the hexadecimal digits in uppercase.
-- In binary literals, write the `0b` prefix in lowercase. Binary literals became standard in C23. In projects that choose C17 or earlier, they are a GNU extension, so add `__extension__`.
-- Write all suffixes in uppercase (`U`, `L`, `UL`, `ULL`, `F`). A lowercase `l` is easily confused with the digit `1`, so write the other suffixes in uppercase too, for consistency.
-- Write a decimal point in floating-point literals.
+- Write hexadecimal literals with a lowercase `0x` prefix and uppercase hexadecimal digits.
+- Write binary literals with a lowercase `0b` prefix. The C23 standard adopted binary literals into the language. In projects that choose C17 or earlier, they are a GNU extension, so add `__extension__`.
+- Write all suffixes in uppercase (`U`, `L`, `UL`, `ULL`, `F`). A lowercase `l` is easily mistaken for the digit `1`, so write the other suffixes in uppercase too, to match.
+- Write floating-point literals with a decimal point.
 
 Incorrect:
 
@@ -3998,7 +3998,7 @@ static const double gs_timeout_s = 2.0;
 
 ### 8.2. Increment and decrement operators
 
-Use the prefix form (`++i`) of increment and decrement operators by default. Use the postfix form only when the previous value is required. Unless there is a specific reason, do not use increment or decrement operators inside array indices, function arguments, or operands of other operators. Move them into separate statements. Do not modify the same object more than once in one expression. To increase or decrease a dereferenced target by one, write `*p += 1` or `*p -= 1` instead of an increment or decrement operator. This keeps the target and the operation apart and leaves no room to confuse it with `*p++`.
+Use the prefix form (`++i`) of the increment and decrement operators by default. Use the postfix form only when the previous value is required. Unless there is a specific reason, do not use increment or decrement operators inside array subscripts, function arguments, or operands of other operators; move them into separate statements. Do not modify the same object more than once in one expression. To increase or decrease a dereferenced target by one, write `*p += 1` or `*p -= 1` instead of an increment or decrement operator. This keeps the target and the operation clearly apart and leaves no room for confusion with `*p++`.
 
 Incorrect:
 
@@ -4092,8 +4092,8 @@ static void skip_spaces(const char **const mut_cursor)
 
 ### 8.3. sizeof
 
-- Derive the size passed to functions such as allocators, `memset`, and `memcpy` from the target variable (`sizeof(*p)`, `sizeof(var)`).
-- Get the number of elements of an array with the `ARRAY_SIZE()` macro. Use this macro only on objects of array type. Dynamically allocated memory and array parameters are pointers, so pass their element counts separately.
+- Derive the size passed to allocation functions or to functions such as `memset` and `memcpy` from the target variable (`sizeof(*p)`, `sizeof(var)`).
+- Get the number of elements of an array with the `ARRAY_SIZE()` macro. Use this macro only on objects of array type. Dynamically allocated memory and array parameters are handled through pointers, so pass their element counts separately.
 
 Incorrect:
 
@@ -4184,8 +4184,8 @@ static void print_names(const char *const *const names, size_t count)
 ### 8.4. Casts
 
 - Do not cast when converting `void *` to another object pointer type. The same applies to the return value of `malloc`.
-- Use an explicit cast for conversions that may truncate a value and for operations that mix signedness.
-- When a cast converts the result of another cast, wrap the inner cast expression in parentheses even though the grammar does not require them. This makes each conversion read as a separate step, applied from the inside out.
+- Use an explicit cast for conversions that may truncate a value and for operations that mix signed and unsigned operands.
+- When casting the result of a cast, wrap the inner cast expression in parentheses even though the grammar does not require them. Each conversion then reads as a separate step, applied from the inside out.
 
 Incorrect:
 
@@ -4245,15 +4245,15 @@ static uint64_t convert_buffer_address(const unsigned char *const buffer, size_t
 
 ### 8.5. Parentheses for precedence
 
-- Parenthesize bitwise operators and shifts when they are mixed with other operators.
+- Parenthesize bitwise and shift operators when they are mixed with other operators.
 - Parenthesize when `&&` and `||` are mixed.
-- Parentheses that the grammar does not require may be used for intuitive understanding, grouping, and readability. Avoid aggressively dropping parentheses just because the grammar does not require them.
+- Parentheses that the grammar does not require may be used for intuitive understanding, grouping, and readability. Avoid stripping parentheses merely because the grammar does not require them.
 
-The position of parentheses changes the meaning of an expression. A cast applies after postfix operators such as `[]`, `->`, and function calls, but before binary operators such as shifts. In the example below, `pixels` is a `const uint8_t *` that holds the red, green, blue, and alpha values of each pixel in sequence, one byte each. The following expressions all differ.
+When the parentheses move, the meaning of the expression changes. A cast applies after postfix operators such as `[]`, `->`, and function calls, but before binary operators such as the shift operators. In the examples below, `pixels` is a `const uint8_t *` that points to a buffer holding the red, green, blue, and alpha values of each pixel in order, one byte each. The following expressions all differ in meaning.
 
-- `(uint32_t)pixels[2]` reads `pixels[2]` first. The subscript `2` means two bytes, so it converts only the blue value of the first pixel to `uint32_t`.
-- `((const uint32_t *)pixels)[2]` converts the pointer first. The subscript `2` means two `uint32_t` values, that is, 8 bytes, so it reads all 4 bytes of the third pixel at once. Reading a byte buffer this way violates the strict aliasing rule. If the address is not suitably aligned for `uint32_t`, it also violates the alignment requirement.
-- `(uint32_t)pixels[3] << 24` converts the alpha value to `uint32_t` and then shifts it. In contrast, `(uint32_t)(pixels[3] << 24)` first shifts the value promoted to `int`. Therefore, if the alpha value is `0x80` or more, the result exceeds the range of `int`, which is undefined behavior.
+- `(uint32_t)pixels[2]` reads `pixels[2]` first. The subscript `2` is an offset of 2 bytes, so it converts the single blue value of the first pixel to `uint32_t`.
+- `((const uint32_t *)pixels)[2]` converts the pointer first. The subscript `2` is an offset of two `uint32_t` values, that is, 8 bytes, so it reads all 4 bytes of the third pixel at once. Reading a byte buffer this way violates the strict aliasing rule. If the address is not aligned for `uint32_t`, it also violates the alignment requirement.
+- `(uint32_t)pixels[3] << 24` converts the alpha value to `uint32_t` and then shifts it. In contrast, `(uint32_t)(pixels[3] << 24)` first shifts the value promoted to `int`. Therefore, if the alpha value is `0x80` or greater, the shift result exceeds the range of `int`. Such a shift is undefined behavior.
 
 Incorrect:
 
@@ -4331,7 +4331,7 @@ static size_t compute_offset(size_t header_size, size_t row, size_t row_stride, 
 
 ### 8.6. Comparisons
 
-- Do not write comparisons with the constant on the left (`NULL == p`). Compiler warnings catch accidental assignments.
+- Do not write comparisons with the constant on the left (`NULL == p`). If `==` is mistyped as `=`, the compiler warns.
 - Do not compare floating-point values with `==`, and do not use them as loop variables.
 
 Incorrect:
@@ -4362,7 +4362,7 @@ static void plot_unit_range(void)
 }
 ```
 
-`0.1` cannot be represented exactly in binary, so adding it ten times does not give exactly `1.0`. Therefore, the loop in `plot_unit_range()` never ends.
+`0.1` has no exact binary representation, so adding it ten times does not give exactly `1.0`. Therefore, the loop in `plot_unit_range()` never ends.
 
 Correct:
 
@@ -4394,7 +4394,7 @@ static void plot_unit_range(void)
 
 ### 8.7. Null pointers and truth tests
 
-- Write a null pointer as `NULL`, not `0`. Only `NULL` shows that the value is a pointer.
+- Write a null pointer as `NULL`, not `0`. Writing `NULL` shows that the value is a pointer.
 - Compare pointers explicitly with `NULL`, and integers with `0`.
 - Use only `bool` values directly as conditions.
 
@@ -4444,9 +4444,9 @@ static int print_title(const char *const title_nullable, size_t line_count, bool
 
 ### 8.8. Conditional operator
 
-Use the conditional operator only to select one value. Wrap the condition in parentheses even though the grammar does not require them. Wrap even a condition that is a single comparison. This makes the condition read as one unit.
+Use the conditional operator only to select one value. Wrap the condition in parentheses even though the grammar does not require them. Wrap a condition that is a single comparison as well. This makes the condition read as one unit.
 
-Avoid nesting conditional operators. If they are nested anyway, wrap the entire inner conditional expression in parentheses. If the nested expression does not fit on one line, pull the inner conditional operator out into an extra variable that holds its result.
+Avoid nesting conditional operators. If they are nested anyway, wrap the entire inner conditional expression in parentheses. If the nested expression does not fit on one line, store the result of the inner conditional operator in a separate variable.
 
 Discouraged:
 
@@ -4542,7 +4542,7 @@ static const char *describe_copy(size_t file_count)
 
 ### 8.9. Assignment
 
-- Do not assign inside a condition. Write a loop that reads and compares a value on every iteration as a `for` statement, and put the read in the init clause and the increment expression. Use assignment inside a condition only when this rewrite is impossible.
+- Do not assign inside a condition. Write a loop that reads and compares a value on every iteration as a `for` statement, and put the expression that reads the value in the init clause and the increment expression. Use assignment inside a condition only when this rewrite is impossible.
 - Do not chain assignments.
 
 Incorrect:
@@ -4618,7 +4618,7 @@ static void clear_range(struct range *const mut_range)
 
 ### 8.10. Comma operator
 
-Do not use the comma operator. However, in a `for` statement that handles two or more variables together, it may be used in the init clause and the increment expression. If such a `for` statement does not fit on one line, break it after a `;`, and start the next line in the column right after the opening parenthesis.
+Do not use the comma operator. However, in a `for` statement that handles two or more variables together, it may be used in the init clause and the increment expression. If such a `for` statement does not fit on one line, break it after a `;` and start the next line in the column right after the opening parenthesis of the `for`.
 
 Incorrect:
 
@@ -4695,7 +4695,7 @@ static void copy_to_free_slots(int *const mut_slots, size_t capacity, const int 
 
 ### 9.1. switch
 
-- Do not put `default` in a `switch` that handles every value of an enumeration. If a new enumeration constant is left out, `-Wswitch` reports it. With a `default`, this warning is turned off.
+- Do not put `default` in a `switch` that handles every value of an enumeration. If the `case` for a newly added enumeration constant is missing, `-Wswitch` warns. With a `default`, this warning does not appear.
 - Put `default` in every other `switch`.
 - End every `case` with one of `break`, `return`, `goto`, or `continue`.
 - Mark an intended fallthrough with a `/* fallthrough */` comment. GCC's `-Wimplicit-fallthrough` recognizes this comment.
@@ -4800,7 +4800,7 @@ static unsigned int grant_rights(char role)
 
 ### 9.2. Empty loop bodies
 
-Avoid loops with empty bodies where possible. Move assignments, increments, and similar operations, as well as function calls, out of the condition and into the body or into the init clause and increment expression of a `for` statement. However, if the work must be in the condition, leave it there.
+Avoid loops with empty bodies where possible. Move operations such as assignments and increments, as well as function calls, out of the condition into the body or into the init clause and increment expression of a `for` statement. However, if that work must stay in the condition, leave it there.
 
 When a loop body is left empty, put one line holding only `;` inside the braces. This shows that the body is empty on purpose.
 
@@ -4889,9 +4889,9 @@ static void wait_for_conversion(void)
 Use goto in the following cases.
 
 - When leaving control statements or loops nested two or more levels deep in one step
-- When a staged initialization stops partway. If initialization runs from stage 1 to stage N in order and stops at some stage, undo the initializations already done, from that stage back to stage 1. If there are resources to clean up, put labels for the cleanup code at the end of the function and jump to them with `goto`. Place the labels in the reverse order of resource acquisition.
+- When a staged initialization fails partway. If initialization runs from stage 1 to stage N in order and fails at some stage, undo the initializations already completed, from the preceding stage back to stage 1. If there are resources to clean up, put cleanup labels at the end of the function and jump to them with `goto`. Place the labels in the reverse order of resource acquisition.
 
-A goto that jumps backward may also be used. However, prefer to write the logic so that such a structure does not arise in the first place.
+A goto that jumps backward may also be used. However, prefer logic that avoids such a structure in the first place.
 
 Discouraged:
 
@@ -5009,9 +5009,9 @@ static int read_sensor_with_retry(int *const mut_value)
 
 ### 10.1. Parameter lists
 
-Declare a function without parameters with `(void)`, not with empty parentheses.
+Declare a function that takes no parameters with `(void)`, not with empty parentheses.
 
-Name every parameter in function declarations. Parameter names in the declaration and the definition must match.
+Name every parameter in a function declaration. The parameter names in the declaration and in the definition must be the same.
 
 Incorrect:
 
@@ -5063,7 +5063,7 @@ int set_volume(int volume)
 
 ### 10.2. Parameter order
 
-Where possible, prefer to put output parameters that receive results first. This is the same order as in `memcpy`.
+Where possible, prefer to put output parameters that receive results at the front of the parameter list. This is the order that `memcpy` uses.
 
 Discouraged:
 
@@ -5099,14 +5099,14 @@ static int format_date(char *const mut_buffer, size_t buffer_size, const struct 
 
 Pointer parameters follow these rules.
 
-- Do not modify a pointer parameter itself inside the function. Therefore, declare every pointer parameter `*const`. If an address other than the one passed in is needed, obtain it by means other than the parameter, such as subscripting or a local pointer variable.
+- Do not modify a pointer parameter itself inside the function. Therefore, declare every pointer parameter `*const`. When an address other than the one passed in is needed, obtain it by means that leave the parameter unchanged, such as subscripting or a local pointer variable.
 - If the function does not modify the target, declare the parameter as `const T *const name`.
 - If the function modifies the target, declare the parameter as `T *const mut_name`. The name starts with `mut_`.
-- End the name of a parameter that may receive `NULL` as an argument with `_nullable` (`const T *const name_nullable`, `T *const mut_name_nullable`). Do not add it to parameters that must not receive `NULL`.
-- When the target is promised not to overlap the target of any other pointer parameter, `restrict` may be added (`const T *const restrict name`). Projects that choose C89 have no `restrict`.
-- Write the parameters of `main` exactly in the form the standard specifies.
+- End the name of a parameter that may receive `NULL` as an argument with `_nullable` (`const T *const name_nullable`, `T *const mut_name_nullable`). Do not add this suffix to a parameter that must not receive `NULL`.
+- When the target is promised not to overlap the target of any other pointer parameter, `restrict` may be added (`const T *const restrict name`). Projects that choose C89 cannot use `restrict`.
+- Write the parameters of `main` exactly in the form that the standard specifies.
 
-Use the same form in the declaration and the definition of a function. Then the declaration alone shows whether the function modifies the targets passed as arguments and whether it accepts `NULL`.
+Use the same form in the declaration and in the definition of a function. Then the declaration alone shows whether the function modifies the targets of its pointer arguments and whether it accepts `NULL` as an argument.
 
 Incorrect:
 
@@ -5216,12 +5216,12 @@ static void print_label(const char *const label_nullable)
 
 ### 10.4. Return value conventions
 
-- For a function that does a task and reports only whether it succeeded, prefer returning `0` on success and a negative value on failure. However, this convention may vary with the design of the higher-level API that calls the function, so if the higher-level API defines a convention, conform to it.
+- For a function that does a task and reports only whether it succeeded, prefer returning `0` on success and a negative value on failure. However, this convention may vary with the design of the higher-level API that calls the function. If the higher-level API defines a convention, conform to that convention.
 - A function that cannot fail returns `void`.
 - A function that returns a truth value returns `int` or `bool`.
-- A function that computes and returns a value signals failure with an out-of-range value (`NULL`, `-1`).
+- A function that computes and returns a value reports failure with an out-of-range value (`NULL`, `-1`).
 
-Returning `int` lets the value distinguish the reasons for false. For example, if all negative values map to false, each negative value can represent a different reason for false. Also, many values in Linux APIs are passed as `int`. When following that convention, `int` is often the natural choice.
+Returning `int` lets the value distinguish the reasons for false. For example, if every negative value means false, each negative value can represent a different reason for false. In addition, many values in Linux APIs are passed as `int`. In code that follows the Linux API conventions, `int` is often the natural choice.
 
 Incorrect:
 
@@ -5281,13 +5281,13 @@ static void sort_tasks(struct task *const mut_tasks, size_t count)
 
 ### 10.5. Function size
 
-There is no upper limit on function length or on the number of local variables. One function may take on several tasks.
+There is no upper limit on the length of a function or on the number of its local variables. One function may take on several tasks.
 
 ### 10.6. inline
 
-Consider `inline` for code fragments with a short execution time. The candidates are fragments that are used repeatedly in several places but are awkward to name as standalone functions, and that fall short as macros in syntax, code navigation and reading, and IDE code analysis. Do not apply it to a function with a long execution time, even if it has few lines. The compiler makes the final decision on inlining.
+Consider adding `inline` to code fragments with a short execution time. The candidates are fragments that are used repeatedly in several places but are awkward to name as standalone functions, and that would fall short as macros in syntax, code navigation and reading, and IDE code analysis. Do not add `inline` to a function with a long execution time, even if it has few lines. The compiler decides whether a call is actually inlined.
 
-Use `static inline` as the default form, but `static` is not mandatory. Under C99 §6.7.4 ¶6, the definition of a function with `inline` but without `static` is an inline definition and does not provide an external definition. Therefore, for such a function, put an `extern inline` declaration in one `.c` file to create the external definition. Otherwise, linking fails for calls that the compiler did not inline. GCC and Clang report an `undefined reference` error with `-std=c99 -O0`. Conversely, in GNU89 mode every file gets an external definition, which causes a `multiple definition` error.
+Use `static inline` as the default form, but `static` is not mandatory. Under C99 §6.7.4 ¶6, the definition of a function with `inline` but without `static` is an inline definition. That definition alone creates no external definition. Therefore, for such a function, put an `extern inline` declaration in one `.c` file to create the external definition. Otherwise, linking fails for calls that the compiler did not inline. For example, building with `-std=c99 -O0` in GCC or Clang produces an `undefined reference` error at link time. Conversely, in GNU89 mode, every file that includes the header gets an external definition, which causes a `multiple definition` error.
 
 Discouraged (`util/listing.h`):
 
@@ -5365,7 +5365,7 @@ Correct (`util/clamp.c`):
 extern inline int clamp_percent(int value);
 ```
 
-However, projects that choose C89 are an exception. C89 has no `inline`, so do not define functions in headers. Define functions in `.c` files, and put only declarations in headers.
+However, projects that choose C89 are an exception. C89 has no `inline`, so do not define functions in headers. Define functions in `.c` files, and put only their declarations in headers.
 
 Correct in a C89 project (`util/color.h`):
 
@@ -5380,9 +5380,9 @@ unsigned char blend_channel(unsigned char back, unsigned char front, unsigned ch
 
 ### 10.7. Function placement
 
-- Place a static function called within the file above the functions that call it. Use forward declarations only in special cases such as mutual recursion.
+- Place a static function above the functions in the same file that call it. Use forward declarations only in special cases such as mutual recursion.
 - `main` is the last function in the file.
-- Write a declaration in the order: storage-class specifier, `inline`, return type, name.
+- Write a declaration in the order storage-class specifier, `inline`, return type, name.
 
 Incorrect:
 
@@ -5456,8 +5456,8 @@ static double parse_sum(const char **const mut_cursor)
 
 ### 10.8. main
 
-- Write `main` as `int main(void)` or `int main(int argc, char *argv[])`.
-- End with `return 0;` on success and `return EXIT_FAILURE;` on failure.
+- Write `main` in the form `int main(void)` or `int main(int argc, char *argv[])`.
+- End with `return 0;` on success and with `return EXIT_FAILURE;` on failure.
 
 Incorrect:
 
@@ -5502,7 +5502,7 @@ int main(int argc, char *argv[])
 - The build system decides which files to compile. Put `#if` in source code only where the implementation actually differs.
 - Branch on features rather than on operating system names. Identify the architecture with macros that the compiler defines.
 - Use `#error` only to mean "this cannot be correct in this environment". Handle an unknown platform with a default value such as `unknown`.
-- After the `#endif` of a conditional block longer than 20 lines, write the condition in a comment.
+- For a conditional compilation block longer than 20 lines, write the condition in a comment after `#endif`.
 
 Incorrect (`src/sleep_win32.c`):
 
@@ -5651,7 +5651,7 @@ static int run_self_test(void)
 
 ### 11.2. Alternatives to macros
 
-For code that behaves like a function, consider a `static inline` function rather than a macro. Use a macro when the code must be type-independent or needs the preprocessor, as with `#`, `##`, and `__FILE__`.
+For code that behaves like a function, consider a `static inline` function rather than a macro. Use a macro when the code must work regardless of type or needs the preprocessor, as with `#`, `##`, and `__FILE__`.
 
 Incorrect:
 
@@ -5677,7 +5677,7 @@ static inline int compute_percent_of(int part, int whole)
 
 ### 11.3. Parentheses
 
-If a macro body is an expression, wrap the entire body in parentheses. Wrap every use of an argument in parentheses. Do not use parentheses for a body that is a single literal.
+If the body of a macro is an expression, wrap the entire body in parentheses. Wrap every use of an argument in parentheses. Do not wrap a body that is a single literal in parentheses.
 
 Incorrect:
 
@@ -5697,7 +5697,7 @@ Correct:
 
 ### 11.4. Multi-statement macros
 
-Wrap a macro that expands to several statements in `do { ... } while (0)`. Only then does it behave as a single statement in an `if` body too.
+Wrap a macro that expands to several statements in `do { ... } while (0)`. Only then does it behave as a single statement in the body of an `if` as well.
 
 Incorrect:
 
@@ -5725,7 +5725,7 @@ static size_t gs_failure_count;
 
 Do not write the following macros.
 
-- Macros that change control flow, for example by returning from the calling function
+- Macros that change control flow, for example by returning from the function that uses them
 - Macros that assume a local variable with a specific name exists
 - Macros used on the left-hand side of an assignment
 - Macros that change the syntax
@@ -5857,7 +5857,7 @@ static size_t count_negatives(const int *const values, size_t count)
 
 ### 11.6. Local names in macros
 
-If a macro must declare a local variable, append one underscore (`_`) to its name, as in `a_`. This keeps it from colliding with names on the calling side. Do not prefix the name with two underscores (`__`), as in `__a`, because names that start with two underscores are reserved identifiers.
+If a macro must declare a local variable, append one underscore (`_`) to its name, as in `a_`. Then the name does not collide with names in the code that calls the macro. Do not prefix the name with two underscores (`__`), as in `__a`, because names that start with two underscores are reserved identifiers.
 
 Incorrect:
 
@@ -5885,15 +5885,15 @@ Correct:
 
 ### 12.1. Amount and content of comments
 
-Write comments only when necessary. First fix names and structure so that the code explains itself. In comments, state what is done and why, and leave how it is done to the code.
+Write comments only when they are necessary. First fix names and structure so that the code alone conveys its meaning. In a comment, state what is done and why, and leave how it is done to the code.
 
-Where reading the code alone is not enough to understand it, write comments on the following.
+Where reading the code alone is not enough to understand it, write the following in comments.
 
 - Background knowledge needed to understand the code
-- The reason the operation must be done
-- The reason for an implementation that looks pointless at first glance
+- Why the operation is necessary
+- Why an implementation that looks pointless at first glance was chosen
 
-Write long comments when the code serves as a public API, library, or interface, and when it is educational code. Then describe the internal behavior, arguments, return values, per-case scenarios, and so on in detail.
+Long comments belong in code that serves as a public API, library, or interface, and in educational code. In such code, describe the internal behavior, arguments, return values, per-case scenarios, and so on in detail.
 
 Incorrect:
 
@@ -5982,7 +5982,7 @@ static long find_sorted(const int *const values, size_t count, int key)
 
 - Use only `/* */`. Do not use `//`.
 - Write a multi-line comment as a `/*` line, lines that start with ` * `, and a `*/` line.
-- Write a trailing comment one space after the code. Do not align trailing comments in columns.
+- Write a trailing comment one space after the code. Do not align trailing comments with each other in columns.
 
 Incorrect:
 
@@ -6032,7 +6032,7 @@ static int gs_delay_ms = 250; /* wait between attempts */
 
 ### 12.3. Function comments and documentation comments
 
-Add function comments to functions whose use is not clear from the name and signature alone, and to functions that serve as a public API, library, or interface. If needed, a documentation comment format such as Doxygen or kernel-doc may be used.
+Add a function comment to a function whose use is not evident from its name and signature alone, and to a function that serves as a public API, library, or interface. If needed, a documentation comment format such as Doxygen or kernel-doc may be used.
 
 Incorrect:
 
@@ -6105,7 +6105,7 @@ int parse_duration(long *const mut_seconds, const char *const text);
 
 ### 13.1. Checking return values
 
-Check the return value of a call whose failure changes the outcome. When a call's result is discarded, make the call as it is, without `(void)`. GCC issues the `warn_unused_result` warning even with a `(void)` cast. So `(void)` is not even a portable means of suppression.
+Check the return value of a call whose failure changes the outcome. Do not prefix `(void)` to a call whose return value is discarded. GCC warns about the return value of a function with the `warn_unused_result` attribute even when it is cast to `(void)`. Therefore, `(void)` is not even a portable way to suppress the warning.
 
 Incorrect:
 
@@ -6184,7 +6184,7 @@ static long measure_file(const char *const path)
 
 ### 13.2. Unused diagnostics
 
-Do not hide unused diagnostics in source code. Do not use `(void)x;`, the unused attribute, diagnostic pragmas, or edits that delete names to avoid a diagnostic. Whether to ignore these diagnostics or turn them off with compiler options (`-Wno-unused-parameter`, `/wd4100`, and so on) is a matter of discretion.
+Do not hide unused diagnostics within the source code. Do not use `(void)x;`, the unused attribute, or diagnostic pragmas, and do not delete names to avoid a diagnostic. Whether to ignore these diagnostics or to turn them off with compiler options (`-Wno-unused-parameter`, `/wd4100`, and so on) is left to the project's discretion.
 
 Incorrect:
 
@@ -6239,7 +6239,7 @@ static int count_entry(const char *const path, void *const mut_context)
 
 ### 13.3. errno
 
-Read `errno` immediately after the failed call. If another library call comes in between, save it to a local variable first.
+Read `errno` immediately after the failed call. If another library call comes before the read, save `errno` to a local variable before that call.
 
 Incorrect:
 
@@ -6291,7 +6291,7 @@ static int replace_file(const char *const temp_path, const char *const final_pat
 
 - If there are no resources to clean up, return immediately at the point of failure.
 - If there are resources to clean up, put cleanup labels at the end of the function and jump to them with `goto`. Place the labels in the reverse order of resource acquisition.
-- Give labels descriptive names (`handle_buffer_alloc`, `out_close_file`). Do not number them, as in `err1` and `err2`.
+- Give labels names that convey their purpose (`handle_buffer_alloc`, `out_close_file`). Do not number them, as in `err1` and `err2`.
 
 Incorrect:
 
@@ -6364,8 +6364,8 @@ out_close_file:
 
 ### 13.5. Dynamic memory
 
-- Avoid, as far as possible, modifying the base value of an allocated pointer unless the structure leaves no other way. Use a separate pointer for iteration.
-- After `free`, assign `NULL` to the pointer. Unless there is a specific reason, assign it even if the pointer is not used again. The same applies after calling another function that releases the target, such as `fclose`.
+- Avoid modifying the base value of an allocated pointer as far as possible, unless the structure leaves no alternative. Use a separate pointer for iteration.
+- After calling `free`, assign `NULL` to the pointer. Unless there is a specific reason, assign it even if the pointer is not used again. The same applies after calling another function that releases its target, such as `fclose`.
 
 Incorrect:
 
@@ -6476,7 +6476,7 @@ static long sum_squares(const int *const values, size_t count)
 
 Use `assert` only to check internal invariants. An internal invariant is a condition that never breaks if the program is correct. Do not check failures of external input, files, or system calls with `assert`.
 
-`assert` must work only in debug builds and must never reach a release build that ships. Removing `assert` from release builds is the job of the build structure, not of the source files: the build system defines `NDEBUG` in every release configuration. For the same reason, keep side effects out of an `assert` condition. When a release build drops the `assert`, its side effects disappear with it.
+`assert` must work only in debug builds and must never reach a release build that ships. Removing `assert` from release builds is handled by the build structure, not by the source files. That is, every release configuration of the build system defines `NDEBUG`. When a release build drops an `assert`, the side effects in its condition disappear with it. Therefore, keep side effects out of `assert` conditions.
 
 Incorrect:
 
@@ -6523,7 +6523,7 @@ static void push_item(struct stack *const mut_stack, int item)
 
 ### 13.7. Static assertions
 
-`_Static_assert` exists from C11 on. A project that chooses C11 or later checks a constant condition at compile time with `_Static_assert`. A project that chooses a standard before C11 checks it with a run-time `assert` or in the build system instead.
+`_Static_assert` is a keyword from the C11 standard on. A project that chooses C11 or a later standard checks constant conditions at compile time with `_Static_assert`. A project that chooses a standard before C11 uses a run-time `assert` or a check in the build system instead.
 
 Correct (C11 and later):
 
@@ -6554,8 +6554,8 @@ static void check_record_layout(void)
 
 ### 13.8. Termination
 
-- Terminate on an unrecoverable internal error with `return` or `exit()`.
-- If the program cannot continue because of user input or the environment, write a message and terminate with `EXIT_FAILURE`. In `main`, end with `return EXIT_FAILURE;`, and in a function other than `main`, end with `exit(EXIT_FAILURE);`. This is because returning from the initial call to `main` is equivalent to calling `exit` with the returned value, whereas the return value of any other function only goes back to its caller (C99 §5.1.2.2.3 ¶1).
+- On an unrecoverable internal error, terminate with `return` or `exit()`.
+- If the program cannot continue because of user input or the environment, print a message and terminate with `EXIT_FAILURE`. In `main`, end with `return EXIT_FAILURE;`, and in any other function, end with `exit(EXIT_FAILURE);`. This is because returning from the initial call to `main` is equivalent to calling `exit` with the returned value (C99 §5.1.2.2.3 ¶1). In contrast, returning from any other function only goes back to its caller.
 
 Incorrect:
 
@@ -6659,37 +6659,37 @@ int main(int argc, char *argv[])
 
 ### 14.1. clang-format
 
-The `.clang-format` at the project root can be used to check and clean up formatting. Check changed files before committing. Visual Studio formats with the nearest `.clang-format` as well.
+The `.clang-format` at the project root can be used to check and fix formatting. Check changed files before committing. Visual Studio also formats code with the `.clang-format` nearest to the file.
 
-If the default behavior of clang-format conflicts with the rules of this document, do not turn off clang-format as a whole. Change only the settings that control that behavior. The root `.clang-format` has the following settings.
+If a default behavior of clang-format conflicts with the rules of this document, change only the settings that control that behavior instead of turning off clang-format as a whole. The root `.clang-format` has the following settings.
 
-- `BasedOnStyle: LLVM` and `IndentWidth: 4`: Start from the LLVM style and change indentation to four spaces (section [5.1](#51-indentation)).
-- `ColumnLimit: 0`: Lines are broken by hand (sections [5.2](#52-line-length) and [5.3](#53-breaking-long-expressions)). clang-format neither joins nor re-breaks lines broken by hand. It only adjusts indentation and alignment.
+- `BasedOnStyle: LLVM` and `IndentWidth: 4`: Start from the LLVM style and change the indentation to four spaces (section [5.1](#51-indentation)).
+- `ColumnLimit: 0`: Lines are broken by hand (sections [5.2](#52-line-length) and [5.3](#53-breaking-long-expressions)). clang-format keeps most hand-made line breaks and adjusts only indentation and alignment.
 - `BreakBeforeBraces: Custom` and `AfterFunction: true` in `BraceWrapping`: Put only the opening brace of a function body on a new line (sections [5.6](#56-function-braces) and [5.7](#57-control-statement-and-loop-braces)).
 - `InsertBraces: true`: Wrap the bodies of control statements and loops in braces (section [5.8](#58-mandatory-braces)).
 - `Empty: false`, `Inline: false`, and `Other: false` in `AllowShortFunctionsOnASingleLine`: Do not merge the body of a short function onto one line (section [5.6](#56-function-braces)).
 - `AllowShortEnumsOnASingleLine: false`: Do not merge the elements of an enum onto one line (section [5.11](#511-brace-initialization)).
-- `Cpp11BracedListStyle: Block`: Put spaces just inside the braces of initializer lists (section [5.11](#511-brace-initialization)).
+- `Cpp11BracedListStyle: Block`: Put spaces just inside the braces of an initializer list (section [5.11](#511-brace-initialization)).
 - `Kind: Never` in `AlignTrailingComments`: Do not align trailing comments in columns (section [5.18](#518-alignment)).
-- `AlignEscapedNewlines: Left`: Align the line-ending `\` of multi-line macros in one column (section [5.18](#518-alignment)).
-- `IndentPPDirectives: AfterHash` and `PPIndentWidth: 1`: Indent directives inside conditional compilation blocks with one space per level after `#` (section [5.19](#519-preprocessing-directives)).
-- `IncludeBlocks: Regroup` and `IncludeCategories`: Group includes by category and sort them (section [4.8](#48-include-order)). The main header is classified as category 0 and comes first. A header with a dependency gets the same `Priority` as the other `<...>` headers and a larger `SortPriority`, which moves it to the end of the same group. In this case, set the `Priority` of the `"..."` group larger than that `SortPriority`.
+- `AlignEscapedNewlines: Left`: Align the line-ending `\` of a multi-line macro in one column (section [5.18](#518-alignment)).
+- `IndentPPDirectives: AfterHash` and `PPIndentWidth: 1`: Indent directives inside conditional compilation blocks after the `#`, one space per level of depth (section [5.19](#519-preprocessing-directives)).
+- `IncludeBlocks: Regroup` and `IncludeCategories`: Group includes by category and sort them (section [4.8](#48-include-order)). clang-format classifies the main header as category 0 and puts it first. A header with a dependency gets the same `Priority` as the other `<...>` headers and a larger `SortPriority`, which moves it to the end of that group. In that case, set the `Priority` of the `"..."` group larger than that `SortPriority`.
 - `InsertNewlineAtEOF: true`: Add a newline at the end of a file if it is missing (section [4.4](#44-final-newline)).
 
-With these settings, clang-format enforces the final newline (section [4.4](#44-final-newline)), whitespace characters in C sources (section [4.5](#45-whitespace-characters)), include order (section [4.8](#48-include-order)), indentation (section [5.1](#51-indentation)), alignment of lines broken inside parentheses (section [5.3](#53-breaking-long-expressions)), brace placement (sections [5.6](#56-function-braces) to [5.10](#510-scope-narrowing-blocks)), spaces inside initializer list braces (section [5.11](#511-brace-initialization)), `switch` and goto labels (sections [5.12](#512-switch-and-case) and [5.13](#513-goto-labels)), spaces and pointer notation (sections [5.14](#514-spaces) and [5.15](#515-pointer-notation)), one statement per line (section [5.16](#516-one-statement-per-line-where-possible)), alignment (section [5.18](#518-alignment)), preprocessing directives (section [5.19](#519-preprocessing-directives)), and column alignment of trailing comments (section [12.2](#122-comment-format)). Apply the remaining rules by hand. In particular, check the following by hand, because clang-format does not fix them or changes them against the rules.
+With these settings, clang-format enforces the final newline (section [4.4](#44-final-newline)), whitespace characters in C sources (section [4.5](#45-whitespace-characters)), include order (section [4.8](#48-include-order)), indentation (section [5.1](#51-indentation)), alignment of lines broken inside parentheses (section [5.3](#53-breaking-long-expressions)), brace placement (sections [5.6](#56-function-braces) to [5.10](#510-scope-narrowing-blocks)), spaces inside initializer list braces (section [5.11](#511-brace-initialization)), `switch` and goto labels (sections [5.12](#512-switch-and-case) and [5.13](#513-goto-labels)), spaces and pointer notation (sections [5.14](#514-spaces) and [5.15](#515-pointer-notation)), one statement per line (section [5.16](#516-one-statement-per-line-where-possible)), alignment (section [5.18](#518-alignment)), preprocessing directives (section [5.19](#519-preprocessing-directives)), and the column alignment of trailing comments (section [12.2](#122-comment-format)). Apply the remaining rules by hand. In particular, check the following items by hand, because clang-format leaves them unfixed or changes them against the rules.
 
-- Lines over 100 columns are not broken (section [5.2](#52-line-length)). A line broken before a binary operator is joined into one line, so the joined line can exceed 100 columns.
-- Lines broken after an assignment operator or after a return type (sections [5.3](#53-breaking-long-expressions) and [5.5](#55-function-headers)) and split message strings (section [5.4](#54-user-visible-strings)) are left as they are.
-- The trailing comma of a list that will grow is not added, and a designated initializer written on one line is not split per member (section [5.11](#511-brace-initialization)).
-- Braces are inserted around a body without braces, but a following statement that is only indented to match is not put into the body (section [5.8](#58-mandatory-braces)).
-- Conditional operators nested without parentheses are broken across lines and aligned (section [8.8](#88-conditional-operator)). If the inner conditional operator is wrapped in parentheses, the expression stays on one line.
-- Blank lines (section [5.17](#517-blank-lines)) and inline assembly strings (section [5.20](#520-gccclang-inline-assembly)) are not fixed.
+- clang-format does not break lines over 100 columns (section [5.2](#52-line-length)). It joins a line broken before a binary operator into one line, so the joined line can exceed 100 columns.
+- Lines broken after an assignment operator or a return type (sections [5.3](#53-breaking-long-expressions) and [5.5](#55-function-headers)) and split message strings (section [5.4](#54-user-visible-strings)) stay as they are.
+- It does not add the trailing comma to a list that will grow, and it does not split a designated initializer written on one line into one member per line (section [5.11](#511-brace-initialization)).
+- It inserts braces around a body without braces, but it does not move a following statement that is only indented to match into the body (section [5.8](#58-mandatory-braces)).
+- It breaks and aligns conditional operators nested without parentheses (section [8.8](#88-conditional-operator)). If the inner conditional operator is wrapped in parentheses, it keeps the expression on one line.
+- It does not fix blank lines (section [5.17](#517-blank-lines)) or inline assembly strings (section [5.20](#520-gccclang-inline-assembly)).
 
-In a directory of dependency code, put a `.clang-format` that contains only `DisableFormat: true` and a `.editorconfig` that matches that code (section [1.2](#12-coding-style-differences-between-project-and-dependencies)). Put `root = true` in this `.editorconfig`. Otherwise it inherits settings such as trailing whitespace removal from the `.editorconfig` at the project root.
+In a directory of dependency code, put a `.clang-format` that contains only `DisableFormat: true` and a `.editorconfig` that matches that code (section [1.2](#12-coding-style-differences-between-project-and-dependencies)). Put `root = true` in this `.editorconfig`. Otherwise, it inherits settings such as trailing whitespace removal from the `.editorconfig` at the project root.
 
-A project split into independent trees for each platform (section [1.1](#11-applicability)) puts a `.clang-format` with the style of that platform in each tree, side by side. clang-format uses the `.clang-format` in the nearest parent directory of a file, so the settings of one tree do not mix into another. `.editorconfig` files are merged with those of parent directories, so put `root = true` in the `.editorconfig` of each tree.
+A project split into independent trees per platform (section [1.1](#11-applicability)) puts a `.clang-format` with that platform's style in each tree, side by side. clang-format uses the `.clang-format` nearest to the file, so the settings of one tree do not mix into another. The settings of a `.editorconfig` are merged with those of the `.editorconfig` files in parent directories, so put `root = true` in the `.editorconfig` of each tree.
 
-If dependency code shares a directory with project code, list the paths of those files in `.clang-format-ignore` at the project root, and add a separate section to the root `.editorconfig` that selects only those files. clang-format skips the files listed in `.clang-format-ignore`.
+If dependency code shares a directory with project code, list the paths of the dependency files in `.clang-format-ignore` at the project root, and add a separate section to the root `.editorconfig` that selects only the dependency files. clang-format skips the files listed in `.clang-format-ignore`.
 
 Correct:
 
@@ -6748,7 +6748,7 @@ indent_style = space
 indent_size = 2
 ```
 
-Correct (a project split into independent trees for each platform):
+Correct (a project split into independent trees per platform):
 
 ```text
 netprobe/
@@ -6780,9 +6780,9 @@ trim_trailing_whitespace = false
 
 ### 14.2. clang-tidy
 
-The `.clang-tidy` at the project root checks the naming rules (chapter [6](#6-naming)) with `readability-identifier-naming`. `bugprone-reserved-identifier` checks reserved identifiers (section [6.10](#610-reserved-identifiers)), and `readability-inconsistent-declaration-parameter-name` checks parameter names in declarations and definitions (section [10.1](#101-parameter-lists)). The `mut_` prefix of pointer parameters (section [10.3](#103-pointer-parameters)) cannot be checked, because `readability-identifier-naming` classifies all pointer parameters declared `*const` as the same kind, regardless of whether the target is `const`.
+The naming rules (chapter [6](#6-naming)) are checked with `readability-identifier-naming` in the `.clang-tidy` at the project root. Reserved identifiers (section [6.10](#610-reserved-identifiers)) are checked with `bugprone-reserved-identifier`, and parameter names in declarations and definitions (section [10.1](#101-parameter-lists)) with `readability-inconsistent-declaration-parameter-name`. The `mut_` prefix of pointer parameters (section [10.3](#103-pointer-parameters)) cannot be checked with clang-tidy, because `readability-identifier-naming` classifies every pointer parameter declared `*const` as the same kind, regardless of whether its target is `const`.
 
-Visual Studio runs clang-tidy with the same `.clang-tidy` when Enable Clang-Tidy is on in the code analysis settings. A CMake project turns it on with `enableClangTidyCodeAnalysis` in the Visual Studio vendor settings of `CMakePresets.json`.
+With Enable Clang-Tidy turned on in the code analysis settings, Visual Studio runs clang-tidy with the same `.clang-tidy`. A CMake project turns it on with `enableClangTidyCodeAnalysis` in the Visual Studio vendor settings of `CMakePresets.json`.
 
 Correct:
 
@@ -6792,15 +6792,15 @@ clang-tidy path/to/file.c -- -std=c99
 
 ### 14.3. Compiler warnings
 
-- With GCC/Clang, build with `-Wall -Wextra -pedantic -Wshadow`.
-- With MSVC, build with `/W4`. `/W4` includes the shadowing warnings C4456, C4457, and C4459. MSVC has no `-pedantic` for C, and `/Za` holds C to C89.
-- With clang-cl, build with `/W4 -Wshadow /clang:-pedantic`. In clang-cl, `/W4` turns on only `-Wall -Wextra`.
-- Fix all warnings other than unused diagnostics (section [13.2](#132-unused-diagnostics)).
+- Build with `-Wall -Wextra -pedantic -Wshadow` for GCC/Clang.
+- Build with `/W4` for MSVC. `/W4` includes the shadowing warnings C4456, C4457, and C4459. MSVC has no C option equivalent to `-pedantic`. `/Za`, which disables language extensions, makes the compiler accept only C89.
+- Build with `/W4 -Wshadow /clang:-pedantic` for clang-cl. In clang-cl, `/W4` turns on only `-Wall -Wextra`.
+- Fix every warning except the unused diagnostics (section [13.2](#132-unused-diagnostics)).
 - Do not use `-Werror` or `/WX`.
 
-A Visual Studio project takes these options from `Directory.Build.targets` in the root directory of its tree. MSBuild imports the nearest `Directory.Build.targets` above each project after the project file, so the settings reach every project in the tree, including projects added later, and override the `WarningLevel` that the project templates write. `Directory.Build.props` does not fit here: MSBuild imports it before the project file, so the template values override it.
+A Visual Studio project receives these options from `Directory.Build.targets` in the root directory of its tree. MSBuild imports the `Directory.Build.targets` nearest to each project after the project file. Therefore, every project in the tree receives these settings, including projects added later. These settings also override the `WarningLevel` that project templates write. `Directory.Build.props` does not suit this purpose. MSBuild imports `Directory.Build.props` before the project file, so values placed there lose to the template values.
 
-To review the unused diagnostics on their own, run a separate check that keeps only those diagnostics. GCC does not issue `-Wunused-function` when checking with `-fsyntax-only`, so compile all the way to object code and then pick out only the diagnostics marked `-Wunused`. For Clang, turn off all warnings with `-Wno-everything` and then turn only the unused diagnostics back on. The compiler cannot find functions with external linkage that no other file uses, so check the whole project with the cppcheck `unusedFunction` check.
+To review only the unused diagnostics, run a separate check that keeps only those diagnostics. GCC does not issue `-Wunused-function` when checking with `-fsyntax-only`, so compile all the way to object code and then pick out only the diagnostics tagged `-Wunused`. For Clang, turn off all warnings with `-Wno-everything` and then turn only the unused diagnostics back on. The compiler cannot find a function with external linkage that no file uses, so check the whole project with the Cppcheck `unusedFunction` check.
 
 Correct:
 
@@ -6832,7 +6832,7 @@ Correct (`Directory.Build.targets` at the root of a Visual Studio tree):
 </Project>
 ```
 
-Correct (reviewing the unused diagnostics on their own):
+Correct (reviewing only the unused diagnostics):
 
 ```sh
 gcc -std=c99 -Wall -Wextra -Wunused-macros -c -o /dev/null foo.c 2>&1 | grep -- '-Wunused'
@@ -6842,7 +6842,7 @@ cppcheck --enable=unusedFunction --quiet src/
 
 ### 14.4. Editor settings
 
-`.editorconfig` tells editors the encoding, line ending, indentation, final newline, and trailing whitespace rules for C sources and headers. Visual Studio applies these core EditorConfig properties ahead of its own text editor settings. `.gitattributes` pins the line endings in the project. Keep editor settings in these two files only, and do not put editor modelines in source files.
+Use `.editorconfig` to tell editors the encoding, line ending, indentation, final newline, and trailing whitespace rules for C sources and headers. Visual Studio applies these core EditorConfig properties ahead of its own text editor settings. Use `.gitattributes` to pin the line endings in the project. Keep editor settings in these two files only, and do not put editor modelines in source files.
 
 Correct:
 
