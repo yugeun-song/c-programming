@@ -1966,7 +1966,7 @@ union float_bits {
 
 ### 5.10. Scope-narrowing blocks
 
-In a block made to narrow a scope, put the opening and closing braces each on a line of their own, with no other code.
+Avoid blocks made to narrow a scope as much as possible. If one is used anyway, put its opening and closing braces each on a line of their own, with no other code.
 
 Incorrect:
 
