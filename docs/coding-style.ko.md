@@ -132,15 +132,15 @@
 
 직접 작성하는 Linux 커널 모듈과 드라이버에는 커널 원본 소스와 별개로 이 코딩 스타일을 적용할 수 있다. 다만 Linux 커널 소스 자체를 커스터마이징할 때는 커널 코딩 스타일을 그대로 따른다. 커널 소스 안에 서로 다른 스타일이 섞이지 않게 하기 위해서이다.
 
-Windows 전용, FreeBSD 전용, macOS 전용 프로젝트처럼 특정 OS나 아키텍처만 대상으로 하는 프로젝트는 그 OS나 아키텍처의 코딩 스타일을 따른다. 반면 크로스플랫폼 프로젝트에서는 특정 OS에 종속된 코드에도 이 코딩 스타일을 적용한다. 플랫폼마다 독립된 구조와 바이너리를 가진 트리는 크로스플랫폼 프로젝트가 아니며, 각 트리는 자기 플랫폼의 스타일을 따른다.
+Windows 전용, FreeBSD 전용, macOS 전용 프로젝트처럼 특정 OS나 아키텍처만 대상으로 하는 프로젝트는 그 OS나 아키텍처의 코딩 스타일을 따른다. 반면 크로스플랫폼 프로젝트에서는 특정 OS에 종속된 코드에도 이 코딩 스타일을 적용한다. 플랫폼마다 독립된 트리로 나누어 구조와 바이너리를 따로 두는 프로젝트는 크로스플랫폼 프로젝트가 아니다. 각 트리는 자기 플랫폼의 스타일을 따른다.
 
-또한, AI 에이전트가 C 코드를 생성할 때 지켜야 할 규약의 모음이기도 하다. AI 에이전트가 규약에 맞추어 코드를 생성하고 검토하고, .clang-format 같은 포맷 양식으로 검사할 수 없는 코딩 스타일의 영역까지 검사 및 수정 제안을 시킬 수 있는 기준점으로서 활용 될 수 있다.
+또한, 이 코딩 스타일은 AI 에이전트가 C 코드를 생성할 때 지켜야 할 규약의 모음이기도 하다. AI 에이전트는 이 규약을 기준으로 코드를 생성하고 검토할 수 있다. `.clang-format` 같은 포맷 설정으로는 검사할 수 없는 영역도 AI 에이전트가 이 규약에 따라 검사하고 수정안을 제안할 수 있다.
 
 ### 1.2. 프로젝트와 종속성의 코딩 스타일 차이
 
-프로젝트가 직접 작성한 코드는 기존 코드까지 모두 이 규칙에 맞춰 고친다. 반면 외부에서 들여온 종속성 코드는 원래 스타일을 유지한다.
+프로젝트에서 직접 작성한 코드는 기존 코드까지 모두 이 규칙에 맞춰 고친다. 반면 외부에서 들여온 종속성 코드는 원래 스타일을 유지한다.
 
-종속성 코드와 프로젝트 코드의 경계는 분명히 긋는다. 종속성 코드는 되도록 프로젝트 코드와 다른 디렉터리에 둔다. 같은 디렉터리에 두어야 하면 파일 단위로 경계를 긋는다. 어느 경우든 종속성 코드의 파일에는 프로젝트의 코딩 스타일을 쓰지 않는다. 종속성 코드를 고쳐야 하면 그 파일의 원래 스타일대로 고친다. 이렇게 하면 프로젝트 안에 두 스타일이 함께 있어도 한 파일 안에는 한 스타일만 남는다. 한 파일에 서로 다른 스타일이 섞이면 읽는 사람이 어느 규칙을 따를지 헷갈리고, 종속성 코드를 새 버전으로 바꿀 때 바뀐 부분을 가려내기도 어렵다.
+종속성 코드와 프로젝트 코드의 경계는 분명히 긋는다. 종속성 코드는 되도록 프로젝트 코드와 다른 디렉터리에 둔다. 같은 디렉터리에 두어야 하면 파일 단위로 경계를 긋는다. 어느 경우든 종속성 코드 파일에는 프로젝트의 코딩 스타일을 쓰지 않는다. 종속성 코드를 고쳐야 하면 그 파일의 원래 스타일대로 고친다. 이렇게 하면 프로젝트 안에 두 스타일이 함께 있어도 한 파일 안에는 한 스타일만 남는다. 한 파일에 서로 다른 스타일이 섞이면 읽는 사람이 어느 규칙을 따를지 헷갈린다. 종속성 코드를 새 버전으로 바꿀 때 바뀐 부분을 가려내기도 어렵다.
 
 틀린 예(종속성 코드인 `third_party/tinyini/ini.c`에 프로젝트 함수를 더한 경우):
 
@@ -213,7 +213,7 @@ static size_t count_sections(const char *const text)
 
 ## 2. 대원칙
 
-이 코딩 스타일은 Linux 커널 코딩 스타일과 MISRA C 규칙의 일부 아이디어를 토대로 고안했다. 중괄호, 이름, 선언, 주석의 모양은 커널을 따르되, 들여쓰기는 탭 대신 공백 4칸을 쓴다. MISRA C에서는 중괄호 생략 금지, 쉼표 연산자와 조건 안 대입의 제한, 정수와 포인터의 명시적 비교처럼 실수할 여지를 줄이는 규칙을 가져온다.
+이 코딩 스타일의 토대는 Linux 커널 코딩 스타일과 MISRA C 규칙의 일부 아이디어이다. 중괄호, 이름, 선언, 주석의 모양은 커널을 따르되, 들여쓰기는 탭 대신 공백 4칸을 쓴다. MISRA C에서는 중괄호 생략 금지, 쉼표 연산자와 조건 안 대입의 제한, 정수와 포인터의 명시적 비교처럼 실수할 여지를 줄이는 규칙을 가져온다.
 
 ### 2.1. 단순하고 직관적인, 일반적인 코드
 
@@ -221,7 +221,7 @@ static size_t count_sections(const char *const text)
 
 일부러 복잡하게 만들거나, 어려워 보이게 만들거나, 읽는 사람이 한 번 더 생각하게 만드는 코드는 쓰지 않는다. 생각할 여지와 실수할 여지가 많은 코드도 쓰지 않는다.
 
-널리 쓰이는 형태로 쓴다. 실수를 줄여 주는 기법이라도 일반적인 코딩 스타일에서 크게 벗어난 방법이라면 쓰지 않는다. 예를 들어 상수를 왼쪽에 두는 비교(`5 == value`)는 `==`를 `=`로 잘못 쓰면 컴파일 오류가 나게 해 준다. 그러나 널리 쓰이는 형태가 아니어서 읽는 사람의 익숙함과 어긋나고, 그 어긋남이 주는 부담이 얻는 이익보다 클 수도 있다. 이처럼 실제로 얻는 이익보다 적용의 부작용이 클 수 있는 기법은 이 코딩 스타일에 넣지 않는다.
+널리 쓰이는 형태로 쓴다. 실수를 줄여 주는 기법이라도 일반적인 코딩 스타일에서 크게 벗어난 방법이라면 쓰지 않는다. 예를 들어 상수를 왼쪽에 두는 비교(`5 == value`)에서는 `==`를 `=`로 잘못 쓰면 컴파일 오류가 난다. 그러나 널리 쓰이는 형태가 아니어서 읽는 사람의 익숙함과 어긋나고, 그 어긋남이 주는 부담이 얻는 이익보다 클 수도 있다. 이처럼 부작용이 실제 이익보다 클 수 있는 기법은 이 코딩 스타일에 넣지 않는다.
 
 틀린 예:
 
@@ -236,7 +236,7 @@ static long sum_clamped(size_t *clipped, const int *v, int n, int lo, int hi)
 }
 ```
 
-이 함수는 `v`가 가리키는 원소 `n`개를 `lo` 이상 `hi` 이하로 잘라 더하고, 잘린 원소의 수를 `*clipped`에 남긴다. 이 코드는 C89부터 지금의 표준까지 문법상 올바르고, undefined behavior도 없다. 결과도 아래 올바른 예와 같다. 그러나 한 줄 안에서 원소 읽기, 비교 두 번, 증가, 더하기가 쉼표 연산자와 중첩된 삼항 연산자로 얽혀 있다. 읽는 사람은 삼항 연산자가 어느 쪽으로 묶이는지, `n--`와 `++v`가 언제 실행되는지, `sum = *clipped = 0`이 어떤 순서로 대입되는지 하나씩 따져 봐야 한다. 이처럼 문법상 문제가 없더라도 생각할 거리를 늘려 읽고 고치는 데 쓸데없는 시간을 쓰게 하는 코드는 쓰지 않는다.
+이 함수는 `v`가 가리키는 원소 `n`개를 `lo` 이상 `hi` 이하로 잘라 더하고, 잘린 원소의 수를 `*clipped`에 남긴다. 이 코드는 C89부터 지금의 표준까지 문법상 올바르다. undefined behavior도 없다. 결과도 아래 올바른 예와 같다. 그러나 한 줄 안에서 원소 읽기, 비교 두 번, 증가, 더하기가 쉼표 연산자와 중첩된 삼항 연산자로 얽혀 있다. 읽는 사람은 삼항 연산자가 어느 쪽으로 묶이는지, `n--`와 `++v`가 언제 실행되는지, `sum = *clipped = 0`이 어떤 순서로 대입되는지 하나씩 따져 봐야 한다. 이처럼 문법상 문제가 없더라도 생각할 거리를 늘려 읽고 고치는 시간을 낭비하게 만드는 코드는 쓰지 않는다.
 
 올바른 예:
 
@@ -278,7 +278,7 @@ static long sum_clamped(size_t *const mut_clipped, const int *const samples, siz
 
 ### 2.2. 이름 충돌 피하기
 
-C 표준과 POSIX 같은 널리 쓰이는 표준의 이름, 그리고 C 키워드와 겹칠 여지가 큰 이름은 쓰지 않는다. 지금은 겹치지 않아도 새 표준이나 라이브러리가 같은 이름을 더하면 빌드가 깨진다. 예를 들어 C23은 `bool`, `true`, `false`, `nullptr`, `typeof`를 키워드로 만들었고, POSIX.1-2024는 `strlcpy`와 `strlcat`을 표준 함수로 더했다.
+C 표준과 POSIX 같은 널리 쓰이는 표준의 이름, 그리고 C 키워드와 겹칠 여지가 큰 이름은 쓰지 않는다. 지금은 겹치지 않아도 새 표준이나 라이브러리가 같은 이름을 더하면 빌드가 깨진다. 예를 들어 C23 표준에서 `bool`, `true`, `false`, `nullptr`, `typeof`가 키워드가 되었다. 또 POSIX.1-2024에서는 `strlcpy`와 `strlcat`이 표준 함수가 되었다.
 
 틀린 예:
 
@@ -338,10 +338,10 @@ static size_t copy_string(char *const mut_dst, const char *const src, size_t dst
 
 기본 표준은 C99이다. 프로젝트는 필요하면 다른 표준이나 GNU 방언을 골라도 된다. 고른 표준은 빌드 설정에 명시한다.
 
-- GCC와 Clang은 `-std`로 고른다(`-std=c99`, `-std=c11`, `-std=c17`, `-std=c23`, `-std=gnu99`).
-- MSVC에는 C99 모드가 없다. `/std`를 주지 않은 기본 모드는 C89에 Microsoft 확장을 더한 것이며, 확장 가운데 일부가 C99 기능이다. C11 이상은 `/std:c11`, `/std:c17`, `/std:clatest`로 고른다. 기본 모드는 traditional preprocessor를 쓴다. C99에 맞는 preprocessor는 `/Zc:preprocessor`로 고른다. `/std:c11`이나 `/std:c17`을 주면 이 preprocessor가 함께 켜진다.
-- Visual Studio 프로젝트는 `LanguageStandard_C`(`stdc11`, `stdc17`, `stdclatest`)와 `UseStandardPreprocessor` 속성으로 고른다.
-- CMake는 `CMAKE_C_STANDARD`로 고른다. MSVC 19.27 이상에서 `CMAKE_C_STANDARD 99`는 표준 옵션을 넘기지 않으므로 기본 모드로 빌드된다.
+- GCC와 Clang에서는 `-std`로 고른다(`-std=c99`, `-std=c11`, `-std=c17`, `-std=c23`, `-std=gnu99`).
+- MSVC에는 C99 모드가 없다. `/std`를 주지 않은 기본 모드는 C89에 Microsoft 확장을 더한 것이다. 그 확장 가운데 일부가 C99 기능이다. C11 이상은 `/std:c11`, `/std:c17`, `/std:clatest`로 고른다. 기본 모드에서는 traditional preprocessor가 동작한다. C99에 맞는 preprocessor는 `/Zc:preprocessor`로 고른다. `/std:c11`이나 `/std:c17`을 주면 이 preprocessor가 함께 켜진다.
+- Visual Studio 프로젝트에서는 `LanguageStandard_C`(`stdc11`, `stdc17`, `stdclatest`)와 `UseStandardPreprocessor` 속성으로 고른다.
+- CMake에서는 `CMAKE_C_STANDARD`로 고른다. MSVC 19.27 이상에서는 `CMAKE_C_STANDARD`가 99이면 CMake가 표준 옵션을 넘기지 않는다. 따라서, 기본 모드로 빌드된다.
 
 표준 문서와 WG14 공개 초안은 다음과 같다. 대응 관계는 [WG14 프로젝트 페이지](https://www.open-std.org/jtc1/sc22/wg14/www/projects)를 따른다.
 
@@ -378,9 +378,9 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 ### 3.2. 플랫폼 API
 
-스레드, 동기화, atomic 연산처럼 플랫폼마다 구현이 다른 기능은 그 플랫폼과 컴파일러가 직접 제공하는 API를 우선해서 쓴다. Linux에서는 POSIX threads(pthread)를, Windows에서는 Win32 API를 쓴다. atomic 연산에는 GCC/Clang에서는 `__atomic` builtin을, Windows에서는 Win32 API의 Interlocked 함수를 쓴다. C11의 `<threads.h>`와 `<stdatomic.h>`처럼 플랫폼 API 위에 한 겹을 더 씌운 표준 라이브러리는 지양한다.
+스레드, 동기화, atomic 연산처럼 플랫폼마다 구현이 다른 기능에는 그 플랫폼과 컴파일러의 고유 API를 우선해서 쓴다. Linux에서는 POSIX threads(pthread)를, Windows에서는 Win32 API를 쓴다. atomic 연산에는 GCC/Clang에서 `__atomic` builtin을, Windows에서 Win32 API의 Interlocked 함수를 쓴다. C11의 `<threads.h>`와 `<stdatomic.h>`처럼 플랫폼 API 위에 한 겹을 더 씌운 표준 라이브러리는 지양한다.
 
-C++나 Rust 같은 언어가 있는데도 C를 쓰는 이유는, 어셈블리와 플랫폼에 거의 1:1로 대응하는 투명성 위에 최소한의 추상화만 얹은 구성을 기대하기 때문이다. 플랫폼 API를 직접 쓰면 쓸데없는 추상화 계층을 거치지 않고, 동작을 정밀하고 투명하게 제어할 수 있다.
+C++나 Rust 같은 언어가 있는데도 C를 쓰는 이유는 어셈블리와 플랫폼에 거의 1:1로 대응하는 투명성 위에 최소한의 추상화만 얹은 구성을 원하기 때문이다. 플랫폼 API를 직접 쓰면 쓸데없는 추상화 계층을 거치지 않고, 동작을 정밀하고 투명하게 제어할 수 있다.
 
 지양하는 예:
 
@@ -542,7 +542,7 @@ static void read_dns_header(struct dns_header *const mut_header, const unsigned 
 }
 ```
 
-DNS 헤더의 필드는 big-endian으로 전송된다. 이 코드는 little-endian인 x86-64와 AArch64 Linux에서 필드마다 바이트 순서가 뒤집힌 값을 읽는다. 구조체에 패딩이 없다는 가정에도 기댄다.
+DNS 헤더의 필드는 big-endian으로 전송된다. 이 코드는 little-endian인 x86-64와 AArch64 Linux에서 필드마다 바이트 순서가 뒤집힌 값을 읽는다. 또 구조체에 패딩이 없다고 가정한다.
 
 올바른 예:
 
@@ -598,9 +598,9 @@ static void read_sensor_sample(struct sensor_sample *const mut_sample,
 
 ### 3.5. 표준 함수의 선택
 
-C 표준 함수, 그중에서도 문자열 함수는 구현체, 문자열과 메모리 안전성, 성능에 따른 trade-off를 판단해서 쓴다. 배치 처리, 병렬 처리, 멀티스레드 안전 등을 확실하게 보장해야 하면 그 기능을 직접 작성한다.
+C 표준 함수는 구현체, 문자열과 메모리 안전성, 성능의 trade-off를 판단해서 쓴다. 특히 문자열 함수가 그렇다. 배치 처리, 병렬 처리, 스레드 안전성 등을 확실하게 보장해야 하면 그 기능을 직접 작성한다.
 
-예를 들어 `strtok`은 다음 탐색을 시작할 위치를 함수 안에 저장해 두고 다음 호출에서 이어 쓴다. C11은 `strtok`이 다른 `strtok` 호출과의 data race를 피하지 않아도 된다고 정한다(C11 §7.24.5.8 ¶6). 또 `strncat`은 호출할 때마다 대상 문자열의 끝을 처음부터 다시 찾는다. 따라서, 많은 문자열을 차례로 이어 붙이면 이어 붙인 길이의 제곱에 비례하는 시간이 든다.
+예를 들어 `strtok`은 다음 탐색을 시작할 위치를 함수 안에 저장해 두고 다음 호출에서 이어 쓴다. C11 표준에 따르면 `strtok`은 다른 `strtok` 호출과의 data race를 피하지 않아도 된다(C11 §7.24.5.8 ¶6). 또 `strncat`은 호출할 때마다 대상 문자열의 끝을 처음부터 다시 찾는다. 따라서, 많은 문자열을 차례로 이어 붙이면 이어 붙인 길이의 제곱에 비례하는 시간이 든다.
 
 틀린 예:
 
@@ -707,7 +707,7 @@ static void join_words(char *const mut_dst, size_t dst_size, const char *const *
 
 ### 3.6. 쓰지 않는 표준 함수
 
-`gets`는 쓰지 않는다. 버퍼 크기를 받지 않아 넘침을 막을 수 없고, C11 표준에서 빠졌다.
+`gets`는 쓰지 않는다. 버퍼 크기를 받지 않아 버퍼 넘침을 막을 수 없다. 또 C11 표준에서 빠졌다.
 
 틀린 예:
 
@@ -739,7 +739,7 @@ static int read_command(char *const mut_line, size_t line_size)
 
 ### 4.1. 파일 이름
 
-C 소스는 `.c`, 헤더는 `.h`로 끝난다. 이름은 소문자 snake_case로 짓는다. Windows의 예약 이름(`CON`, `PRN`, `AUX`, `NUL`, `COM1`, `LPT1` 등)은 확장자를 붙여도 쓰지 않는다.
+C 소스 파일의 이름은 `.c`로, 헤더 파일의 이름은 `.h`로 끝난다. 이름은 소문자 snake_case로 짓는다. Windows의 예약 이름(`CON`, `PRN`, `AUX`, `NUL`, `COM1`, `LPT1` 등)은 확장자를 붙여도 쓰지 않는다.
 
 틀린 예:
 
@@ -777,11 +777,11 @@ printer.c
 
 ### 4.2. 인코딩과 줄 끝
 
-파일은 BOM 없는 UTF-8과 LF를 쓴다. Visual Studio 프로젝트 파일(`.sln`, `.slnx`, `.vcxproj`, `.vcxproj.filters`, `.props`, `.targets`)만 CRLF를 쓴다. `.gitattributes`와 `.editorconfig`로 이 규칙을 강제할 수 있다.
+파일은 BOM 없는 UTF-8로 인코딩하고, 줄 끝에는 LF를 쓴다. Visual Studio 프로젝트 파일(`.sln`, `.slnx`, `.vcxproj`, `.vcxproj.filters`, `.props`, `.targets`)에만 CRLF를 쓴다. `.gitattributes`와 `.editorconfig`로 이 규칙을 강제할 수 있다.
 
-Git의 `core.autocrlf`는 쓰지 않는다. `core.autocrlf`는 사람마다 다르게 둘 수 있는 로컬 설정이라 프로젝트의 줄 끝을 고정하지 못한다. 줄 끝은 프로젝트에 함께 들어가는 `.gitattributes`로 정한다. `.gitattributes`에서 `eol`을 정한 파일은 `core.autocrlf` 값과 상관없이 그 줄 끝으로 checkout된다.
+Git의 `core.autocrlf`는 쓰지 않는다. `core.autocrlf`는 사람마다 다르게 둘 수 있는 로컬 설정이다. 따라서, 이 설정으로는 프로젝트의 줄 끝을 고정할 수 없다. 줄 끝은 프로젝트에 함께 들어가는 `.gitattributes`로 정한다. `.gitattributes`에서 `eol`을 정한 파일은 `core.autocrlf` 값과 상관없이 그 줄 끝으로 checkout된다.
 
-`text=auto`처럼 Git이 텍스트 여부를 스스로 판정하게 하는 설정도 쓰지 않는다. 자동 판정은 파일 내용을 보고 텍스트 여부를 정하므로, 경로만 보고는 줄 끝을 알 수 없다. 경로마다 `text`와 `eol`을 직접 정하고, 바이너리 파일은 `binary`로 표시한다.
+`text=auto`처럼 Git이 텍스트 여부를 스스로 판정하게 하는 설정도 쓰지 않는다. 자동 판정을 쓰면 Git이 파일 내용을 보고 텍스트 여부를 정한다. 따라서, 경로만 보고는 줄 끝을 알 수 없다. 경로마다 `text`와 `eol`을 직접 정하고, 바이너리 파일은 `binary`로 표시한다.
 
 틀린 예:
 
@@ -824,7 +824,7 @@ word_count.c: C source, ASCII text
 
 ### 4.3. 문자 집합
 
-코드와 주석은 ASCII로 쓴다. 출력 문자열에는 뜻이 있는 기호가 필요할 때만 ASCII 밖의 문자를 쓴다. 메시지의 따옴표는 ASCII `'`와 `"`이다.
+코드와 주석은 ASCII로 쓴다. 출력 문자열에는 뜻이 있는 기호가 필요할 때만 ASCII 밖의 문자를 쓴다. 메시지의 따옴표에는 ASCII `'`와 `"`를 쓴다.
 
 틀린 예:
 
@@ -871,7 +871,7 @@ C 소스 파일에는 C 표준이 이를 요구한다. 기본 표준인 C99의 �
 
 > A source file that is not empty shall end in a new-line character, which shall not be immediately preceded by a backslash character before any such splicing takes place.
 
-이 요구를 어기면 C99 §4 ¶2에 따라 undefined behavior이다. C99 Annex J.2에서도 이 경우는 undefined behavior에 해당한다. C11과 C23에도 같은 문장이 있다.
+이 요구를 어기면 C99 §4 ¶2에 따라 undefined behavior가 된다. C99 Annex J.2의 undefined behavior 목록에도 이 경우가 있다. C11과 C23에도 같은 문장이 있다.
 
 틀린 예:
 
@@ -1021,15 +1021,15 @@ int main(void)
 
 ### 4.7. feature test macro
 
-POSIX와 glibc 기능을 쓰는 파일은 feature test macro로 그 기능을 켠다. feature test macro는 시스템 헤더가 어떤 선언을 보여 줄지 정한다. 소스 파일에서 어떤 `#include`보다도 앞에 정의하고, 그 아래에 빈 줄을 하나 둔다. 헤더 안에서는 정의하지 않는다. 그 헤더보다 먼저 include된 헤더에는 효과가 없기 때문이다.
+POSIX나 glibc 기능을 쓰는 파일에서는 feature test macro로 그 기능을 켠다. 시스템 헤더가 보여 주는 선언은 feature test macro에 따라 달라진다. 이 매크로는 소스 파일에서 어떤 `#include`보다도 앞에 정의하고, 그 아래에 빈 줄을 하나 둔다. 헤더 안에서는 정의하지 않는다. 그 헤더보다 먼저 include된 헤더에는 효과가 없기 때문이다.
 
 필요한 기능에 맞는 가장 좁은 매크로를 고른다. 표준 C 기능만 쓰는 파일에는 정의하지 않는다.
 
-- `_POSIX_C_SOURCE`: POSIX 인터페이스를 쓸 때 정의한다. 기본값은 POSIX.1-2008의 `200809L`이다. POSIX.1-2024의 값은 `202405L`이다.
+- `_POSIX_C_SOURCE`: POSIX 인터페이스를 쓸 때 정의한다. 기본값으로 POSIX.1-2008의 `200809L`을 쓴다. POSIX.1-2024의 값은 `202405L`이다.
 - `_XOPEN_SOURCE`: POSIX의 XSI 확장까지 쓸 때 정의한다. POSIX.1-2008의 값은 `700`, POSIX.1-2024의 값은 `800`이다.
-- `_DEFAULT_SOURCE`: glibc의 기본 기능 집합을 쓸 때 정의한다. 이 집합은 POSIX.1-2008과 일부 BSD·SVID 기능이다. glibc는 다른 feature test macro를 정의하거나 `-std=c99` 같은 standard 모드로 컴파일하면 이 집합을 끈다.
-- `_GNU_SOURCE`: glibc의 모든 기능과 GNU 확장을 켠다. `_POSIX_C_SOURCE 200809L`과 `_XOPEN_SOURCE 700`도 함께 켜진다. Linux 전용 파일에서만 쓴다.
-- `WIN32_LEAN_AND_MEAN`, `_WIN32_WINNT`: feature test macro는 아니지만 같은 자리에 둔다. `WIN32_LEAN_AND_MEAN`은 Cryptography, DDE, RPC, Shell, Windows Sockets 같은 API를 `<windows.h>`에서 뺀다. `_WIN32_WINNT`는 지원할 가장 낮은 Windows 버전을 정한다. Windows 10은 `0x0A00`이다.
+- `_DEFAULT_SOURCE`: glibc의 기본 기능 집합을 쓸 때 정의한다. 이 집합에는 그 glibc가 지원하는 가장 높은 수준의 POSIX 기능과 BSD, SVID 기능 일부가 들어 있다. 다른 feature test macro를 정의하거나 `-std=c99` 같은 ISO 표준 모드로 컴파일하면 glibc는 이 집합을 끈다.
+- `_GNU_SOURCE`: 정의하면 glibc의 모든 기능과 GNU 확장이 켜진다. `_POSIX_C_SOURCE`와 `_XOPEN_SOURCE`도 그 glibc가 지원하는 가장 높은 값으로 함께 정의된다. glibc 2.44에서는 `202405L`과 `800`이다. Linux 전용 파일에서만 쓴다.
+- `WIN32_LEAN_AND_MEAN`, `_WIN32_WINNT`: feature test macro는 아니지만 같은 자리에 둔다. `WIN32_LEAN_AND_MEAN`을 정의하면 `<windows.h>`에서 Cryptography, DDE, RPC, Shell, Windows Sockets 같은 API가 빠진다. `_WIN32_WINNT`는 지원할 가장 낮은 Windows 버전으로 정의한다. Windows 10의 값은 `0x0A00`이다.
 
 틀린 예:
 
@@ -1234,7 +1234,7 @@ static void print_total(long total)
 2. `<...>` 형식: 표준 헤더, 시스템 헤더, 외부 라이브러리 헤더
 3. `"..."` 형식: 프로젝트 안의 헤더
 
-종속성이 있는 헤더는 그 헤더가 필요로 하는 헤더 뒤, 같은 묶음의 맨 뒤에 둔다. 예를 들어 GNU Readline의 `<readline/readline.h>`는 `FILE`을 쓰면서 `<stdio.h>`를 스스로 include하지 않는다. 알파벳 순서로는 `<stdio.h>`보다 앞에 오므로 그대로 두면 컴파일 오류가 난다.
+종속성이 있는 헤더는 같은 묶음의 맨 뒤에 두어, 그 헤더에 필요한 헤더보다 뒤에 오게 한다. 예를 들어 GNU Readline의 `<readline/readline.h>`는 `FILE`을 쓰면서 `<stdio.h>`를 스스로 include하지 않는다. 알파벳 순서로는 `<stdio.h>`보다 앞에 오므로 그대로 두면 컴파일 오류가 난다.
 
 틀린 예:
 
@@ -1280,9 +1280,9 @@ static void print_total(long total)
 
 `#endif` 뒤에는 반드시 가드 이름을 주석으로 단다. 헤더가 길면 `#endif`가 어느 `#ifndef`의 짝인지 바로 보이지 않기 때문이다.
 
-가드 이름 맨 앞에 `_`를 붙이지 않는다. `_`가 맨 앞에 오고 그 뒤에 대문자가 오는 이름은 C 표준이 implementation에 예약한 이름이며, 시스템 헤더가 자주 쓰기 때문이다. 실제로 glibc의 `<net/if.h>`는 `_NET_IF_H`를 가드로 쓴다. 프로젝트에 `net/if.h`라는 헤더가 있어서 같은 이름을 가드로 쓰면, 두 헤더 가운데 나중에 include한 쪽의 내용이 빠진다. 컴파일러는 이 일을 오류나 경고로 알리지 않는다.
+가드 이름 맨 앞에 `_`를 붙이지 않는다. `_`로 시작하고 바로 뒤에 대문자가 오는 이름은 C 표준이 implementation에 예약한 이름이다. 시스템 헤더도 이런 이름을 자주 쓴다. 실제로 glibc의 `<net/if.h>`는 `_NET_IF_H`를 가드로 쓴다. 프로젝트에 `net/if.h`라는 헤더가 있어서 같은 이름을 가드로 쓰면, 두 헤더 가운데 나중에 include한 쪽의 내용이 빠진다. 컴파일러는 이 문제를 오류나 경고로 알리지 않는다.
 
-틀린 예(`util/text.h`의 가드 이름을 경로로 만들지 않은 경우):
+틀린 예(`util/text.h`):
 
 ```c
 #ifndef TEXT_H
@@ -1346,7 +1346,7 @@ size_t count_words(const char *const text);
 
 - 변수의 정의: 헤더를 include하는 translation unit마다 정의가 생겨 링크할 때 `multiple definition` 오류가 난다.
 - `static` 변수: 헤더를 include하는 translation unit마다 별개의 변수가 생긴다. 한 파일에서 바꾼 값이 다른 파일에는 보이지 않는다.
-- `static` 함수: translation unit마다 사본이 생기는 점은 `static inline`과 같다. 다만 그 함수를 쓰지 않는 파일마다 GCC와 Clang이 `-Wunused-function` 경고를 낸다. `static inline`에는 이 경고를 내지 않는다.
+- `static` 함수: translation unit마다 사본이 생기는 점은 `static inline` 함수와 같다. 다만 그 함수를 쓰지 않는 파일마다 GCC와 Clang이 `-Wunused-function` 경고를 낸다. `static inline` 함수에는 이 경고를 내지 않는다.
 
 틀린 예(`store/inventory.h`):
 
@@ -1471,7 +1471,7 @@ static const char *describe_temperature(int celsius)
 
 ### 5.2. 줄 길이
 
-한 줄은 100열을 넘기지 않는 것이 원칙이다. 다만 넘치는 길이가 크지 않으면 넘겨도 된다.
+한 줄은 100열을 넘기지 않는 것이 원칙이다. 다만 넘치는 부분이 짧으면 넘겨도 된다.
 
 틀린 예:
 
@@ -1497,9 +1497,9 @@ static void print_order_summary(const char *const customer, size_t item_count,
 
 줄을 나눌 때는 다음 모양을 따른다.
 
-- 소괄호 안에서 나누면, 다음 줄은 아직 닫히지 않은 가장 안쪽 여는 소괄호의 바로 다음 열에서 시작한다. 즉, 다음 줄의 첫 글자와 그 소괄호 바로 뒤의 첫 글자가 같은 열에 놓인다. 함수 호출의 인자, 함수 선언의 매개변수, `if`와 `while`의 조건식이 모두 그렇다.
+- 소괄호 안에서 나누면, 다음 줄은 아직 닫히지 않은 소괄호 가운데 가장 안쪽 소괄호의 바로 다음 열에서 시작한다. 즉, 다음 줄의 첫 글자는 그 소괄호 바로 뒤의 글자와 같은 열에 놓인다. 함수 호출의 인자, 함수 선언의 매개변수, `if`와 `while`의 조건식이 모두 그렇다.
 - 소괄호 밖의 식을 연산자 뒤에서 나누면, 다음 줄은 그 식의 첫 피연산자와 같은 열에서 시작한다.
-- 대입문은 대입 연산자 뒤에서 나누지 않고, 오른쪽 식의 소괄호 안에서 나누는 것을 기본으로 한다. 오른쪽 식이 매우 길어 소괄호 안에서 나누면 다음 줄이 들어갈 자리가 남지 않을 때만 대입 연산자 바로 뒤에서 나누고, 다음 줄은 문장의 첫 줄보다 4칸 더 들여 쓴다.
+- 대입문은 대입 연산자 뒤에서 나누지 않고, 오른쪽 식의 소괄호 안에서 나누는 것을 기본으로 한다. 오른쪽 식이 매우 길어 소괄호 안에서 나누면 다음 줄이 들어갈 자리가 남지 않을 때만 대입 연산자 바로 뒤에서 나눈다. 이때 다음 줄은 문장의 첫 줄보다 4칸 더 들여쓴다.
 - 이항 연산자와 쉼표는 줄 끝에 남긴다.
 
 틀린 예:
@@ -1597,7 +1597,7 @@ static unsigned long report_remaining_time(unsigned long first_job, unsigned lon
 
 ### 5.4. 사용자에게 보이는 문자열
 
-출력 메시지 문자열은 줄 길이를 넘어도 나누지 않는다. 메시지를 grep 등의 문자열 탐색 도구로 찾을 수 있어야 한다. 여러 줄을 출력하는 문자열은 출력 줄 단위로 나눠 이어 붙여도 된다.
+출력 메시지 문자열은 줄 길이 제한을 넘어도 나누지 않는다. grep 같은 문자열 탐색 도구로 메시지를 찾을 수 있어야 하기 때문이다. 다만 여러 줄을 출력하는 문자열은 출력 줄 단위로 나눠 이어 붙여도 된다.
 
 틀린 예:
 
@@ -1631,7 +1631,7 @@ static void show_help(const char *const program_name)
 
 ### 5.5. 함수 선언부
 
-반환형, 함수 이름, 매개변수 목록을 한 줄에 쓴다. 길면 매개변수 목록 안에서 나눈다.
+반환형, 함수 이름, 매개변수 목록을 한 줄에 쓴다. 그 줄이 길면 매개변수 목록 안에서 나눈다.
 
 틀린 예:
 
@@ -1796,7 +1796,7 @@ static int adjust_level(int level, const int *const history, size_t count)
 
 ### 5.8. 중괄호 생략 금지
 
-모든 제어문의 본문은 반드시 중괄호로 감싼다. 대상은 `if`, `else`, `for`, `while`, `do`이다. 본문이 한 문장이어도 같다.
+모든 제어문의 본문은 반드시 중괄호로 감싼다. 대상은 `if`, `else`, `for`, `while`, `do`이다. 본문이 한 문장뿐이어도 감싼다.
 
 중괄호를 생략하면 본문에 문장을 더할 때 오동작하기 쉽다. 예를 들어 `if (cond) do_something();`의 본문에 `do_after();`를 더하면서 같은 들여쓰기로 두면, 두 문장이 모두 `if`에 걸린 것처럼 보인다. 그러나 `if`에 걸리는 것은 `do_something();` 하나뿐이고, `do_after();`는 조건과 상관없이 늘 실행된다. 중괄호를 늘 쓰는 것은 이런 오동작을 막기 위해서이다.
 
@@ -1965,7 +1965,7 @@ union float_bits {
 
 ### 5.10. 범위를 좁히는 블록
 
-범위를 좁히려고 만든 블록은 여는 중괄호와 닫는 중괄호를 각각 새 줄에 둔다.
+범위를 좁히려고 만든 블록은 여는 중괄호와 닫는 중괄호를 각각 다른 코드 없이 한 줄에 둔다.
 
 틀린 예:
 
@@ -1996,7 +1996,7 @@ static void print_totals(long online_sales, long store_sales, long returns)
 
 ### 5.11. 중괄호를 이용한 초기화
 
-중괄호 초기화 목록의 안쪽에는 공백을 둔다. 마지막 원소 뒤의 쉼표는 원소가 더 늘어날 여지가 있는 목록에만 둔다. enum이나 표처럼 원소가 늘어날 목록은 원소마다 줄을 바꾸고 마지막 원소 뒤에도 쉼표를 둔다. 원소를 더하거나 뺄 때 diff가 한 줄로 끝난다.
+중괄호 초기화 목록은 중괄호 안쪽에 공백을 둔다. 마지막 원소 뒤의 쉼표는 원소가 더 늘어날 여지가 있는 목록에만 둔다. enum이나 표처럼 원소가 늘어날 목록은 원소마다 줄을 바꾸고 마지막 원소 뒤에도 쉼표를 둔다. 그러면 원소를 더하거나 뺄 때 diff가 한 줄로 끝난다.
 
 구조체를 designated initializer로 초기화할 때는 멤버마다 줄을 바꾸는 것을 기본으로 한다.
 
@@ -2120,7 +2120,7 @@ static int convert_grade(char grade)
 
 ### 5.13. goto 레이블
 
-goto 레이블은 감싸는 블록의 중괄호와 같은 열에 둔다. 함수 본문의 레이블은 열 0에 온다.
+goto 레이블은 감싸는 블록의 중괄호와 같은 열에 둔다. 따라서, 함수 본문 바로 안에 있는 레이블은 줄의 맨 앞에 온다.
 
 틀린 예:
 
@@ -2224,7 +2224,7 @@ static size_t count_rows_without_zero(const int *const cells, size_t row_count, 
 - `if`, `for`, `while`, `switch`, `return` 같은 키워드 뒤에는 공백을 둔다.
 - 함수 이름과 `(` 사이, `sizeof`와 `(` 사이에는 공백을 두지 않는다.
 - 이항 연산자와 삼항 연산자의 양옆에는 공백을 둔다.
-- 단항 연산자, `.`, `->`, 증감 연산자에는 공백을 두지 않는다.
+- 단항 연산자와 증감 연산자는 피연산자에 붙여 쓴다. `.`, `->`의 양옆에도 공백을 두지 않는다.
 - 쉼표 뒤에는 공백을 두고, 앞에는 두지 않는다.
 - 괄호 안쪽과 캐스트 뒤에는 공백을 두지 않는다.
 
@@ -2310,7 +2310,7 @@ static int sum_distances(const struct point *const points, size_t count, bool is
 
 ### 5.15. 포인터 표기
 
-`*`는 이름 쪽에 붙인다. 포인터를 돌려주는 함수도 같다. 다만 Windows 전용 프로젝트에서는 Windows 관례대로 `*`를 타입 쪽에 붙인다.
+포인터를 선언할 때 `*`는 이름 쪽에 붙인다. 포인터를 돌려주는 함수도 같다. 다만 Windows 전용 프로젝트에서는 Windows 관례대로 `*`를 타입 쪽에 붙인다.
 
 틀린 예:
 
@@ -2365,7 +2365,7 @@ static void reset_size(struct size *const mut_size)
 
 ### 5.17. 빈 줄
 
-작업과 맥락이 바뀌는 덩어리마다 빈 줄을 적절히 둔다.
+작업이나 맥락이 바뀌는 덩어리 사이에는 빈 줄을 적절히 둔다.
 
 올바른 예:
 
@@ -2400,9 +2400,9 @@ static long count_long_lines(const char *const path, size_t limit)
 
 ### 5.18. 정렬
 
-연속된 대입, 선언, 매크로, 줄 끝 주석을 열에 맞춰 정렬하지 않는다. 한 줄만 고쳐도 이웃 줄까지 맞춰야 하기 때문이다.
+연속된 대입, 선언, 매크로, 줄 끝 주석을 열에 맞춰 정렬하지 않는다. 한 줄만 고쳐도 이웃 줄까지 다시 맞춰야 하기 때문이다.
 
-다만 여러 줄에 걸친 매크로의 줄 끝 `\`는 같은 열에 맞춘다. 가장 긴 줄의 마지막 글자 뒤에 공백 하나를 두고 `\`를 쓰고, 다른 줄의 `\`도 그 열에 둔다. `\`가 코드 바로 옆에 줄마다 다른 위치로 붙어 있으면 코드를 읽기 어렵고, 그 블록이 매크로라는 것도 한눈에 알아보기 어렵다. `\`가 한 열에 모여 있으면 매크로의 범위가 바로 보이고, 빠진 `\`도 바로 눈에 띈다.
+다만 여러 줄에 걸친 매크로의 줄 끝 `\`는 같은 열에 맞춘다. 가장 긴 줄에서는 마지막 글자 뒤에 공백 하나를 두고 `\`를 쓴다. 다른 줄의 `\`도 그 열에 둔다. `\`가 줄마다 코드 바로 뒤에 붙어 열이 제각각이면, 코드를 읽기 어렵고 그 블록이 매크로라는 것도 한눈에 알아보기 어렵다. 반면 `\`가 한 열에 모여 있으면 매크로의 범위가 바로 보이고, 빠진 `\`도 쉽게 눈에 띈다.
 
 틀린 예:
 
@@ -2461,12 +2461,12 @@ static void open_account(struct account *const mut_account)
 ### 5.19. preprocessing directive
 
 - preprocessing directive의 `#`은 늘 줄의 맨 앞에 둔다. 함수나 다른 중괄호 블록 안에 있는 directive도 같다.
-- 조건부 컴파일 블록 안에 있는 directive는 `#`과 directive 이름 사이에 깊이 1마다 공백 1칸을 둔다. 깊이 1이면 1칸, 깊이 2이면 2칸, 깊이 3이면 3칸이다.
+- 조건부 컴파일 블록 안에 있는 directive는 `#`과 directive 이름 사이에 중첩 깊이만큼 공백을 둔다. 깊이 1이면 1칸, 깊이 2이면 2칸, 깊이 3이면 3칸이다.
 - `#elif`, `#else`, `#endif`는 짝이 되는 `#if`, `#ifdef`, `#ifndef`와 같은 깊이에 둔다.
-- include guard는 깊이에 넣지 않는다.
+- include guard는 중첩 깊이에 포함하지 않는다.
 - 조건부 컴파일 블록 안의 C 코드는 directive의 깊이와 상관없이, directive가 없을 때와 같은 들여쓰기를 따른다.
 
-`#`이 늘 맨 앞에 있으면 directive가 코드와 구별되고, `#` 뒤의 공백은 중첩 깊이를 보여 준다.
+`#`이 늘 줄의 맨 앞에 있으면 directive가 코드와 구별된다. 또 `#` 뒤의 공백 수를 보면 중첩 깊이를 알 수 있다.
 
 틀린 예:
 
@@ -2547,9 +2547,9 @@ static char get_path_separator(void)
 
 ### 5.20. GCC/Clang 인라인 어셈블리
 
-인라인 어셈블리는 명령 하나를 문자열 하나에 쓴다. 마지막 문자열을 뺀 나머지 끝에는 `\n\t`를 붙인다.
+인라인 어셈블리는 명령 하나를 문자열 하나에 쓴다. 마지막 문자열을 뺀 나머지 문자열의 끝에는 `\n\t`를 붙인다.
 
-`\n\t`는 GCC 매뉴얼의 Extended Asm 절이 권하는 구분자이다. `\n`은 명령 사이의 줄을 바꾸고, `\t`는 컴파일러가 출력하는 어셈블리에서 명령을 명령 필드까지 들여쓴다. 컴파일러는 asm 문의 마지막 명령 뒤에서 스스로 줄을 바꾼다. 따라서 마지막 문자열에 `\n\t`를 붙이면 탭만 있는 줄이 하나 더 생긴다.
+`\n\t`는 GCC 매뉴얼의 Extended Asm 절에 나오는 권장 구분자이다. `\n`은 명령 사이의 줄바꿈이다. `\t`는 컴파일러가 출력하는 어셈블리에서 명령을 명령 필드까지 들여쓰는 탭이다. 컴파일러는 asm 문의 마지막 명령 뒤에서 스스로 줄을 바꾼다. 따라서, 마지막 문자열에 `\n\t`를 붙이면 탭만 있는 줄이 하나 더 생긴다.
 
 틀린 예:
 
@@ -2666,7 +2666,7 @@ out_unlock:
 
 ### 6.2. 매크로와 enumeration constant의 이름
 
-매크로와 enumeration constant는 대문자 snake_case로 짓는다. enumeration constant에 열거형 이름을 접두어로 붙이라고 강제하지 않는다.
+매크로와 enumeration constant는 대문자 snake_case로 짓는다. enumeration constant에 열거형 이름 접두어를 강제하지 않는다.
 
 틀린 예:
 
@@ -2703,7 +2703,7 @@ enum direction {
 
 ### 6.3. function-like macro
 
-function-like macro도 대문자로 짓는다. 다만 컴파일러 builtin을 감싸는 관용 이름은 `likely`, `unlikely`와 같이 소문자를 예외적으로 허용한다.
+function-like macro도 대문자로 짓는다. 다만 `likely`, `unlikely`처럼 컴파일러 builtin을 감싸는 관용 이름에는 예외로 소문자를 허용한다.
 
 틀린 예:
 
@@ -2726,7 +2726,7 @@ function-like macro도 대문자로 짓는다. 다만 컴파일러 builtin을 �
 
 ### 6.4. const 객체의 이름
 
-const 객체도 변수 규칙을 따른다. 대문자 이름은 매크로와 enumeration constant에만 쓴다.
+const 객체의 이름도 변수 이름 규칙을 따른다. 대문자 이름은 매크로와 enumeration constant에만 쓴다.
 
 틀린 예:
 
@@ -2742,11 +2742,11 @@ static const int gs_days_in_month[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 
 
 ### 6.5. 이름의 길이와 내용
 
-- external linkage 이름과 file scope 이름은 뜻이 드러나게 짓는다.
-- 사용 범위가 좁은 지역 변수는 그 용어상의 용례가 확실한 짧은 이름으로 지을 수 있다(`i`, `n`, `tmp`, `iter` 등).
-- 타입을 나타내는 접두어나 접미어를 이름에 붙이지 않는다(Hungarian notation). 이름은 값의 뜻을 나타낸다.
+- external linkage가 있는 이름과 file scope 이름은 뜻이 드러나게 짓는다.
+- 사용 범위가 좁은 지역 변수는 쓰임이 관례로 굳은 짧은 이름으로 지어도 된다(`i`, `n`, `tmp`, `iter` 등).
+- Hungarian notation처럼 타입을 나타내는 접두어나 접미어를 이름에 붙이지 않는다. 이름은 값의 뜻을 나타낸다.
 - 널리 쓰이는 약어만 쓴다.
-- `l`, `O`처럼 숫자와 혼동되는 한 글자 이름과 대소문자만 다른 이름을 쓰지 않는다.
+- `l`, `O`처럼 숫자와 혼동되는 한 글자 이름은 쓰지 않는다. 대소문자만 다른 이름도 쓰지 않는다.
 
 틀린 예:
 
@@ -2832,7 +2832,7 @@ int cart_add_item(const char *const name);
 참 거짓을 돌려주는 함수와 function-like macro, 참 거짓 값을 담는 변수, 매개변수, struct 멤버의 이름은 다음 두 형태 가운데 하나로 짓는다.
 
 - be 동사나 의문문을 만드는 동사로 시작한다. `is_` 뒤에는 보어인 명사나 형용사를, `has_` 뒤에는 명사나 과거분사를, `can_`과 `should_` 뒤에는 동사 원형을 붙인다(`is_empty`, `is_directory`, `has_children`, `has_found`, `can_retry`, `should_flush`).
-- 상태를 나타내는 3인칭 동사로 시작한다(`exists`, `contains_key`, `matches_pattern`).
+- 상태를 나타내는 3인칭 단수 동사로 시작한다(`exists`, `contains_key`, `matches_pattern`).
 
 틀린 예:
 
@@ -2953,7 +2953,7 @@ static void report_negative(const int *const values, size_t count)
 - 함수 안의 `static` 변수는 `s_`로 시작한다.
 - `static`이 없는 지역 변수에는 접두어를 붙이지 않는다.
 
-`g_`, `gs_`, `s_`가 붙는 변수는 모두 static storage duration이라 프로그램이 끝날 때까지 남고, 프로그램 시작 전에 한 번만 초기화된다. 차이는 scope와 linkage이다. `g_` 변수는 다른 파일에서도 보이고, `gs_` 변수는 그 파일 안에서만 보인다. `s_` 변수는 그 함수 안에서만 보이지만, 값이 호출과 호출 사이에 남는다. 접두어는 쓰는 자리마다 이 수명과 범위를 드러낸다.
+`g_`, `gs_`, `s_`가 붙는 변수는 모두 static storage duration 객체이다. 따라서, 프로그램이 끝날 때까지 남고, 프로그램 시작 전에 한 번만 초기화된다. 차이는 scope와 linkage이다. `g_` 변수는 다른 파일에서도 보이고, `gs_` 변수는 정의한 파일 안에서만 보인다. `s_` 변수는 정의한 함수 안에서만 보이지만, 값이 호출과 호출 사이에 남는다. 접두어가 있으면 변수를 쓰는 자리마다 이 수명과 범위가 드러난다.
 
 틀린 예:
 
@@ -2991,7 +2991,7 @@ static unsigned int issue_ticket(void)
 
 ### 6.9. typedef
 
-struct, union, enum에 typedef를 붙이는 것은 가능한 한 지양한다. `struct point`처럼 태그를 그대로 쓴다. 특히 enum 타입의 변수는 특별한 이유가 없으면 typedef로 enum임을 감추지 않고 `enum` 태그로 선언한다. typedef가 어울리는 곳은 내부를 감추는 opaque type과 함수 포인터 타입이다.
+struct, union, enum에 typedef를 붙이는 것은 가능한 한 지양한다. `struct point`처럼 태그를 그대로 쓴다. 특히 enum 타입의 변수는 특별한 이유가 없으면 typedef로 enum임을 감추지 않고 `enum` 태그로 선언한다. typedef는 내부를 감추는 opaque type과 함수 포인터 타입에 어울린다.
 
 지양하는 예:
 
@@ -3034,13 +3034,13 @@ audio_device *open_audio_device(const char *const name, sample_callback on_sampl
 
 ### 6.10. 예약된 식별자
 
-C 표준은 일부 이름을 implementation에 예약한다. implementation은 컴파일러와 표준 라이브러리를 함께 이르는 C 표준의 용어이다. 표준 헤더와 컴파일러는 내부 매크로와 함수에 이런 이름을 쓴다. 프로그램이 예약된 식별자(reserved identifier)를 선언하거나 정의하면 undefined behavior이다(C99 §7.1.3 ¶2).
+C 표준은 일부 이름을 implementation이 쓰도록 예약한다. implementation은 컴파일러와 표준 라이브러리를 함께 이르는 C 표준의 용어이다. 표준 헤더와 컴파일러는 내부 매크로와 함수에 이런 이름을 쓴다. 프로그램이 예약된 식별자를 선언하거나 정의하면 undefined behavior이다(C99 §7.1.3 ¶2).
 
 다음 이름은 쓰지 않는다.
 
 - `_`와 대문자로 시작하는 이름(`_STORE_CART_H`)과 `__`로 시작하는 이름(`__retry_count`): 어떤 용도로도 예약되어 있다(C99 §7.1.3 ¶1).
 - file scope에서 `_`로 시작하는 이름(`_buffer_size`): file scope 식별자로 예약되어 있다(C99 §7.1.3 ¶1).
-- `_t`로 끝나는 이름(`item_id_t`): POSIX는 implementation이 어느 헤더에든 이런 이름을 새로 넣을 수 있게 허용한다(POSIX.1-2024 XSH 2.2.2). glibc도 이런 이름을 타입 이름용으로 예약한다(glibc 매뉴얼 Reserved Names).
+- `_t`로 끝나는 이름(`item_id_t`): POSIX에서는 implementation이 어느 헤더에든 이런 이름을 새로 넣을 수 있다(POSIX.1-2024 XSH 2.2.2). glibc도 이런 이름을 타입 이름용으로 예약한다(glibc 매뉴얼 Reserved Names).
 
 `_POSIX_C_SOURCE`처럼 표준이 사용자에게 정의하라고 정한 feature test macro는 예외이다.
 
@@ -3092,7 +3092,7 @@ static size_t gs_buffer_size;
 
 ### 6.11. Win32 API 심볼과 타입
 
-크로스플랫폼 코드를 개발할 때 Win32 API와 그 심볼의 이름(`CreateFileW`, `HANDLE`, `SOCKET`)은 원래 철자로 쓴다. Win32 API의 이름을 다른 이름으로 감싸지 않고, 직접 짓는 이름에는 Win32 API의 표기법을 따라 하지 않는다.
+크로스플랫폼 코드를 개발할 때 Win32 API의 심볼과 타입 이름(`CreateFileW`, `HANDLE`, `SOCKET`)은 원래 철자로 쓴다. Win32 API의 이름을 다른 이름으로 감싸지 않는다. 직접 짓는 이름에는 Win32 API의 표기법을 따라 하지 않는다.
 
 틀린 예:
 
@@ -3228,7 +3228,7 @@ static long sum_unpaid(const struct order *const orders, size_t count)
 }
 ```
 
-다만 C89를 고른 프로젝트는 예외로 한다. C89는 문장 뒤의 선언과 `for` 초기식 안의 선언을 허용하지 않는다. 따라서 변수는 쓰이는 가장 좁은 블록의 맨 앞에 선언하고, 반복 변수는 반복문을 감싼 블록의 맨 앞에 선언한다.
+다만 C89를 고른 프로젝트는 예외로 한다. C89는 문장 뒤의 선언과 `for` 초기식 안의 선언을 허용하지 않는다. 따라서, 변수는 쓰이는 가장 좁은 블록의 맨 앞에 선언하고, 반복 변수는 반복문을 감싼 블록의 맨 앞에 선언한다.
 
 C89 프로젝트의 올바른 예:
 
@@ -3312,7 +3312,7 @@ static size_t count_errors(const int *const codes, size_t count)
 
 ### 7.4. 수명이 끝난 대상을 가리키는 포인터
 
-포인터가 가리키는 대상이 범위를 벗어나 수명이 끝났는데 포인터 변수는 남아 있으면 `NULL`을 대입한다. 더는 그 포인터로 접근할 일이 없어도 대입한다. 그러면 실수로 그 포인터를 다시 쓸 때 사라진 대상 대신 `NULL`을 다루게 되어, `NULL` 검사에 걸리거나 대개 그 자리에서 바로 실패한다.
+포인터가 가리키는 대상이 범위를 벗어나 수명이 끝났는데 포인터 변수는 남아 있으면 `NULL`을 대입한다. 더는 그 포인터로 접근할 일이 없어도 대입한다. 그러면 실수로 그 포인터를 다시 써도 사라진 대상 대신 `NULL`을 다룬다. 따라서, `NULL` 검사에 걸리거나 대개 그 자리에서 바로 실패한다.
 
 틀린 예:
 
@@ -3401,7 +3401,7 @@ static void print_greeting(const char *const name, bool is_formal)
 ### 7.5. 정수 타입
 
 - 크기, 개수, 인덱스에는 `size_t`를 쓴다.
-- 타입의 크기가 엄격해야 하는 경우에는 `<stdint.h>`의 exact-width integer type을 쓴다. 다만 Linux의 POSIX API처럼 반환형과 매개변수가 대개 기본 타입인 코드에서는 `<stdint.h>`를 쓰지 않고 그 API의 타입을 따라도 된다.
+- 타입의 크기를 정확히 맞춰야 하면 `<stdint.h>`의 exact-width integer type을 쓴다. 다만 Linux의 POSIX API처럼 반환형과 매개변수가 대개 기본 타입인 API를 쓰는 코드에서는 `<stdint.h>` 대신 그 API의 타입을 따라도 된다.
 - 바이트 데이터는 `unsigned char` 또는 `uint8_t`로 다룬다.
 - 부호 있는 값과 없는 값을 섞어 연산할 때는 명시적으로 캐스트한다.
 
@@ -3468,7 +3468,7 @@ static int read_exactly(int fd, unsigned char *const mut_buffer, size_t size)
 
 ### 7.6. 참 거짓 값
 
-참 거짓 값은 `<stdbool.h>`의 `bool`, `true`, `false`로 다뤄도 되고, `int` 같은 정수 타입과 `1`, `0`으로 다뤄도 된다. 다만 Linux의 POSIX API처럼 반환형과 매개변수가 대개 기본 타입인 코드에서는 `int`를 우선하고, 그렇지 않은 코드에서는 `bool`을 써도 된다.
+참 거짓 값은 `<stdbool.h>`의 `bool`, `true`, `false`로 다뤄도 되고, `int` 같은 정수 타입과 `1`, `0`으로 다뤄도 된다. 다만 Linux의 POSIX API처럼 반환형과 매개변수가 대개 기본 타입인 API를 쓰는 코드에서는 `int`를 우선한다. 그 밖의 코드에서는 `bool`을 써도 된다.
 
 정수로 다룰 때 참은 `1`, 거짓은 `0`이다. `0`이 아닌 값은 모두 참으로 해석되지만, 참 상태를 직접 정해 넣는 코드에서는 `1`을 우선한다.
 
@@ -3518,7 +3518,7 @@ static int is_dirty(unsigned int flags)
 }
 ```
 
-C89를 고른 프로젝트에는 `<stdbool.h>`가 없으므로 정수 타입으로 다룬다. 이때 `bool`, `true`, `false`를 직접 정의하지 않는다. C23에서 이 이름들이 키워드가 되어 충돌하기 때문이다.
+C89에는 `<stdbool.h>`가 없다. 따라서, C89를 고른 프로젝트는 참 거짓 값을 정수 타입으로 다룬다. 이때 `bool`, `true`, `false`를 직접 정의하지 않는다. C23 표준에서 세 이름이 모두 키워드가 되어 충돌하기 때문이다.
 
 C89 프로젝트의 틀린 예:
 
@@ -3543,7 +3543,7 @@ static int gs_is_running = 1;
 - 단독 상수는 `#define`으로 정의한다.
 - 타입이 중요한 상수는 `static const` 객체로 정의한다.
 
-enum의 첫 enumeration constant에는 반드시 값을 명시한다. 첫 값은 생략해도 0이 되지만(C99 §6.7.2.2 ¶3), 0에서 시작한다는 의도를 선언에 드러내기 위해서이다.
+enum의 첫 enumeration constant에는 반드시 값을 명시한다. 첫 값은 생략해도 0이 되지만(C99 §6.7.2.2 ¶3), 값을 명시하면 0에서 시작한다는 의도가 선언에 드러난다.
 
 틀린 예:
 
@@ -3560,7 +3560,7 @@ static long long convert_days_to_ms(int days)
 }
 ```
 
-`MILLISECONDS_PER_DAY`는 `int`이므로 `days * MILLISECONDS_PER_DAY`도 `int`로 계산된다. 따라서 `days`가 25 이상이면 결과를 `long long`으로 바꾸기 전에 `int`의 범위를 넘는다.
+`MILLISECONDS_PER_DAY`는 `int` 상수이므로 `days * MILLISECONDS_PER_DAY`도 `int`로 계산된다. 따라서, `days`가 25 이상이면 곱셈 결과가 `long long`으로 바뀌기 전에 `int`의 범위를 넘는다.
 
 틀린 예(enum의 첫 값을 생략한 경우):
 
@@ -3594,7 +3594,7 @@ static long long convert_days_to_ms(int days)
 ### 7.8. const
 
 - 기본 타입 변수를 포함한 일반 변수와 값 매개변수에는 `const`를 강제하지 않는다.
-- 문자열 리터럴을 가리키는 포인터는 `const char *`이다.
+- 문자열 리터럴을 가리키는 포인터는 `const char *`로 선언한다.
 - 값으로 돌려주는 반환형에는 `const`를 붙이지 않는다.
 
 틀린 예:
@@ -3935,7 +3935,7 @@ static void print_default_window(void)
 }
 ```
 
-실행 중에 값이 정해지는 file scope 변수는 되도록 프로그램 초반부, 곧 `main`의 앞부분이나 초기화 함수에서 초기화한다. 실행 중에 채우는 구조체, 동적 할당한 메모리, 라이브러리나 OS에서 받아 오는 값이 여기에 해당한다. static storage duration 객체의 초기화식은 상수식이어야 하므로(C99 §6.7.8 ¶4), 이런 값은 정의할 때 초기화할 수 없다. 컴파일할 때 값이 정해지는 상수와 const 표는 정의할 때 초기화한다.
+실행 중에 값이 정해지는 file scope 변수는 되도록 프로그램 초반부에 초기화한다. 즉, `main`의 앞부분이나 초기화 함수에서 초기화한다. 실행 중에 채우는 구조체, 동적 할당한 메모리, 라이브러리나 OS에서 받아 오는 값이 여기에 해당한다. static storage duration 객체의 초기화식은 상수식이어야 하므로(C99 §6.7.8 ¶4), 이런 값은 정의할 때 초기화식으로 쓸 수 없다. 반면 컴파일할 때 값이 정해지는 상수와 const 표는 정의할 때 초기화한다.
 
 올바른 예:
 
@@ -3968,7 +3968,7 @@ int main(void)
 ### 8.1. 리터럴 표기
 
 - 16진 리터럴은 `0x` 접두어를 소문자로, 16진 숫자를 대문자로 쓴다.
-- 2진 리터럴은 `0b` 접두어를 소문자로 쓴다. 2진 리터럴은 C23에서 표준이 되었다. C17 이하를 고른 프로젝트에서는 GNU 확장이므로 `__extension__`을 붙인다.
+- 2진 리터럴은 `0b` 접두어를 소문자로 쓴다. 2진 리터럴은 C23 표준에서 정식 문법이 되었다. C17 이하를 고른 프로젝트에서는 GNU 확장이므로 `__extension__`을 붙인다.
 - 접미어는 모두 대문자로 쓴다(`U`, `L`, `UL`, `ULL`, `F`). 소문자 `l`은 숫자 `1`과 헷갈리기 쉬우므로, 다른 접미어도 함께 대문자로 맞춘다.
 - 부동소수점 리터럴에는 소수점을 쓴다.
 
@@ -3998,7 +3998,7 @@ static const double gs_timeout_s = 2.0;
 
 ### 8.2. 증감 연산자
 
-증감 연산자는 기본적으로 전위형(`++i`)을 쓴다. 후위형은 이전 값이 꼭 필요할 때만 쓴다. 특별한 이유가 없는 한, 배열 인덱스, 함수 인자, 다른 연산자의 피연산자 안에서는 증감 연산자를 쓰지 않고 별도 문장으로 뺀다. 한 식에서 같은 객체를 두 번 이상 수정하지 않는다. 역참조한 대상을 하나 늘리거나 줄일 때는 증감 연산자 대신 `*p += 1`, `*p -= 1`로 쓴다. 대상과 연산이 분명히 나뉘고, `*p++`와 헷갈릴 여지가 없기 때문이다.
+증감 연산자는 기본적으로 전위형(`++i`)을 쓴다. 후위형은 이전 값이 꼭 필요할 때만 쓴다. 특별한 이유가 없는 한, 배열 첨자, 함수 인자, 다른 연산자의 피연산자 안에서는 증감 연산자를 쓰지 않고 별도 문장으로 뺀다. 한 식에서 같은 객체를 두 번 이상 수정하지 않는다. 역참조한 대상을 하나 늘리거나 줄일 때는 증감 연산자 대신 `*p += 1`, `*p -= 1`로 쓴다. 대상과 연산이 분명히 나뉘고, `*p++`와 헷갈릴 여지가 없기 때문이다.
 
 틀린 예:
 
@@ -4092,8 +4092,8 @@ static void skip_spaces(const char **const mut_cursor)
 
 ### 8.3. sizeof
 
-- 할당, `memset`, `memcpy` 같은 함수에 넘기는 크기는 대상 변수에서 얻는다(`sizeof(*p)`, `sizeof(var)`).
-- 배열의 원소 수는 `ARRAY_SIZE()` 매크로로 구한다. 이 매크로는 배열 타입의 객체에만 쓴다. 동적 할당한 메모리와 배열 매개변수는 포인터이므로 원소 수를 따로 넘긴다.
+- 할당 함수나 `memset`, `memcpy` 같은 함수에 넘기는 크기는 대상 변수에서 얻는다(`sizeof(*p)`, `sizeof(var)`).
+- 배열의 원소 수는 `ARRAY_SIZE()` 매크로로 구한다. 이 매크로는 배열 타입의 객체에만 쓴다. 동적 할당한 메모리와 배열 매개변수는 포인터로 다루므로, 원소 수를 따로 넘긴다.
 
 틀린 예:
 
@@ -4183,9 +4183,9 @@ static void print_names(const char *const *const names, size_t count)
 
 ### 8.4. 캐스트
 
-- `void *`를 다른 객체 포인터로 바꿀 때는 캐스트하지 않는다. `malloc`의 반환값도 같다.
+- `void *`를 다른 객체 포인터 타입으로 바꿀 때는 캐스트하지 않는다. `malloc`의 반환값도 같다.
 - 값이 잘릴 수 있는 변환과 부호가 섞인 연산에는 명시적 캐스트를 쓴다.
-- 캐스트한 결과를 다시 캐스트할 때는 문법상 필요 없더라도 안쪽 캐스트 식을 괄호로 감싼다. 그러면 각 변환이 안쪽부터 차례로 적용되는 별개의 단계로 읽힌다.
+- 캐스트한 결과를 다시 캐스트할 때는 문법상 필요 없더라도 안쪽 캐스트 식을 소괄호로 감싼다. 그러면 각 변환이 안쪽부터 차례로 적용되는 별개의 단계로 읽힌다.
 
 틀린 예:
 
@@ -4245,15 +4245,15 @@ static uint64_t convert_buffer_address(const unsigned char *const buffer, size_t
 
 ### 8.5. 우선순위 괄호
 
-- 비트 연산자와 시프트가 다른 연산자와 섞이면 소괄호로 묶는다.
+- 비트 연산자와 시프트 연산자가 다른 연산자와 섞이면 소괄호로 묶는다.
 - `&&`와 `||`가 섞이면 소괄호로 묶는다.
 - 직관적인 이해, 덩어리 구분, 가독성을 위해 문법상 필요 없는 소괄호를 써도 된다. 문법상 필요 없다는 이유만으로 소괄호를 과감히 생략하는 것은 지양한다.
 
-소괄호의 위치는 식의 뜻을 바꾼다. 캐스트는 `[]`, `->`, 함수 호출처럼 뒤에 붙는 연산자보다 나중에, 시프트 같은 이항 연산자보다는 먼저 적용된다. 아래 예에서 `pixels`는 픽셀마다 빨강, 초록, 파랑, 알파 값을 1바이트씩 차례로 담은 `const uint8_t *`이다. 이때 다음 식들은 모두 다르다.
+소괄호의 위치가 달라지면 식의 뜻도 달라진다. 캐스트는 `[]`, `->`, 함수 호출처럼 뒤에 붙는 연산자보다 나중에, 시프트 연산자 같은 이항 연산자보다는 먼저 적용된다. 아래 예에서 `pixels`는 픽셀마다 빨강, 초록, 파랑, 알파 값을 1바이트씩 차례로 담은 버퍼를 가리키는 `const uint8_t *`이다. 이때 다음 식은 모두 뜻이 다르다.
 
-- `(uint32_t)pixels[2]`는 `pixels[2]`를 먼저 읽는다. 첨자 `2`는 바이트 2개이므로, 첫 픽셀의 파랑 값 하나를 `uint32_t`로 바꾼다.
-- `((const uint32_t *)pixels)[2]`는 포인터를 먼저 바꾼다. 첨자 `2`는 `uint32_t` 2개, 곧 8바이트이므로, 세 번째 픽셀의 4바이트를 한꺼번에 읽는다. 바이트 버퍼를 이렇게 읽으면 strict aliasing 규칙을 어긴다. 주소가 `uint32_t`의 정렬 단위에 맞지 않으면 정렬 요구도 어긴다.
-- `(uint32_t)pixels[3] << 24`는 알파 값을 `uint32_t`로 바꾼 뒤 시프트한다. 반면 `(uint32_t)(pixels[3] << 24)`는 `int`로 승격된 값을 먼저 시프트한다. 따라서, 알파 값이 `0x80` 이상이면 결과가 `int`의 범위를 넘어 undefined behavior이다.
+- `(uint32_t)pixels[2]`는 `pixels[2]`를 먼저 읽는다. 첨자 `2`는 2바이트 뒤를 뜻하므로, 첫 픽셀의 파랑 값 하나를 `uint32_t`로 바꾼다.
+- `((const uint32_t *)pixels)[2]`는 포인터를 먼저 바꾼다. 첨자 `2`는 `uint32_t` 2개, 곧 8바이트 뒤를 뜻하므로, 세 번째 픽셀의 4바이트를 한꺼번에 읽는다. 바이트 버퍼를 이렇게 읽으면 strict aliasing 규칙을 어긴다. 주소가 `uint32_t`의 정렬 단위에 맞지 않으면 정렬 요구 사항도 어긴다.
+- `(uint32_t)pixels[3] << 24`는 알파 값을 `uint32_t`로 바꾼 뒤 시프트한다. 반면 `(uint32_t)(pixels[3] << 24)`는 `int`로 승격된 값을 먼저 시프트한다. 따라서, 알파 값이 `0x80` 이상이면 시프트 결과가 `int`의 범위를 넘는다. 이런 시프트는 undefined behavior이다.
 
 틀린 예:
 
@@ -4331,7 +4331,7 @@ static size_t compute_offset(size_t header_size, size_t row, size_t row_stride, 
 
 ### 8.6. 비교
 
-- 상수를 왼쪽에 두는 비교(`NULL == p`)를 쓰지 않는다. 대입 실수는 컴파일러 경고가 잡는다.
+- 상수를 왼쪽에 두는 비교(`NULL == p`)를 쓰지 않는다. `==`를 `=`로 잘못 쓰면 컴파일러가 경고한다.
 - 부동소수점 값은 `==`로 비교하지 않고, 반복 변수로 쓰지 않는다.
 
 틀린 예:
@@ -4362,7 +4362,7 @@ static void plot_unit_range(void)
 }
 ```
 
-`0.1`은 2진수로 정확히 나타낼 수 없어서, 열 번 더해도 정확히 `1.0`이 되지 않는다. 따라서 `plot_unit_range()`의 반복문은 끝나지 않는다.
+`0.1`은 2진수로 정확히 나타낼 수 없으므로, 열 번 더해도 정확히 `1.0`이 되지 않는다. 따라서, `plot_unit_range()`의 반복문은 끝나지 않는다.
 
 올바른 예:
 
@@ -4394,7 +4394,7 @@ static void plot_unit_range(void)
 
 ### 8.7. 널 포인터와 참 거짓 판정
 
-- 널 포인터는 `NULL`로 쓰고, `0`으로 쓰지 않는다. `NULL`이어야 그 값이 포인터라는 것이 드러난다.
+- 널 포인터는 `NULL`로 쓰고, `0`으로 쓰지 않는다. `NULL`로 써야 그 값이 포인터임이 드러난다.
 - 포인터는 `NULL`과, 정수는 `0`과 명시적으로 비교한다.
 - `bool` 값만 그대로 조건에 쓴다.
 
@@ -4446,7 +4446,7 @@ static int print_title(const char *const title_nullable, size_t line_count, bool
 
 삼항 연산자는 값 하나를 고를 때만 쓴다. 조건은 문법상 필요 없어도 소괄호로 감싼다. 비교 하나뿐인 조건도 감싼다. 조건이 한 덩어리로 읽히게 하기 위해서이다.
 
-삼항 연산자의 중첩은 지양한다. 굳이 중첩한다면 안쪽 삼항 연산자는 식 전체를 소괄호로 감싼다. 중첩한 식이 한 줄에 들어가지 않으면, 안쪽 삼항 연산자의 결과를 담는 변수를 하나 더 만들어 밖으로 뽑는다.
+삼항 연산자의 중첩은 지양한다. 굳이 중첩한다면 안쪽 삼항 연산자 식 전체를 소괄호로 감싼다. 중첩한 식이 한 줄에 들어가지 않으면, 안쪽 삼항 연산자의 결과를 별도 변수에 담는다.
 
 지양하는 예:
 
@@ -4542,7 +4542,7 @@ static const char *describe_copy(size_t file_count)
 
 ### 8.9. 대입
 
-- 조건식 안에서 대입하지 않는다. 반복마다 값을 읽어 비교하는 반복문은 `for` 문으로 쓰고, 읽기를 초기식과 증감식에 둔다. 조건식 안의 대입은 이렇게 바꿀 수 없을 때만 쓴다.
+- 조건식 안에서 대입하지 않는다. 반복마다 값을 읽어 비교하는 반복문은 `for` 문으로 쓰고, 값을 읽는 식을 초기식과 증감식에 둔다. 조건식 안의 대입은 이렇게 바꿀 수 없을 때만 쓴다.
 - 대입을 연쇄하지 않는다.
 
 틀린 예:
@@ -4618,7 +4618,7 @@ static void clear_range(struct range *const mut_range)
 
 ### 8.10. 쉼표 연산자
 
-쉼표 연산자는 쓰지 않는다. 다만 `for` 문에서 변수 두 개 이상을 함께 다룰 때는 초기식과 증감식에 쓸 수 있다. 이런 `for` 문이 한 줄에 들어가지 않으면 `;` 뒤에서 나누고, 다음 줄은 여는 소괄호의 바로 다음 열에서 시작한다.
+쉼표 연산자는 쓰지 않는다. 다만 `for` 문에서 변수 두 개 이상을 함께 다룰 때는 초기식과 증감식에 쓸 수 있다. 이런 `for` 문이 한 줄에 들어가지 않으면 `;` 뒤에서 나누고, 다음 줄은 `for`의 여는 소괄호 바로 다음 열에서 시작한다.
 
 틀린 예:
 
@@ -4695,7 +4695,7 @@ static void copy_to_free_slots(int *const mut_slots, size_t capacity, const int 
 
 ### 9.1. switch
 
-- 열거형의 모든 값을 다루는 `switch`에는 `default`를 두지 않는다. 새 enumeration constant를 빠뜨리면 `-Wswitch`가 알려 준다. `default`가 있으면 이 경고가 꺼진다.
+- 열거형의 모든 값을 다루는 `switch`에는 `default`를 두지 않는다. 열거형에 새로 더한 enumeration constant의 `case`를 빠뜨리면 `-Wswitch`가 경고한다. `default`가 있으면 이 경고가 나오지 않는다.
 - 그 밖의 모든 `switch`에는 `default`를 둔다.
 - 모든 `case`는 `break`, `return`, `goto`, `continue` 가운데 하나로 끝낸다.
 - 의도한 fallthrough에는 `/* fallthrough */` 주석을 단다. GCC의 `-Wimplicit-fallthrough`가 이 주석을 인식한다.
@@ -4889,7 +4889,7 @@ static void wait_for_conversion(void)
 goto는 다음 경우에 쓴다.
 
 - 이중 이상으로 중첩된 제어문이나 반복문을 한 번에 빠져나갈 때
-- 단계별 초기화가 중간에 멈췄을 때. 1단계부터 N단계까지 차례로 초기화하다가 어느 단계에서 멈추면, 그 단계부터 1단계까지 이미 한 초기화를 거꾸로 해제한다. 정리할 자원이 있으면 함수 끝에 정리 코드 레이블을 두고 `goto`로 점프한다. 레이블은 자원을 얻은 순서의 역순으로 둔다.
+- 단계별 초기화가 중간에 실패했을 때. 1단계부터 N단계까지 차례로 초기화하다가 어느 단계에서 실패하면, 이미 마친 초기화를 그 직전 단계부터 1단계까지 거꾸로 해제한다. 정리할 자원이 있으면 함수 끝에 정리 레이블을 두고 `goto`로 점프한다. 레이블은 자원을 얻은 순서의 역순으로 둔다.
 
 뒤로 점프하는 goto도 쓸 수 있다. 다만 그런 구조를 애초에 만들지 않도록 로직을 짜는 쪽을 지향한다.
 
@@ -5099,14 +5099,14 @@ static int format_date(char *const mut_buffer, size_t buffer_size, const struct 
 
 포인터 매개변수는 다음 규칙을 따른다.
 
-- 포인터 매개변수 자체는 함수 안에서 바꾸지 않는다. 따라서, 포인터 매개변수는 모두 `*const`로 선언한다. 넘겨받은 주소와 다른 주소가 필요하면 첨자 연산이나 지역 포인터 변수처럼 매개변수가 아닌 다른 수단으로 얻는다.
+- 포인터 매개변수 자체는 함수 안에서 바꾸지 않는다. 따라서, 포인터 매개변수는 모두 `*const`로 선언한다. 넘겨받은 주소와 다른 주소가 필요하면 첨자 연산이나 지역 포인터 변수처럼 매개변수를 바꾸지 않는 수단으로 얻는다.
 - 함수가 대상을 바꾸지 않으면 `const T *const name`으로 선언한다.
 - 함수가 대상을 바꾸면 `T *const mut_name`으로 선언한다. 이름은 `mut_`으로 시작한다.
-- 인자로 `NULL`을 받아도 되는 매개변수는 이름을 `_nullable`로 끝낸다(`const T *const name_nullable`, `T *const mut_name_nullable`). `NULL`을 받으면 안 되는 매개변수에는 붙이지 않는다.
-- 대상이 다른 포인터 매개변수의 대상과 겹치지 않는다고 약속할 때는 `restrict`를 더할 수 있다(`const T *const restrict name`). C89를 고른 프로젝트에는 `restrict`가 없다.
+- 인자로 `NULL`을 받아도 되는 매개변수는 이름을 `_nullable`로 끝낸다(`const T *const name_nullable`, `T *const mut_name_nullable`). `NULL`을 받으면 안 되는 매개변수에는 이 접미어를 붙이지 않는다.
+- 대상이 다른 포인터 매개변수의 대상과 겹치지 않는다고 약속할 때는 `restrict`를 붙일 수 있다(`const T *const restrict name`). C89를 고른 프로젝트에서는 `restrict`를 쓸 수 없다.
 - `main`의 매개변수는 표준이 정한 형태를 그대로 쓴다.
 
-함수의 선언과 정의에는 같은 형태를 쓴다. 그러면 선언만 보고도 그 함수가 인자로 넘긴 대상을 바꾸는지, `NULL`을 받아도 되는지 알 수 있다.
+함수의 선언과 정의에는 같은 형태를 쓴다. 그러면 선언만 보고도 함수가 포인터 인자의 대상을 바꾸는지, 인자로 `NULL`을 받아도 되는지 알 수 있다.
 
 틀린 예:
 
@@ -5216,12 +5216,12 @@ static void print_label(const char *const label_nullable)
 
 ### 10.4. 반환값 규약
 
-- 일을 하고 성공 여부만 알리는 함수는 성공하면 `0`, 실패하면 음수를 돌려주는 것을 우선한다. 다만 이 규약은 그 함수를 부르는 상위 API의 구성에 따라 달라질 수 있으므로, 상위 API가 정한 규약이 있으면 그 규약에 맞춘다.
+- 일을 하고 성공 여부만 알리는 함수는 성공하면 `0`, 실패하면 음수를 돌려주는 것을 우선한다. 다만 이 규약은 그 함수를 부르는 상위 API의 설계에 따라 달라질 수 있다. 상위 API가 정한 규약이 있으면 그 규약에 맞춘다.
 - 실패할 수 없는 함수는 `void`를 돌려준다.
 - 참 거짓을 돌려주는 함수는 `int`나 `bool`을 돌려준다.
 - 값을 계산해 돌려주는 함수는 범위 밖 값(`NULL`, `-1`)으로 실패를 알린다.
 
-`int`를 돌려주면 거짓인 이유를 값으로 나눌 수 있다. 예를 들어 음수 전체를 거짓에 대응시키면, 음수 값마다 거짓인 이유를 따로 나타낼 수 있다. 또 Linux API에서는 많은 값이 `int`로 오간다. 그 규약을 지킬 때는 `int`가 자연스러운 경우가 많다.
+`int`를 돌려주면 거짓인 이유를 값으로 구별할 수 있다. 예를 들어 음수 전체를 거짓에 대응시키면, 음수 값마다 거짓인 이유를 따로 나타낼 수 있다. 또 Linux API에서는 많은 값이 `int`로 오간다. Linux API의 규약을 따르는 코드에서는 `int`가 자연스러운 경우가 많다.
 
 틀린 예:
 
@@ -5281,13 +5281,13 @@ static void sort_tasks(struct task *const mut_tasks, size_t count)
 
 ### 10.5. 함수의 크기
 
-함수의 길이와 지역 변수 수에는 상한을 두지 않는다. 함수 하나가 여러 일을 맡아도 된다.
+함수의 길이와 지역 변수 개수에는 상한을 두지 않는다. 함수 하나가 여러 일을 맡아도 된다.
 
 ### 10.6. inline
 
-`inline`은 실행 시간이 짧은 코드 조각에 검토한다. 여러 곳에서 되풀이해 쓰지만 독립된 함수로 이름을 붙이기는 어색하고, 매크로로 쓰기에는 문법, 코드 탐색과 읽기, IDE의 코드 분석 같은 면에서 아쉬운 조각이 그 대상이다. 줄 수가 적어도 실행 시간이 긴 함수에는 붙이지 않는다. 인라인 여부는 결국 컴파일러가 정한다.
+`inline`은 실행 시간이 짧은 코드 조각에 붙일지 검토한다. 여러 곳에서 되풀이해 쓰지만 독립된 함수로 이름을 붙이기는 어색하고, 매크로로 쓰기에는 문법, 코드 탐색과 읽기, IDE의 코드 분석 같은 면에서 아쉬운 조각이 그 대상이다. 줄 수가 적어도 실행 시간이 긴 함수에는 붙이지 않는다. 실제로 인라인할지는 컴파일러가 정한다.
 
-형태는 `static inline`을 기본으로 하되, `static`을 강제하지는 않는다. `static` 없이 `inline`만 붙인 함수의 정의는 C99 §6.7.4 ¶6에 따라 inline definition이며 external definition을 만들지 않는다. 따라서 이런 함수는 `.c` 파일 하나에 `extern inline` 선언을 두어 external definition을 만든다. 그러지 않으면 컴파일러가 인라인하지 않은 호출에서 링크가 실패한다. GCC와 Clang은 `-std=c99 -O0`에서 `undefined reference` 오류를 낸다. 반대로 GNU89 모드에서는 파일마다 external definition이 생겨 `multiple definition` 오류가 난다.
+형태는 `static inline`을 기본으로 하되, `static`을 강제하지는 않는다. `static` 없이 `inline`만 붙인 함수의 정의는 C99 §6.7.4 ¶6에 따라 inline definition이다. 이 정의만으로는 external definition이 생기지 않는다. 따라서, 이런 함수는 `.c` 파일 하나에 `extern inline` 선언을 두어 external definition을 만든다. 그러지 않으면 컴파일러가 인라인하지 않은 호출에서 링크가 실패한다. 예를 들어 GCC와 Clang에서 `-std=c99 -O0`으로 빌드하면 링크 단계에서 `undefined reference` 오류가 난다. 반대로 GNU89 모드에서는 헤더를 포함한 파일마다 external definition이 생겨 `multiple definition` 오류가 난다.
 
 지양하는 예(`util/listing.h`):
 
@@ -5380,7 +5380,7 @@ unsigned char blend_channel(unsigned char back, unsigned char front, unsigned ch
 
 ### 10.7. 함수 배치
 
-- 파일 안에서 호출되는 static 함수는 호출하는 함수보다 위에 둔다. 전방 선언은 상호 재귀적 관계와 같은 특수한 경우일 때만 쓴다.
+- static 함수는 같은 파일에서 그 함수를 호출하는 함수보다 위에 둔다. 전방 선언은 상호 재귀처럼 특수한 경우에만 쓴다.
 - `main`은 파일의 마지막 함수이다.
 - 선언은 storage-class specifier, `inline`, 반환형, 이름 순서로 쓴다.
 
@@ -5500,9 +5500,9 @@ int main(int argc, char *argv[])
 ### 11.1. 조건부 컴파일
 
 - 어떤 파일을 컴파일할지는 빌드 시스템이 정한다. 소스 안의 `#if`는 구현이 실제로 달라지는 곳에만 둔다.
-- 운영체제 이름보다 기능으로 분기한다. 아키텍처는 컴파일러가 정의한 매크로로 판별한다.
+- 운영체제 이름보다 기능을 기준으로 분기한다. 아키텍처는 컴파일러가 정의한 매크로로 판별한다.
 - `#error`는 "이 환경에서는 올바를 수 없다"는 뜻으로만 쓴다. 알 수 없는 플랫폼은 `unknown` 같은 기본값으로 처리한다.
-- 20줄이 넘는 조건부 블록의 `#endif` 뒤에는 조건을 주석으로 쓴다.
+- 20줄이 넘는 조건부 컴파일 블록은 `#endif` 뒤에 조건을 주석으로 쓴다.
 
 틀린 예(`src/sleep_win32.c`):
 
@@ -5651,7 +5651,7 @@ static int run_self_test(void)
 
 ### 11.2. 매크로를 대신할 수단
 
-함수처럼 동작하는 코드는 매크로보다 `static inline` 함수를 검토한다. 매크로는 타입에 무관해야 하거나 `#`, `##`, `__FILE__`처럼 전처리기가 필요할 때 쓴다.
+함수처럼 동작하는 코드에는 매크로보다 `static inline` 함수를 검토한다. 매크로는 타입과 무관하게 동작해야 하거나, `#`, `##`, `__FILE__`처럼 전처리기가 필요할 때 쓴다.
 
 틀린 예:
 
@@ -5677,7 +5677,7 @@ static inline int compute_percent_of(int part, int whole)
 
 ### 11.3. 괄호
 
-매크로 본문이 식이면 본문 전체를 괄호로 감싼다. 인자는 쓰는 곳마다 괄호로 감싼다. 리터럴 하나뿐인 본문에는 괄호를 쓰지 않는다.
+매크로 본문이 식이면 본문 전체를 괄호로 감싼다. 인자는 쓰는 곳마다 괄호로 감싼다. 리터럴 하나뿐인 본문은 괄호로 감싸지 않는다.
 
 틀린 예:
 
@@ -5725,7 +5725,7 @@ static size_t gs_failure_count;
 
 다음 매크로는 쓰지 않는다.
 
-- 호출한 함수에서 빠져나가는 등 제어 흐름을 바꾸는 매크로
+- 매크로를 쓴 함수에서 빠져나가는 등 제어 흐름을 바꾸는 매크로
 - 특정 이름의 지역 변수가 있다고 가정하는 매크로
 - 대입의 왼쪽에 쓰는 매크로
 - 문법을 바꾸는 매크로
@@ -5857,7 +5857,7 @@ static size_t count_negatives(const int *const values, size_t count)
 
 ### 11.6. 매크로 안의 지역 이름
 
-매크로 안에서 지역 변수를 선언해야 하면 이름 끝에 밑줄 하나(`_`)를 붙인다(`a_`). 호출하는 쪽의 이름과 겹치지 않게 하기 위해서이다. 이름 앞에는 밑줄 두 개(`__`)를 붙이지 않는다(`__a`). 밑줄 두 개로 시작하는 이름은 예약된 식별자이기 때문이다.
+매크로 안에서 지역 변수를 선언해야 하면 이름 끝에 밑줄 하나(`_`)를 붙인다(`a_`). 그래야 매크로를 호출하는 쪽의 이름과 겹치지 않는다. 이름 앞에는 밑줄 두 개(`__`)를 붙이지 않는다(`__a`). 밑줄 두 개로 시작하는 이름은 예약된 식별자이기 때문이다.
 
 틀린 예:
 
@@ -5885,15 +5885,15 @@ static size_t count_negatives(const int *const values, size_t count)
 
 ### 12.1. 주석의 양과 내용
 
-주석은 꼭 필요할 때만 쓴다. 코드가 스스로 설명하도록 이름과 구조를 먼저 고친다. 주석에는 무엇을 왜 하는지 쓰고, 어떻게 하는지는 코드에 맡긴다.
+주석은 꼭 필요할 때만 쓴다. 먼저 이름과 구조를 고쳐 코드만으로 뜻이 드러나게 한다. 주석에는 무엇을 왜 하는지 쓰고, 어떻게 하는지는 코드에 맡긴다.
 
-코드만 읽어서는 이해할 수 없는 곳에는 다음과 같은 내용을 주석으로 적는다.
+코드만 읽어서는 이해할 수 없는 곳에는 다음 내용을 주석으로 적는다.
 
 - 코드를 이해하는 데 필요한 배경 지식
-- 그 동작을 꼭 해야 하는 이유
-- 겉보기에는 쓸데없어 보이는 구현을 하는 이유
+- 그 동작이 꼭 필요한 이유
+- 언뜻 쓸데없어 보이는 구현을 택한 이유
 
-주석을 길게 쓰는 것은 그 코드가 외부에 공개하는 API, 라이브러리, 인터페이스 역할을 할 때와 교육용 코드일 때이다. 이때는 내부 동작, 인자, 반환값, 케이스별 시나리오 등을 자세히 적는다.
+주석을 길게 쓰는 곳은 외부에 공개하는 API, 라이브러리, 인터페이스 역할을 하는 코드와 교육용 코드이다. 이런 코드에는 내부 동작, 인자, 반환값, 경우별 시나리오 등을 자세히 적는다.
 
 틀린 예:
 
@@ -5982,7 +5982,7 @@ static long find_sorted(const int *const values, size_t count, int key)
 
 - `/* */`만 쓴다. `//`는 쓰지 않는다.
 - 여러 줄 주석은 `/*` 줄, ` * `로 시작하는 줄, `*/` 줄로 쓴다.
-- 줄 끝 주석은 코드 뒤에 공백 하나를 두고 쓴다. 열을 맞추지 않는다.
+- 줄 끝 주석은 코드 뒤에 공백 하나를 두고 쓴다. 줄 끝 주석끼리 열을 맞추지 않는다.
 
 틀린 예:
 
@@ -6105,7 +6105,7 @@ int parse_duration(long *const mut_seconds, const char *const text);
 
 ### 13.1. 반환값 검사
 
-실패가 결과를 바꾸는 호출은 반환값을 검사한다. 결과를 버리는 호출에는 `(void)`를 붙이지 않고 그대로 호출한다. GCC는 `(void)` 캐스트가 있어도 `warn_unused_result` 경고를 낸다. 따라서 `(void)`는 이식성 있는 억제 수단도 아니다.
+실패하면 결과가 달라지는 호출은 반환값을 검사한다. 반환값을 버리는 호출에는 `(void)`를 붙이지 않는다. GCC는 `warn_unused_result` 속성이 붙은 함수의 반환값을 `(void)`로 캐스트해도 경고를 낸다. 따라서, `(void)`는 이식성 있는 경고 억제 수단도 아니다.
 
 틀린 예:
 
@@ -6184,7 +6184,7 @@ static long measure_file(const char *const path)
 
 ### 13.2. unused 진단
 
-unused 계열 진단을 소스 코드로 숨기지 않는다. `(void)x;`, unused 속성, 진단 pragma, 진단을 피하려고 이름을 지우는 편집을 쓰지 않는다. 이 진단을 무시할지, 컴파일러 옵션(`-Wno-unused-parameter`, `/wd4100` 등)으로 끌지는 재량에 따라 판단한다.
+unused 계열 진단을 소스 코드 안에서 숨기지 않는다. `(void)x;`, unused 속성, 진단 pragma를 쓰지 않고, 진단을 피하려고 이름을 지우지도 않는다. 이 진단을 무시할지, 컴파일러 옵션(`-Wno-unused-parameter`, `/wd4100` 등)으로 끌지는 프로젝트의 재량으로 정한다.
 
 틀린 예:
 
@@ -6239,7 +6239,7 @@ static int count_entry(const char *const path, void *const mut_context)
 
 ### 13.3. errno
 
-`errno`는 실패한 호출 바로 뒤에 읽는다. 사이에 다른 라이브러리 호출이 끼면 먼저 지역 변수에 저장한다.
+`errno`는 실패한 호출 바로 뒤에 읽는다. 읽기 전에 다른 라이브러리 호출이 끼면, 그 호출보다 먼저 `errno`를 지역 변수에 저장한다.
 
 틀린 예:
 
@@ -6365,7 +6365,7 @@ out_close_file:
 ### 13.5. 동적 메모리
 
 - 할당받은 포인터의 base 값을 수정하는 시도는 구조적으로 어쩔 수 없는 경우가 아닌 한 최대한 지양한다. 순회에는 별도 포인터를 쓴다.
-- `free` 뒤에는 그 포인터에 `NULL`을 대입한다. 특별한 이유가 없는 한, 그 포인터를 다시 쓰지 않더라도 대입한다. `fclose`처럼 대상을 해제하는 다른 함수를 부른 뒤에도 같다.
+- `free`를 부른 뒤에는 그 포인터에 `NULL`을 대입한다. 특별한 이유가 없는 한, 그 포인터를 다시 쓰지 않더라도 대입한다. `fclose`처럼 대상을 해제하는 다른 함수를 부른 뒤에도 같다.
 
 틀린 예:
 
@@ -6474,9 +6474,9 @@ static long sum_squares(const int *const values, size_t count)
 
 ### 13.6. assert
 
-`assert`는 내부 불변식 검사에만 쓴다. 내부 불변식은 프로그램이 옳다면 깨지지 않는 조건이다. 외부 입력, 파일, 시스템 호출의 실패는 `assert`로 검사하지 않는다.
+`assert`는 내부 불변식 검사에만 쓴다. 내부 불변식은 프로그램이 올바르면 깨지지 않는 조건이다. 외부 입력, 파일, 시스템 호출의 실패는 `assert`로 검사하지 않는다.
 
-`assert`는 반드시 디버그 빌드에서만 동작하게 하고, 배포하는 release 빌드에는 들어가지 않게 한다. release 빌드에서 `assert`를 빼는 일은 소스 파일이 아니라 빌드 구조가 맡는다. 빌드 시스템은 모든 release 구성에서 `NDEBUG`를 정의한다. 같은 이유로 `assert`의 조건식에는 side effect를 두지 않는다. release 빌드에서 `assert`가 빠지면 그 side effect도 함께 사라지기 때문이다.
+`assert`는 반드시 debug 빌드에서만 동작하게 하고, 배포하는 release 빌드에는 들어가지 않게 한다. release 빌드에서 `assert`를 빼는 일은 소스 파일이 아니라 빌드 구조에서 처리한다. 즉, 빌드 시스템의 모든 release 구성에서 `NDEBUG`를 정의한다. release 빌드에서 `assert`가 빠지면 조건식의 side effect도 함께 사라진다. 따라서, `assert`의 조건식에는 side effect를 두지 않는다.
 
 틀린 예:
 
@@ -6523,7 +6523,7 @@ static void push_item(struct stack *const mut_stack, int item)
 
 ### 13.7. static assertion
 
-`_Static_assert`는 C11부터 있다. C11 이후를 고른 프로젝트는 상수 조건을 `_Static_assert`로 컴파일할 때 검사한다. C11 이전 표준을 고른 프로젝트는 런타임 `assert`나 빌드 시스템의 검사로 대신한다.
+`_Static_assert`는 C11 표준부터 키워드이다. C11 이후 표준을 고른 프로젝트는 상수 조건을 `_Static_assert`로 컴파일할 때 검사한다. C11 이전 표준을 고른 프로젝트는 런타임 `assert`나 빌드 시스템의 검사로 대신한다.
 
 올바른 예(C11 이후):
 
@@ -6554,8 +6554,8 @@ static void check_record_layout(void)
 
 ### 13.8. 종료
 
-- 복구할 수 없는 내부 오류는 `return`이나 `exit()`로 끝낸다.
-- 사용자 입력이나 환경 때문에 계속할 수 없으면 메시지를 쓰고 `EXIT_FAILURE`로 끝낸다. 이때 `main`에서는 `return EXIT_FAILURE;`로 끝내고, `main`이 아닌 함수에서는 `exit(EXIT_FAILURE);`로 끝낸다. 처음 호출된 `main`에서 돌아가는 것은 그 반환값으로 `exit`를 부르는 것과 같지만, 다른 함수의 반환값은 호출한 함수로 돌아갈 뿐이기 때문이다(C99 §5.1.2.2.3 ¶1).
+- 복구할 수 없는 내부 오류가 나면 `return`이나 `exit()`로 끝낸다.
+- 사용자 입력이나 환경 때문에 계속할 수 없으면 메시지를 출력하고 `EXIT_FAILURE`로 끝낸다. 이때 `main`에서는 `return EXIT_FAILURE;`로 끝내고, `main`이 아닌 함수에서는 `exit(EXIT_FAILURE);`로 끝낸다. 처음 호출된 `main`에서 반환하면 그 반환값으로 `exit`를 부른 것과 같기 때문이다(C99 §5.1.2.2.3 ¶1). 반면 다른 함수에서 반환하면 호출한 함수로 돌아갈 뿐이다.
 
 틀린 예:
 
@@ -6659,12 +6659,12 @@ int main(int argc, char *argv[])
 
 ### 14.1. clang-format
 
-서식 검사와 정리에는 프로젝트 루트의 `.clang-format`을 사용할 수 있다. 커밋하기 전에 바꾼 파일을 검사한다. Visual Studio도 가장 가까운 `.clang-format`으로 서식을 맞춘다.
+서식 검사와 정리에는 프로젝트 루트의 `.clang-format`을 쓸 수 있다. 커밋하기 전에 바꾼 파일을 검사한다. Visual Studio도 파일에서 가장 가까운 `.clang-format`으로 서식을 맞춘다.
 
 clang-format의 기본 동작이 이 문서의 규칙과 어긋나면, clang-format 전체를 끄지 않고 그 동작을 정하는 설정만 골라 바꾼다. 루트 `.clang-format`의 설정은 다음과 같다.
 
 - `BasedOnStyle: LLVM`과 `IndentWidth: 4`: LLVM 스타일을 바탕으로 하고, 들여쓰기를 공백 4칸으로 바꾼다([5.1절](#51-들여쓰기)).
-- `ColumnLimit: 0`: 줄은 사람이 나눈다([5.2절](#52-줄-길이), [5.3절](#53-긴-식-나누기)). clang-format은 사람이 나눈 줄을 합치거나 다시 나누지 않고, 들여쓰기와 정렬만 맞춘다.
+- `ColumnLimit: 0`: 줄은 사람이 나눈다([5.2절](#52-줄-길이), [5.3절](#53-긴-식-나누기)). clang-format은 사람이 나눈 줄을 대부분 그대로 두고, 들여쓰기와 정렬만 맞춘다.
 - `BreakBeforeBraces: Custom`과 `BraceWrapping`의 `AfterFunction: true`: 함수 본문의 여는 중괄호만 새 줄에 둔다([5.6절](#56-함수-중괄호), [5.7절](#57-제어문과-반복문-중괄호)).
 - `InsertBraces: true`: 제어문과 반복문의 본문을 중괄호로 감싼다([5.8절](#58-중괄호-생략-금지)).
 - `AllowShortFunctionsOnASingleLine`의 `Empty: false`, `Inline: false`, `Other: false`: 짧은 함수의 본문을 한 줄로 합치지 않는다([5.6절](#56-함수-중괄호)).
@@ -6672,11 +6672,11 @@ clang-format의 기본 동작이 이 문서의 규칙과 어긋나면, clang-for
 - `Cpp11BracedListStyle: Block`: 중괄호 초기화 목록의 안쪽에 공백을 둔다([5.11절](#511-중괄호를-이용한-초기화)).
 - `AlignTrailingComments`의 `Kind: Never`: 줄 끝 주석을 열에 맞추지 않는다([5.18절](#518-정렬)).
 - `AlignEscapedNewlines: Left`: 여러 줄 매크로의 줄 끝 `\`를 같은 열에 맞춘다([5.18절](#518-정렬)).
-- `IndentPPDirectives: AfterHash`와 `PPIndentWidth: 1`: 조건부 컴파일 블록 안의 directive를 `#` 뒤 공백 하나씩으로 들여쓴다([5.19절](#519-preprocessing-directive)).
-- `IncludeBlocks: Regroup`과 `IncludeCategories`: include를 유형별로 묶어 정렬한다([4.8절](#48-include-순서)). main header는 category 0으로 분류되어 맨 앞에 온다. 종속성이 있는 헤더는 다른 `<...>` 헤더와 같은 `Priority`에 더 큰 `SortPriority`를 줘서 같은 묶음의 맨 뒤로 보낸다. 이때 `"..."` 묶음의 `Priority`는 그 `SortPriority`보다 크게 둔다.
+- `IndentPPDirectives: AfterHash`와 `PPIndentWidth: 1`: 조건부 컴파일 블록 안의 directive를 `#` 뒤에서 깊이마다 공백 1칸씩 들여쓴다([5.19절](#519-preprocessing-directive)).
+- `IncludeBlocks: Regroup`과 `IncludeCategories`: include를 유형별로 묶어 정렬한다([4.8절](#48-include-순서)). clang-format은 main header를 category 0으로 분류해 맨 앞에 둔다. 종속성이 있는 헤더는 다른 `<...>` 헤더와 같은 `Priority`에 더 큰 `SortPriority`를 주어 같은 묶음의 맨 뒤로 보낸다. 이때 `"..."` 묶음의 `Priority`는 그 `SortPriority`보다 크게 둔다.
 - `InsertNewlineAtEOF: true`: 파일 끝에 개행이 없으면 더한다([4.4절](#44-마지막-개행)).
 
-이 설정으로 clang-format이 맞추는 규칙은 마지막 개행([4.4절](#44-마지막-개행)), C 소스의 공백 문자([4.5절](#45-공백-문자)), include 순서([4.8절](#48-include-순서)), 들여쓰기([5.1절](#51-들여쓰기)), 소괄호 안에서 나눈 줄의 정렬([5.3절](#53-긴-식-나누기)), 중괄호의 위치([5.6절](#56-함수-중괄호)~[5.10절](#510-범위를-좁히는-블록)), 중괄호 초기화 목록 안쪽의 공백([5.11절](#511-중괄호를-이용한-초기화)), `switch`와 goto 레이블([5.12절](#512-switch와-case), [5.13절](#513-goto-레이블)), 공백과 포인터 표기([5.14절](#514-공백), [5.15절](#515-포인터-표기)), 한 줄에 한 문장([5.16절](#516-한-줄에는-가능한-한-문장만)), 정렬([5.18절](#518-정렬)), preprocessing directive([5.19절](#519-preprocessing-directive)), 줄 끝 주석의 열 맞춤([12.2절](#122-주석-형식))이다. 그 밖의 규칙은 사람이 맞춘다. 특히 다음은 clang-format이 고치지 않거나 규칙과 다르게 바꾸므로 직접 확인한다.
+이 설정으로 clang-format이 맞추는 규칙은 마지막 개행([4.4절](#44-마지막-개행)), C 소스의 공백 문자([4.5절](#45-공백-문자)), include 순서([4.8절](#48-include-순서)), 들여쓰기([5.1절](#51-들여쓰기)), 소괄호 안에서 나눈 줄의 정렬([5.3절](#53-긴-식-나누기)), 중괄호의 위치([5.6절](#56-함수-중괄호)~[5.10절](#510-범위를-좁히는-블록)), 중괄호 초기화 목록 안쪽의 공백([5.11절](#511-중괄호를-이용한-초기화)), `switch`와 goto 레이블([5.12절](#512-switch와-case), [5.13절](#513-goto-레이블)), 공백과 포인터 표기([5.14절](#514-공백), [5.15절](#515-포인터-표기)), 한 줄에 한 문장([5.16절](#516-한-줄에는-가능한-한-문장만)), 정렬([5.18절](#518-정렬)), preprocessing directive([5.19절](#519-preprocessing-directive)), 줄 끝 주석의 열 맞춤([12.2절](#122-주석-형식))이다. 그 밖의 규칙은 사람이 맞춘다. 특히 다음 항목은 clang-format이 고치지 않거나 규칙과 다르게 바꾸므로 직접 확인한다.
 
 - 100열을 넘는 줄은 나누지 않는다([5.2절](#52-줄-길이)). 이항 연산자 앞에서 나눈 줄은 한 줄로 합치므로, 합친 줄이 100열을 넘을 수 있다.
 - 대입 연산자 뒤나 반환형 뒤에서 나눈 줄([5.3절](#53-긴-식-나누기), [5.5절](#55-함수-선언부))과 나눠 쓴 메시지 문자열([5.4절](#54-사용자에게-보이는-문자열))은 그대로 둔다.
@@ -6685,11 +6685,11 @@ clang-format의 기본 동작이 이 문서의 규칙과 어긋나면, clang-for
 - 소괄호 없이 중첩한 삼항 연산자는 줄을 나눠 정렬한다([8.8절](#88-삼항-연산자)). 안쪽 삼항 연산자를 소괄호로 감싸면 한 줄로 둔다.
 - 빈 줄([5.17절](#517-빈-줄))과 인라인 어셈블리의 문자열([5.20절](#520-gccclang-인라인-어셈블리))은 고치지 않는다.
 
-종속성 코드의 디렉터리에는 `DisableFormat: true`만 담은 `.clang-format`과 그 코드에 맞춘 `.editorconfig`를 둔다([1.2절](#12-프로젝트와-종속성의-코딩-스타일-차이)). 이 `.editorconfig`에는 `root = true`를 둔다. 그러지 않으면 프로젝트 루트의 `.editorconfig`에서 줄 끝 공백 제거 같은 설정을 물려받는다.
+종속성 코드의 디렉터리에는 `DisableFormat: true`만 담은 `.clang-format`과 그 코드에 맞춘 `.editorconfig`를 둔다([1.2절](#12-프로젝트와-종속성의-코딩-스타일-차이)). 이 `.editorconfig`에는 `root = true`를 넣는다. 그러지 않으면 프로젝트 루트의 `.editorconfig`에서 줄 끝 공백 제거 같은 설정을 물려받는다.
 
-플랫폼마다 독립된 트리로 나눈 프로젝트([1.1절](#11-적용-대상))는 트리마다 그 플랫폼의 스타일을 담은 `.clang-format`을 나란히 둔다. clang-format은 파일에서 가장 가까운 상위 디렉터리의 `.clang-format`을 쓰므로, 한 트리의 설정이 다른 트리에 섞이지 않는다. `.editorconfig`는 상위 디렉터리의 파일과 합쳐지므로, 트리마다 둔 `.editorconfig`에는 `root = true`를 넣는다.
+플랫폼마다 독립된 트리로 나눈 프로젝트([1.1절](#11-적용-대상))는 트리마다 그 플랫폼의 스타일을 담은 `.clang-format`을 나란히 둔다. clang-format은 파일에서 가장 가까운 `.clang-format`을 쓰므로, 한 트리의 설정이 다른 트리에 섞이지 않는다. `.editorconfig`는 상위 디렉터리의 `.editorconfig`와 설정이 합쳐지므로, 트리마다 둔 `.editorconfig`에는 `root = true`를 넣는다.
 
-종속성 코드가 프로젝트 코드와 같은 디렉터리에 있으면, 프로젝트 루트의 `.clang-format-ignore`에 그 파일들의 경로를 적고, 루트 `.editorconfig`에는 그 파일들만 고르는 섹션을 따로 둔다. clang-format은 `.clang-format-ignore`에 적힌 파일을 건너뛴다.
+종속성 코드가 프로젝트 코드와 같은 디렉터리에 있으면, 프로젝트 루트의 `.clang-format-ignore`에 종속성 파일의 경로를 적고, 루트 `.editorconfig`에는 종속성 파일만 고르는 섹션을 따로 둔다. clang-format은 `.clang-format-ignore`에 적힌 파일을 건너뛴다.
 
 올바른 예:
 
@@ -6780,7 +6780,7 @@ trim_trailing_whitespace = false
 
 ### 14.2. clang-tidy
 
-이름 규칙([6장](#6-이름))은 프로젝트 루트의 `.clang-tidy`가 `readability-identifier-naming`으로 검사한다. 예약된 식별자([6.10절](#610-예약된-식별자))는 `bugprone-reserved-identifier`가, 선언과 정의의 매개변수 이름([10.1절](#101-매개변수-목록))은 `readability-inconsistent-declaration-parameter-name`이 검사한다. 포인터 매개변수의 `mut_` 접두어([10.3절](#103-포인터-매개변수))는 검사하지 못한다. `readability-identifier-naming`은 `*const`로 선언한 포인터 매개변수를 대상의 `const` 여부와 상관없이 같은 종류로 분류하기 때문이다.
+이름 규칙([6장](#6-이름))은 프로젝트 루트의 `.clang-tidy`에서 `readability-identifier-naming`으로 검사한다. 예약된 식별자([6.10절](#610-예약된-식별자))는 `bugprone-reserved-identifier`로, 선언과 정의의 매개변수 이름([10.1절](#101-매개변수-목록))은 `readability-inconsistent-declaration-parameter-name`으로 검사한다. 포인터 매개변수의 `mut_` 접두어([10.3절](#103-포인터-매개변수))는 clang-tidy로 검사할 수 없다. `readability-identifier-naming`은 `*const`로 선언한 포인터 매개변수를 대상의 `const` 여부와 상관없이 같은 종류로 분류하기 때문이다.
 
 Visual Studio는 코드 분석 설정에서 Enable Clang-Tidy를 켜면 같은 `.clang-tidy`로 clang-tidy를 실행한다. CMake 프로젝트는 `CMakePresets.json`의 Visual Studio vendor 설정에 `enableClangTidyCodeAnalysis`를 두어 켠다.
 
@@ -6793,14 +6793,14 @@ clang-tidy path/to/file.c -- -std=c99
 ### 14.3. 컴파일러 경고
 
 - GCC/Clang은 `-Wall -Wextra -pedantic -Wshadow`로 빌드한다.
-- MSVC는 `/W4`로 빌드한다. `/W4`에는 shadowing 경고 C4456, C4457, C4459가 들어 있다. MSVC에는 C용 `-pedantic`이 없다. `/Za`를 주면 컴파일러가 C89만 받아들인다.
+- MSVC는 `/W4`로 빌드한다. `/W4`에는 shadowing 경고 C4456, C4457, C4459가 들어 있다. MSVC에는 C용 `-pedantic`에 해당하는 옵션이 없다. 언어 확장을 끄는 `/Za`를 주면 컴파일러가 C89만 받아들인다.
 - clang-cl은 `/W4 -Wshadow /clang:-pedantic`으로 빌드한다. clang-cl에서 `/W4`를 주면 `-Wall -Wextra`만 켜진다.
 - unused 계열을 뺀 경고는 모두 고친다([13.2절](#132-unused-진단)).
 - `-Werror`와 `/WX`는 쓰지 않는다.
 
-Visual Studio 프로젝트는 이 옵션을 트리 루트 디렉터리의 `Directory.Build.targets`에서 받는다. MSBuild는 각 프로젝트 위쪽에서 가장 가까운 `Directory.Build.targets`를 프로젝트 파일 다음에 가져온다. 따라서 나중에 더한 프로젝트를 포함해 트리의 모든 프로젝트가 이 설정을 받는다. 프로젝트 템플릿이 적는 `WarningLevel`도 이 설정으로 바뀐다. `Directory.Build.props`는 여기에 맞지 않는다. MSBuild가 이 파일을 프로젝트 파일보다 먼저 가져오므로, 이 파일에 둔 값은 템플릿 값에 밀린다.
+Visual Studio 프로젝트는 이 옵션을 트리 루트 디렉터리의 `Directory.Build.targets`에서 받는다. MSBuild는 각 프로젝트에서 가장 가까운 `Directory.Build.targets`를 프로젝트 파일 다음에 가져온다. 따라서, 나중에 더한 프로젝트를 포함해 트리의 모든 프로젝트가 이 설정을 받는다. 프로젝트 템플릿이 적는 `WarningLevel`도 이 설정으로 바뀐다. `Directory.Build.props`는 이 용도에 맞지 않는다. MSBuild가 `Directory.Build.props`를 프로젝트 파일보다 먼저 가져오므로, 거기에 둔 값은 템플릿 값에 밀린다.
 
-unused 계열 진단만 모아 볼 때는 그 진단만 걸러 따로 검사한다. GCC는 `-fsyntax-only`로 검사하면 `-Wunused-function`을 내지 않으므로, 오브젝트 코드까지 컴파일한 뒤 `-Wunused`가 붙은 진단만 고른다. Clang은 `-Wno-everything`으로 모든 경고를 끈 뒤 unused 계열만 다시 켠다. 다른 파일에서 쓰지 않는 external linkage 함수는 컴파일러가 찾지 못하므로, cppcheck의 `unusedFunction` 검사로 프로젝트 전체를 검사한다.
+unused 계열 진단만 모아 볼 때는 그 진단만 걸러 따로 검사한다. GCC는 `-fsyntax-only`로 검사하면 `-Wunused-function`을 내지 않으므로, 오브젝트 코드까지 컴파일한 뒤 `-Wunused`가 붙은 진단만 고른다. Clang은 `-Wno-everything`으로 모든 경고를 끈 뒤 unused 계열만 다시 켠다. 어느 파일에서도 쓰지 않는 external linkage 함수는 컴파일러가 찾지 못하므로, Cppcheck의 `unusedFunction` 검사로 프로젝트 전체를 검사한다.
 
 올바른 예:
 
@@ -6842,7 +6842,7 @@ cppcheck --enable=unusedFunction --quiet src/
 
 ### 14.4. 에디터 설정
 
-`.editorconfig`는 에디터에 C 소스와 헤더의 인코딩, 줄 끝, 들여쓰기, 마지막 개행, 줄 끝 공백 규칙을 알린다. Visual Studio는 이 핵심 EditorConfig 속성을 자체 텍스트 편집기 설정보다 앞서 적용한다. `.gitattributes`는 프로젝트 안의 줄 끝을 고정한다. 에디터 설정은 이 두 파일에만 두고, 소스 파일에 에디터 modeline을 넣지 않는다.
+C 소스와 헤더의 인코딩, 줄 끝, 들여쓰기, 마지막 개행, 줄 끝 공백 규칙은 `.editorconfig`로 에디터에 알린다. Visual Studio는 이 핵심 EditorConfig 속성을 자체 텍스트 편집기 설정보다 앞서 적용한다. 프로젝트 안의 줄 끝은 `.gitattributes`로 고정한다. 에디터 설정은 이 두 파일에만 두고, 소스 파일에 에디터 modeline을 넣지 않는다.
 
 올바른 예:
 
