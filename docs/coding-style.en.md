@@ -134,6 +134,8 @@ Your own Linux kernel modules and drivers may use this coding style, independent
 
 A project that targets only a specific OS or architecture, such as a Windows-only, FreeBSD-only, or macOS-only project, follows the coding style of that OS or architecture. In a cross-platform project, by contrast, apply this coding style to OS-specific code as well. Trees that each have their own structure and binaries for one platform are not a cross-platform project, and each such tree follows the style of its own platform.
 
+This coding style is also a collection of conventions that AI agents must follow when they generate C code. It was written with the intent that AI agents, too, follow these conventions.
+
 ### 1.2. Coding style differences between project and dependencies
 
 Bring all code written by the project itself, including existing code, into line with these rules. In contrast, dependency code imported from outside keeps its original style.
@@ -219,7 +221,7 @@ Keep code short, but do not write it to show off. Avoid anything open to more th
 
 Do not write code that is deliberately complicated, made to look difficult, or makes the reader think twice. Do not write code that leaves much room for thought or mistakes, either.
 
-Write code in widely used forms. Do not use a technique that is not common practice, even if it reduces mistakes. For example, a comparison with the constant on the left (`5 == value`) turns `==` mistyped as `=` into a compile error. However, it is not a widely used form, so it clashes with what readers are used to, and the burden of that clash outweighs the gain. Techniques like this, whose side effects can outweigh their actual benefit, are not part of this coding style.
+Write code in widely used forms. Do not use a technique that departs far from conventional coding style, even if it reduces mistakes. For example, a comparison with the constant on the left (`5 == value`) turns `==` mistyped as `=` into a compile error. However, it is not a widely used form, so it clashes with what readers are used to, and the burden of that clash may outweigh the gain. Techniques like this, whose side effects can outweigh their actual benefit, are not part of this coding style.
 
 Incorrect:
 
@@ -402,7 +404,7 @@ Correct (Linux):
 ```c
 #include <pthread.h>
 
-static pthread_mutex_t gs_hit_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t gs_hit_lock;
 static unsigned long gs_hit_count;
 
 static void record_hit(void)
@@ -418,7 +420,7 @@ Correct (Windows):
 ```c
 #include <windows.h>
 
-static SRWLOCK gs_hit_lock = SRWLOCK_INIT;
+static SRWLOCK gs_hit_lock;
 static unsigned long gs_hit_count;
 
 static void record_hit(void)
@@ -458,7 +460,7 @@ static void record_hit(void)
 Make the use of features outside the chosen language standard visible.
 
 - Wrap GNU extension syntax with `__extension__`.
-- Spell extension keywords with underscores, as in `__asm__` and `__typeof__`. In ISO standard modes such as `-std=c99`, `asm` is not a keyword, and `typeof` is a keyword only from C23. So in those modes the spellings without underscores do not compile.
+- Spell extension keywords with underscores, as in `__asm__` and `__typeof__`. In ISO standard modes such as `-std=c99`, `asm` is not a keyword, and `typeof` is reserved as a keyword only from the C23 standard. Therefore, in those modes the spellings without underscores do not compile.
 
 Incorrect:
 
@@ -512,7 +514,7 @@ static inline void compiler_barrier(void)
 
 ### 3.4. Implementation-defined behavior
 
-Do not depend on implementation-defined behavior, such as integer widths, the signedness of `char`, endianness, alignment, and padding, or on platform-specific internal behavior. If code must depend on it, state so in a comment. However, code with a clearly defined target platform may rely on that platform's behavior without hesitation.
+Do not depend on implementation-defined behavior, such as integer widths, the signedness of `char`, endianness, alignment, and padding, or on platform-specific internal behavior. If code must depend on it, state so in a comment. However, code with a clearly defined target platform may assume that platform's behavior with certainty.
 
 Incorrect:
 
@@ -559,14 +561,17 @@ static void read_dns_header(struct dns_header *const mut_header, const unsigned 
 Correct (the relied-on behavior stated in a comment):
 
 ```c
-static int32_t scale_down_by_16(int32_t value)
+static int save_counter_cache(FILE *const file, const uint64_t *const counters, size_t count)
 {
-    /* relies on >> sign-extending negative values, as GCC documents and Clang also does */
-    return value >> 4;
+    /* written in host byte order; only the host that wrote the cache reads it back */
+    if (fwrite(counters, sizeof(*counters), count, file) != count) {
+        return -1;
+    }
+    return 0;
 }
 ```
 
-Correct (little-endian-only firmware that reads a little-endian sensor):
+Correct (firmware code for a little-endian architecture that reads values from a sensor sending its data in little-endian order):
 
 ```c
 struct sensor_sample {
@@ -585,7 +590,7 @@ static void read_sensor_sample(struct sensor_sample *const mut_sample,
 
 Use C standard functions, string functions in particular, after weighing the trade-offs in implementation, string and memory safety, and performance. When batch processing, parallel processing, thread safety, or similar properties must be guaranteed, write that functionality yourself.
 
-For example, `strtok` saves internally the position where the next search starts and resumes from it on the next call. C11 states that `strtok` need not avoid data races with other calls to `strtok` (C11 §7.24.5.8 ¶6). Also, `strncat` searches for the end of the destination string from the beginning on every call. So appending many strings one after another takes time proportional to the square of the concatenated length.
+For example, `strtok` saves internally the position where the next search starts and resumes from it on the next call. C11 states that `strtok` need not avoid data races with other calls to `strtok` (C11 §7.24.5.8 ¶6). Also, `strncat` searches for the end of the destination string from the beginning on every call. Therefore, appending many strings one after another takes time proportional to the square of the concatenated length.
 
 Incorrect:
 
@@ -806,7 +811,7 @@ Write code and comments in ASCII. Use characters outside ASCII in output strings
 Incorrect:
 
 ```c
-/* returns a value ≥ 0 on success */
+/* returns the power of 1024 for unit (B → 0, KiB → 1, MiB → 2), or -1 if unknown */
 int parse_unit(const char *const unit);
 ```
 
@@ -820,7 +825,7 @@ static void report_unknown_unit(const char *const program_name, const char *cons
 Correct:
 
 ```c
-/* returns a value >= 0 on success */
+/* returns the power of 1024 for unit (B -> 0, KiB -> 1, MiB -> 2), or -1 if unknown */
 int parse_unit(const char *const unit);
 ```
 
@@ -1894,7 +1899,7 @@ Incorrect:
 ```c
 enum traffic_light
 {
-    TRAFFIC_LIGHT_RED,
+    TRAFFIC_LIGHT_RED = 0,
     TRAFFIC_LIGHT_YELLOW,
     TRAFFIC_LIGHT_GREEN,
 };
@@ -1917,7 +1922,7 @@ Correct:
 
 ```c
 enum traffic_light {
-    TRAFFIC_LIGHT_RED,
+    TRAFFIC_LIGHT_RED = 0,
     TRAFFIC_LIGHT_YELLOW,
     TRAFFIC_LIGHT_GREEN,
 };
@@ -1978,7 +1983,7 @@ static const int gs_first_primes[] = {2, 3, 5, 7};
 ```
 
 ```c
-enum image_format { IMAGE_FORMAT_PNG, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_GIF };
+enum image_format { IMAGE_FORMAT_PNG = 0, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_GIF };
 
 static const char *const gs_image_extensions[] = { ".png", ".jpg", ".gif" };
 ```
@@ -2000,7 +2005,7 @@ static const int gs_first_primes[] = { 2, 3, 5, 7 };
 
 ```c
 enum image_format {
-    IMAGE_FORMAT_PNG,
+    IMAGE_FORMAT_PNG = 0,
     IMAGE_FORMAT_JPEG,
     IMAGE_FORMAT_GIF,
 };
@@ -2429,7 +2434,13 @@ static void open_account(struct account *const mut_account)
 
 ### 5.19. Preprocessing directives
 
-Put the `#` of a preprocessing directive at the very start of the line. The same applies to directives inside functions. For a directive inside a conditional compilation block, put one space after `#` for each level of block depth. The include guard does not count toward the depth. With `#` always at the start of the line, directives stand apart from code, and the spaces after `#` show the nesting depth.
+- Always put the `#` of a preprocessing directive at the very start of the line. The same applies to directives inside a function or another brace block.
+- For a directive inside a conditional compilation block, put one space between `#` and the directive name for each level of depth: one space at depth 1, two at depth 2, and three at depth 3.
+- Put `#elif`, `#else`, and `#endif` at the same depth as the matching `#if`, `#ifdef`, or `#ifndef`.
+- The include guard does not count toward the depth.
+- C code inside a conditional compilation block keeps the indentation it would have without the directives, whatever the directive depth.
+
+With `#` always at the start of the line, directives stand apart from code, and the spaces after `#` show the nesting depth.
 
 Incorrect:
 
@@ -2565,7 +2576,7 @@ union PriceValue {
 };
 
 enum CartState {
-    CART_STATE_OPEN,
+    CART_STATE_OPEN = 0,
     CART_STATE_PAID,
 };
 
@@ -2598,7 +2609,7 @@ union price_value {
 };
 
 enum cart_state {
-    CART_STATE_OPEN,
+    CART_STATE_OPEN = 0,
     CART_STATE_PAID,
 };
 
@@ -2627,7 +2638,7 @@ Incorrect:
 #define maxRetries 3
 
 enum shape {
-    Circle,
+    Circle = 0,
     Square,
 };
 ```
@@ -2638,7 +2649,7 @@ Correct:
 #define MAX_RETRIES 3
 
 enum shape {
-    SHAPE_CIRCLE,
+    SHAPE_CIRCLE = 0,
     SHAPE_SQUARE,
 };
 ```
@@ -2647,7 +2658,7 @@ Correct (without the enumeration name as a prefix):
 
 ```c
 enum direction {
-    NORTH,
+    NORTH = 0,
     EAST,
     SOUTH,
     WEST,
@@ -2955,7 +2966,7 @@ typedef struct point {
 } point;
 
 typedef enum {
-    FAN_SPEED_LOW,
+    FAN_SPEED_LOW = 0,
     FAN_SPEED_HIGH,
 } fan_speed;
 
@@ -2971,7 +2982,7 @@ struct point {
 };
 
 enum fan_speed {
-    FAN_SPEED_LOW,
+    FAN_SPEED_LOW = 0,
     FAN_SPEED_HIGH,
 };
 
@@ -3207,7 +3218,7 @@ static long sum_unpaid(const struct order *const orders, size_t count)
 
 Keep a variable used by only one function inside that function.
 
-Declare functions and file scope variables `static` by default. Leave out `static` only when there is a specific reason, such as use from another file. A name declared `static` is not visible to other files. So linking does not break even if another file has the same name, and the compiler warns about unused functions.
+Declare functions and file scope variables `static` by default. Leave out `static` only when there is a specific reason, such as use from another file. A name declared `static` is not visible to other files. Therefore, linking does not break even if another file has the same name, and the compiler warns about unused functions.
 
 Do not declare a name in an inner scope that is already declared in an outer scope. `-Wshadow` warns about such shadowing.
 
@@ -3488,6 +3499,8 @@ static int gs_is_running = 1;
 - Define a standalone constant with `#define`.
 - Define a constant whose type matters as a `static const` object.
 
+Always give the first enumeration constant of an enum an explicit value. The first value is 0 even when omitted (C99 §6.7.2.2 ¶3), but the explicit value shows in the declaration that starting at 0 is intended.
+
 Incorrect:
 
 ```c
@@ -3505,11 +3518,21 @@ static long long convert_days_to_ms(int days)
 
 `MILLISECONDS_PER_DAY` is an `int`, so `days * MILLISECONDS_PER_DAY` is also computed as `int`. Therefore, when `days` is 25 or more, the result exceeds the range of `int` before it is converted to `long long`.
 
-Correct:
+Incorrect (without an explicit first value):
 
 ```c
 enum color {
     COLOR_RED,
+    COLOR_GREEN,
+    COLOR_BLUE,
+};
+```
+
+Correct:
+
+```c
+enum color {
+    COLOR_RED = 0,
     COLOR_GREEN,
     COLOR_BLUE,
 };
@@ -3593,7 +3616,7 @@ static int read_result(int *const mut_value)
 Correct:
 
 ```c
-static pthread_mutex_t gs_result_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t gs_result_lock;
 static int gs_result;
 static int gs_has_result;
 
@@ -3710,7 +3733,7 @@ static inline int read_hardware_random(uint64_t *const mut_value)
 
 ### 7.10. VLA
 
-Do not use VLAs (variable length arrays). When a size is determined at run time, use dynamic allocation.
+Do not use VLAs (variable length arrays). When a size is determined at run time, use dynamic allocation, or have the caller pass in an array prepared in advance.
 
 Incorrect:
 
@@ -3752,6 +3775,25 @@ static int print_histogram(const unsigned char *const values, size_t count, size
 
     free(buckets);
     buckets = NULL;
+    return 0;
+}
+```
+
+Correct (taking the array as a parameter):
+
+```c
+static int print_histogram(const unsigned char *const values, size_t count,
+                           unsigned int *const mut_buckets, size_t bucket_count)
+{
+    memset(mut_buckets, 0, bucket_count * sizeof(*mut_buckets));
+    for (size_t i = 0; i < count; ++i) {
+        ++mut_buckets[values[i] % bucket_count];
+    }
+
+    for (size_t i = 0; i < bucket_count; ++i) {
+        printf("%zu: %u\n", i, mut_buckets[i]);
+    }
+
     return 0;
 }
 ```
@@ -3912,12 +3954,12 @@ static const double gs_timeout_s = 2.0;
 
 ### 8.2. Increment and decrement operators
 
-Use the prefix form (`++i`) of increment and decrement operators by default. Use the postfix form only when the previous value is required. Unless there is a specific reason, do not use increment or decrement operators inside array indices, function arguments, or operands of other operators. Move them into separate statements. Do not modify the same object more than once in one expression.
+Use the prefix form (`++i`) of increment and decrement operators by default. Use the postfix form only when the previous value is required. Unless there is a specific reason, do not use increment or decrement operators inside array indices, function arguments, or operands of other operators. Move them into separate statements. Do not modify the same object more than once in one expression. To increase or decrease a dereferenced target by one, write `*p += 1` or `*p -= 1` instead of an increment or decrement operator. This keeps the target and the operation apart and leaves no room to confuse it with `*p++`.
 
 Incorrect:
 
 ```c
-static size_t copy_positive(int *const mut_dst, const int *const src, size_t count)
+static size_t copy_positive_values(int *const mut_dst, const int *const src, size_t count)
 {
     size_t copied = 0;
 
@@ -3945,7 +3987,7 @@ static int read_pair_sum(const int *const values, size_t *const mut_index)
 Correct:
 
 ```c
-static size_t copy_positive(int *const mut_dst, const int *const src, size_t count)
+static size_t copy_positive_values(int *const mut_dst, const int *const src, size_t count)
 {
     size_t copied = 0;
 
@@ -3978,6 +4020,28 @@ static void print_reversed(const int *const values, size_t count)
 {
     for (size_t i = count; i-- > 0;) {
         printf("%d\n", values[i]);
+    }
+}
+```
+
+Incorrect (an increment operator on a dereferenced target):
+
+```c
+static void skip_spaces(const char **const mut_cursor)
+{
+    while (**mut_cursor == ' ') {
+        ++*mut_cursor;
+    }
+}
+```
+
+Correct (increasing a dereferenced target by one):
+
+```c
+static void skip_spaces(const char **const mut_cursor)
+{
+    while (**mut_cursor == ' ') {
+        *mut_cursor += 1;
     }
 }
 ```
@@ -4145,7 +4209,7 @@ The position of parentheses changes the meaning of an expression. A cast applies
 
 - `(uint32_t)pixels[2]` reads `pixels[2]` first. The subscript `2` means two bytes, so it converts only the blue value of the first pixel to `uint32_t`.
 - `((const uint32_t *)pixels)[2]` converts the pointer first. The subscript `2` means two `uint32_t` values, that is, 8 bytes, so it reads all 4 bytes of the third pixel at once. Reading a byte buffer this way violates the strict aliasing rule. If the address is not suitably aligned for `uint32_t`, it also violates the alignment requirement.
-- `(uint32_t)pixels[3] << 24` converts the alpha value to `uint32_t` and then shifts it. In contrast, `(uint32_t)(pixels[3] << 24)` first shifts the value promoted to `int`. So if the alpha value is `0x80` or more, the result exceeds the range of `int`, which is undefined behavior.
+- `(uint32_t)pixels[3] << 24` converts the alpha value to `uint32_t` and then shifts it. In contrast, `(uint32_t)(pixels[3] << 24)` first shifts the value promoted to `int`. Therefore, if the alpha value is `0x80` or more, the result exceeds the range of `int`, which is undefined behavior.
 
 Incorrect:
 
@@ -4514,7 +4578,7 @@ Incorrect:
 ```c
 static void add_sample(long *const mut_total, int *const mut_count, int value)
 {
-    *mut_total += value, ++*mut_count;
+    *mut_total += value, *mut_count += 1;
 }
 ```
 
@@ -4536,7 +4600,7 @@ Correct:
 static void add_sample(long *const mut_total, int *const mut_count, int value)
 {
     *mut_total += value;
-    ++*mut_count;
+    *mut_count += 1;
 }
 ```
 
@@ -4593,7 +4657,7 @@ Incorrect:
 
 ```c
 enum shape {
-    SHAPE_TRIANGLE,
+    SHAPE_TRIANGLE = 0,
     SHAPE_SQUARE,
     SHAPE_PENTAGON,
 };
@@ -4640,7 +4704,7 @@ Correct:
 
 ```c
 enum shape {
-    SHAPE_TRIANGLE,
+    SHAPE_TRIANGLE = 0,
     SHAPE_SQUARE,
     SHAPE_PENTAGON,
 };
@@ -4691,6 +4755,8 @@ static unsigned int grant_rights(char role)
 
 Avoid loops with empty bodies where possible. Move assignments, increments, and similar operations, as well as function calls, out of the condition and into the body or into the init clause and increment expression of a `for` statement. However, if the work must be in the condition, leave it there.
 
+When a loop body is left empty, put one line holding only `;` inside the braces. This shows that the body is empty on purpose.
+
 Incorrect:
 
 ```c
@@ -4699,6 +4765,7 @@ static size_t measure_text(const char *const text)
     const char *cursor = text;
 
     while (*cursor++ != '\0') {
+        ;
     }
 
     return (size_t)(cursor - text - 1);
@@ -4711,6 +4778,20 @@ static void echo_line(FILE *const mut_input, FILE *const mut_output)
     int c;
 
     while ((c = fgetc(mut_input)) != EOF && fputc(c, mut_output) != '\n') {
+        ;
+    }
+}
+```
+
+Incorrect (an empty body without `;`):
+
+```c
+#define ADC_STATUS (*(volatile const uint32_t *)0x40012000UL)
+#define ADC_CONVERSION_DONE 0x2U
+
+static void wait_for_conversion(void)
+{
+    while ((ADC_STATUS & ADC_CONVERSION_DONE) == 0) {
     }
 }
 ```
@@ -4751,6 +4832,7 @@ Correct (when the work must stay in the condition):
 static void wait_for_conversion(void)
 {
     while ((ADC_STATUS & ADC_CONVERSION_DONE) == 0) {
+        ;
     }
 }
 ```
@@ -4932,9 +5014,9 @@ int set_volume(int volume)
 
 ### 10.2. Parameter order
 
-Put output parameters that receive results first. This is the same order as in `memcpy`.
+Where possible, prefer to put output parameters that receive results first. This is the same order as in `memcpy`.
 
-Incorrect:
+Discouraged:
 
 ```c
 struct date {
@@ -4969,8 +5051,8 @@ static int format_date(char *const mut_buffer, size_t buffer_size, const struct 
 Pointer parameters follow these rules.
 
 - Do not modify a pointer parameter itself inside the function. Therefore, declare every pointer parameter `*const`. If an address other than the one passed in is needed, obtain it by means other than the parameter, such as subscripting or a local pointer variable.
-- If the function does not modify the target, make the target `const` too (`const T *const name`).
-- If the function modifies the target, do not make the target `const`, and start the name with `mut_` (`T *const mut_name`).
+- If the function does not modify the target, declare the parameter as `const T *const name`.
+- If the function modifies the target, declare the parameter as `T *const mut_name`. The name starts with `mut_`.
 - End the name of a parameter that may receive `NULL` as an argument with `_nullable` (`const T *const name_nullable`, `T *const mut_name_nullable`). Do not add it to parameters that must not receive `NULL`.
 - When the target is promised not to overlap the target of any other pointer parameter, `restrict` may be added (`const T *const restrict name`). Projects that choose C89 have no `restrict`.
 - Write the parameters of `main` exactly in the form the standard specifies.
@@ -5085,7 +5167,7 @@ static void print_label(const char *const label_nullable)
 
 ### 10.4. Return value conventions
 
-- For a function that does a task and reports only whether it succeeded, prefer returning `0` on success and a negative value on failure. However, this convention may vary with the design of the higher-level API that calls the function, so if the higher-level API defines a convention, follow it.
+- For a function that does a task and reports only whether it succeeded, prefer returning `0` on success and a negative value on failure. However, this convention may vary with the design of the higher-level API that calls the function, so if the higher-level API defines a convention, conform to it.
 - A function that cannot fail returns `void`.
 - A function that returns a truth value returns `int` or `bool`.
 - A function that computes and returns a value signals failure with an out-of-range value (`NULL`, `-1`).
@@ -5297,9 +5379,9 @@ static double parse_sum(const char **const mut_cursor);
 static double parse_factor(const char **const mut_cursor)
 {
     if (**mut_cursor == '(') {
-        ++*mut_cursor;
+        *mut_cursor += 1;
         double value = parse_sum(mut_cursor);
-        ++*mut_cursor;
+        *mut_cursor += 1;
         return value;
     }
 
@@ -5315,7 +5397,7 @@ static double parse_sum(const char **const mut_cursor)
     double sum = parse_factor(mut_cursor);
 
     while (**mut_cursor == '+') {
-        ++*mut_cursor;
+        *mut_cursor += 1;
         sum += parse_factor(mut_cursor);
     }
 
@@ -6212,7 +6294,7 @@ out_close_file:
 
 ### 13.5. Dynamic memory
 
-- Do not iterate with the allocated pointer itself. Use a separate pointer for iteration.
+- Avoid, as far as possible, modifying the base value of an allocated pointer unless the structure leaves no other way. Use a separate pointer for iteration.
 - After `free`, assign `NULL` to the pointer. Unless there is a specific reason, assign it even if the pointer is not used again. The same applies after calling another function that releases the target, such as `fclose`.
 
 Incorrect:
@@ -6322,7 +6404,9 @@ static long sum_squares(const int *const values, size_t count)
 
 ### 13.6. assert
 
-Use `assert` only to check internal invariants. An internal invariant is a condition that never breaks if the program is correct. Do not check failures of external input, files, or system calls with `assert`. Release builds turn off `assert` with `-DNDEBUG`.
+Use `assert` only to check internal invariants. An internal invariant is a condition that never breaks if the program is correct. Do not check failures of external input, files, or system calls with `assert`.
+
+`assert` must work only in debug builds and must never reach a release build that ships. Removing `assert` from release builds is the job of the build structure, not of the source files: the build system defines `NDEBUG` in every release configuration. For the same reason, keep side effects out of an `assert` condition. When a release build drops the `assert`, its side effects disappear with it.
 
 Incorrect:
 
@@ -6407,7 +6491,7 @@ Incorrect:
 
 ```c
 enum job_state {
-    JOB_STATE_IDLE,
+    JOB_STATE_IDLE = 0,
     JOB_STATE_RUNNING,
     JOB_STATE_DONE,
 };
@@ -6455,7 +6539,7 @@ Correct:
 
 ```c
 enum job_state {
-    JOB_STATE_IDLE,
+    JOB_STATE_IDLE = 0,
     JOB_STATE_RUNNING,
     JOB_STATE_DONE,
 };
@@ -6711,6 +6795,7 @@ trim_trailing_whitespace = true
 - C99 §6.3.2.3: N1256 [PDF page 59](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=59) (sections [8.5](#85-parentheses-for-precedence) and [8.7](#87-null-pointers-and-truth-tests))
 - C99 §6.5: N1256 [PDF page 79](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=79), [PDF page 80](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=80) (sections [8.2](#82-increment-and-decrement-operators) and [8.5](#85-parentheses-for-precedence))
 - C99 §6.5.7: N1256 [PDF page 97](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=97) (section [8.5](#85-parentheses-for-precedence))
+- C99 §6.7.2.2: N1256 [PDF page 117](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=117) (section [7.7](#77-constants))
 - C99 §6.7.3.1: N1256 [PDF page 122](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=122) (section [10.3](#103-pointer-parameters))
 - C99 §6.7.4: N1256 [PDF page 124](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=124) (section [10.6](#106-inline))
 - C99 §6.7.8: N1256 [PDF page 137](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=137), [PDF page 139](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=139) (section [7.11](#711-initialization))

@@ -134,6 +134,8 @@
 
 Windows 전용, FreeBSD 전용, macOS 전용 프로젝트처럼 특정 OS나 아키텍처만 대상으로 하는 프로젝트는 그 OS나 아키텍처의 코딩 스타일을 따른다. 반면 크로스플랫폼 프로젝트에서는 특정 OS에 종속된 코드에도 이 코딩 스타일을 적용한다. 플랫폼마다 독립된 구조와 바이너리를 가진 트리는 크로스플랫폼 프로젝트가 아니며, 각 트리는 자기 플랫폼의 스타일을 따른다.
 
+또한, AI 에이전트가 C 코드를 생성할 때 지켜야 할 규약의 모음이기도 하다. AI 에이전트가 규약에 맞추어 코드를 생성하고 검토하고, .clang-format 같은 포맷 양식으로 검사할 수 없는 코딩 스타일의 영역까지 검사 및 수정 제안을 시킬 수 있는 기준점으로서 활용 될 수 있다.
+
 ### 1.2. 프로젝트와 종속성의 코딩 스타일 차이
 
 프로젝트가 직접 작성한 코드는 기존 코드까지 모두 이 규칙에 맞춰 고친다. 반면 외부에서 들여온 종속성 코드는 원래 스타일을 유지한다.
@@ -219,7 +221,7 @@ static size_t count_sections(const char *const text)
 
 일부러 복잡하게 만들거나, 어려워 보이게 만들거나, 읽는 사람이 한 번 더 생각하게 만드는 코드는 쓰지 않는다. 생각할 여지와 실수할 여지가 많은 코드도 쓰지 않는다.
 
-널리 쓰이는 형태로 쓴다. 실수를 줄여 주는 기법이라도 일반적인 용례가 아니면 쓰지 않는다. 예를 들어 상수를 왼쪽에 두는 비교(`5 == value`)는 `==`를 `=`로 잘못 쓰면 컴파일 오류가 나게 해 준다. 그러나 널리 쓰이는 형태가 아니어서 읽는 사람의 익숙함과 어긋나고, 그 어긋남이 주는 부담이 얻는 이익보다 크다. 이처럼 실제로 얻는 이익보다 적용의 부작용이 클 수 있는 기법은 이 코딩 스타일에 넣지 않는다.
+널리 쓰이는 형태로 쓴다. 실수를 줄여 주는 기법이라도 일반적인 코딩 스타일에서 크게 벗어난 방법이라면 쓰지 않는다. 예를 들어 상수를 왼쪽에 두는 비교(`5 == value`)는 `==`를 `=`로 잘못 쓰면 컴파일 오류가 나게 해 준다. 그러나 널리 쓰이는 형태가 아니어서 읽는 사람의 익숙함과 어긋나고, 그 어긋남이 주는 부담이 얻는 이익보다 클 수도 있다. 이처럼 실제로 얻는 이익보다 적용의 부작용이 클 수 있는 기법은 이 코딩 스타일에 넣지 않는다.
 
 틀린 예:
 
@@ -402,7 +404,7 @@ static void record_hit(void)
 ```c
 #include <pthread.h>
 
-static pthread_mutex_t gs_hit_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t gs_hit_lock;
 static unsigned long gs_hit_count;
 
 static void record_hit(void)
@@ -418,7 +420,7 @@ static void record_hit(void)
 ```c
 #include <windows.h>
 
-static SRWLOCK gs_hit_lock = SRWLOCK_INIT;
+static SRWLOCK gs_hit_lock;
 static unsigned long gs_hit_count;
 
 static void record_hit(void)
@@ -458,7 +460,7 @@ static void record_hit(void)
 선택한 언어 표준 밖의 기능은 드러나게 쓴다.
 
 - GNU 확장 문법은 `__extension__`으로 감싼다.
-- 확장 키워드는 `__asm__`, `__typeof__`처럼 밑줄 철자로 쓴다. `-std=c99` 같은 ISO 표준 모드에서 `asm`은 키워드가 아니고, `typeof`는 C23부터 키워드이다. 그래서 그런 모드에서는 밑줄 없는 철자가 컴파일되지 않는다.
+- 확장 키워드는 `__asm__`, `__typeof__`처럼 밑줄 철자로 쓴다. `-std=c99` 같은 ISO 표준 모드에서 `asm`은 키워드가 아니고, `typeof`는 C23 표준부터 키워드로 예약된다. 따라서, 그런 모드에서는 밑줄 없는 철자가 컴파일되지 않는다.
 
 틀린 예:
 
@@ -512,7 +514,7 @@ static inline void compiler_barrier(void)
 
 ### 3.4. implementation-defined behavior
 
-정수 폭, `char`의 부호, 엔디언, 정렬, 패딩 같은 implementation-defined behavior와 플랫폼별 내부 동작에 의존하지 않는다. 의존해야 한다면 주석으로 밝힌다. 다만 대상 플랫폼을 분명히 정한 코드는 그 플랫폼의 동작에 과감히 기대도 된다.
+정수 폭, `char`의 부호, 엔디언, 정렬, 패딩 같은 implementation-defined behavior와 플랫폼별 내부 동작에 의존하지 않는다. 의존해야 한다면 주석으로 밝힌다. 다만 대상 플랫폼을 분명히 정한 코드는 그 플랫폼의 동작을 확실하게 가정해도 된다.
 
 틀린 예:
 
@@ -559,14 +561,17 @@ static void read_dns_header(struct dns_header *const mut_header, const unsigned 
 올바른 예(의존하는 동작을 주석으로 밝힌 경우):
 
 ```c
-static int32_t scale_down_by_16(int32_t value)
+static int save_counter_cache(FILE *const file, const uint64_t *const counters, size_t count)
 {
-    /* relies on >> sign-extending negative values, as GCC documents and Clang also does */
-    return value >> 4;
+    /* written in host byte order; only the host that wrote the cache reads it back */
+    if (fwrite(counters, sizeof(*counters), count, file) != count) {
+        return -1;
+    }
+    return 0;
 }
 ```
 
-올바른 예(little-endian 센서를 읽는 little-endian 전용 펌웨어):
+올바른 예(데이터를 little-endian으로 보내는 센서의 값을 읽는, little-endian 아키텍처 기반 펌웨어 코드):
 
 ```c
 struct sensor_sample {
@@ -585,7 +590,7 @@ static void read_sensor_sample(struct sensor_sample *const mut_sample,
 
 C 표준 함수, 그중에서도 문자열 함수는 구현체, 문자열과 메모리 안전성, 성능에 따른 trade-off를 판단해서 쓴다. 배치 처리, 병렬 처리, 멀티스레드 안전 등을 확실하게 보장해야 하면 그 기능을 직접 작성한다.
 
-예를 들어 `strtok`은 다음 탐색을 시작할 위치를 함수 안에 저장해 두고 다음 호출에서 이어 쓴다. C11은 `strtok`이 다른 `strtok` 호출과의 data race를 피하지 않아도 된다고 정한다(C11 §7.24.5.8 ¶6). 또 `strncat`은 호출할 때마다 대상 문자열의 끝을 처음부터 다시 찾는다. 그래서 많은 문자열을 차례로 이어 붙이면 이어 붙인 길이의 제곱에 비례하는 시간이 든다.
+예를 들어 `strtok`은 다음 탐색을 시작할 위치를 함수 안에 저장해 두고 다음 호출에서 이어 쓴다. C11은 `strtok`이 다른 `strtok` 호출과의 data race를 피하지 않아도 된다고 정한다(C11 §7.24.5.8 ¶6). 또 `strncat`은 호출할 때마다 대상 문자열의 끝을 처음부터 다시 찾는다. 따라서, 많은 문자열을 차례로 이어 붙이면 이어 붙인 길이의 제곱에 비례하는 시간이 든다.
 
 틀린 예:
 
@@ -806,7 +811,7 @@ word_count.c: C source, ASCII text
 틀린 예:
 
 ```c
-/* returns a value ≥ 0 on success */
+/* returns the power of 1024 for unit (B → 0, KiB → 1, MiB → 2), or -1 if unknown */
 int parse_unit(const char *const unit);
 ```
 
@@ -820,7 +825,7 @@ static void report_unknown_unit(const char *const program_name, const char *cons
 올바른 예:
 
 ```c
-/* returns a value >= 0 on success */
+/* returns the power of 1024 for unit (B -> 0, KiB -> 1, MiB -> 2), or -1 if unknown */
 int parse_unit(const char *const unit);
 ```
 
@@ -1894,7 +1899,7 @@ struct, union, enum의 여는 중괄호는 같은 줄에 둔다.
 ```c
 enum traffic_light
 {
-    TRAFFIC_LIGHT_RED,
+    TRAFFIC_LIGHT_RED = 0,
     TRAFFIC_LIGHT_YELLOW,
     TRAFFIC_LIGHT_GREEN,
 };
@@ -1917,7 +1922,7 @@ union float_bits
 
 ```c
 enum traffic_light {
-    TRAFFIC_LIGHT_RED,
+    TRAFFIC_LIGHT_RED = 0,
     TRAFFIC_LIGHT_YELLOW,
     TRAFFIC_LIGHT_GREEN,
 };
@@ -1978,7 +1983,7 @@ static const int gs_first_primes[] = {2, 3, 5, 7};
 ```
 
 ```c
-enum image_format { IMAGE_FORMAT_PNG, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_GIF };
+enum image_format { IMAGE_FORMAT_PNG = 0, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_GIF };
 
 static const char *const gs_image_extensions[] = { ".png", ".jpg", ".gif" };
 ```
@@ -2000,7 +2005,7 @@ static const int gs_first_primes[] = { 2, 3, 5, 7 };
 
 ```c
 enum image_format {
-    IMAGE_FORMAT_PNG,
+    IMAGE_FORMAT_PNG = 0,
     IMAGE_FORMAT_JPEG,
     IMAGE_FORMAT_GIF,
 };
@@ -2429,7 +2434,13 @@ static void open_account(struct account *const mut_account)
 
 ### 5.19. preprocessing directive
 
-preprocessing directive의 `#`은 줄의 맨 앞에 둔다. 함수 안에 있는 directive도 같다. 조건부 컴파일 블록 안에 있는 directive는 `#` 뒤에 블록의 깊이만큼 공백을 하나씩 둔다. include guard는 깊이에 넣지 않는다. `#`이 늘 맨 앞에 있으면 directive가 코드와 구별되고, `#` 뒤의 공백은 중첩 깊이를 보여 준다.
+- preprocessing directive의 `#`은 늘 줄의 맨 앞에 둔다. 함수나 다른 중괄호 블록 안에 있는 directive도 같다.
+- 조건부 컴파일 블록 안에 있는 directive는 `#`과 directive 이름 사이에 깊이 1마다 공백 1칸을 둔다. 깊이 1이면 1칸, 깊이 2이면 2칸, 깊이 3이면 3칸이다.
+- `#elif`, `#else`, `#endif`는 짝이 되는 `#if`, `#ifdef`, `#ifndef`와 같은 깊이에 둔다.
+- include guard는 깊이에 넣지 않는다.
+- 조건부 컴파일 블록 안의 C 코드는 directive의 깊이와 상관없이, directive가 없을 때와 같은 들여쓰기를 따른다.
+
+`#`이 늘 맨 앞에 있으면 directive가 코드와 구별되고, `#` 뒤의 공백은 중첩 깊이를 보여 준다.
 
 틀린 예:
 
@@ -2565,7 +2576,7 @@ union PriceValue {
 };
 
 enum CartState {
-    CART_STATE_OPEN,
+    CART_STATE_OPEN = 0,
     CART_STATE_PAID,
 };
 
@@ -2598,7 +2609,7 @@ union price_value {
 };
 
 enum cart_state {
-    CART_STATE_OPEN,
+    CART_STATE_OPEN = 0,
     CART_STATE_PAID,
 };
 
@@ -2627,7 +2638,7 @@ invalid_price:
 #define maxRetries 3
 
 enum shape {
-    Circle,
+    Circle = 0,
     Square,
 };
 ```
@@ -2638,7 +2649,7 @@ enum shape {
 #define MAX_RETRIES 3
 
 enum shape {
-    SHAPE_CIRCLE,
+    SHAPE_CIRCLE = 0,
     SHAPE_SQUARE,
 };
 ```
@@ -2647,7 +2658,7 @@ enum shape {
 
 ```c
 enum direction {
-    NORTH,
+    NORTH = 0,
     EAST,
     SOUTH,
     WEST,
@@ -2955,7 +2966,7 @@ typedef struct point {
 } point;
 
 typedef enum {
-    FAN_SPEED_LOW,
+    FAN_SPEED_LOW = 0,
     FAN_SPEED_HIGH,
 } fan_speed;
 
@@ -2971,7 +2982,7 @@ struct point {
 };
 
 enum fan_speed {
-    FAN_SPEED_LOW,
+    FAN_SPEED_LOW = 0,
     FAN_SPEED_HIGH,
 };
 
@@ -3176,7 +3187,7 @@ static long sum_unpaid(const struct order *const orders, size_t count)
 }
 ```
 
-다만 C89를 고른 프로젝트는 예외로 한다. C89는 문장 뒤의 선언과 `for` 초기식 안의 선언을 허용하지 않는다. 따라서 변수는 그 변수를 쓰는 가장 좁은 블록의 맨 앞에 선언하고, 반복 변수는 반복문을 감싼 블록의 맨 앞에 선언한다.
+다만 C89를 고른 프로젝트는 예외로 한다. C89는 문장 뒤의 선언과 `for` 초기식 안의 선언을 허용하지 않는다. 따라서 변수는 쓰이는 가장 좁은 블록의 맨 앞에 선언하고, 반복 변수는 반복문을 감싼 블록의 맨 앞에 선언한다.
 
 C89 프로젝트의 올바른 예:
 
@@ -3207,7 +3218,7 @@ static long sum_unpaid(const struct order *const orders, size_t count)
 
 한 함수에서만 쓰는 변수는 그 함수 안에 둔다.
 
-함수와 file scope 변수는 기본으로 `static`으로 선언한다. 다른 파일에서 써야 하는 등 따로 사유가 있을 때만 `static`을 붙이지 않는다. `static`으로 선언하면 이름이 다른 파일에 드러나지 않는다. 그래서 다른 파일에 같은 이름이 있어도 링크가 깨지지 않고, 쓰지 않는 함수는 컴파일러가 경고한다.
+함수와 file scope 변수는 기본으로 `static`으로 선언한다. 다른 파일에서 써야 하는 등 따로 사유가 있을 때만 `static`을 붙이지 않는다. `static`으로 선언하면 이름이 다른 파일에 드러나지 않는다. 따라서, 다른 파일에 같은 이름이 있어도 링크가 깨지지 않고, 쓰지 않는 함수는 컴파일러가 경고한다.
 
 안쪽 범위에서 바깥 범위와 같은 이름을 선언하지 않는다. 이런 shadowing은 `-Wshadow`가 경고한다.
 
@@ -3258,7 +3269,7 @@ static int count_errors(const int *const codes, size_t count)
 
 ### 7.4. 수명이 끝난 대상을 가리키는 포인터
 
-포인터가 가리키는 대상이 범위를 벗어나 수명이 끝났는데 포인터 변수는 남아 있으면, 그 포인터 변수에 `NULL`을 대입한다. 더는 그 포인터로 접근할 일이 없어도 대입한다. 그러면 실수로 그 포인터를 다시 쓸 때 사라진 대상 대신 `NULL`을 다루게 되어, `NULL` 검사에 걸리거나 대개 그 자리에서 바로 실패한다.
+포인터가 가리키는 대상이 범위를 벗어나 수명이 끝났는데 포인터 변수는 남아 있으면 `NULL`을 대입한다. 더는 그 포인터로 접근할 일이 없어도 대입한다. 그러면 실수로 그 포인터를 다시 쓸 때 사라진 대상 대신 `NULL`을 다루게 되어, `NULL` 검사에 걸리거나 대개 그 자리에서 바로 실패한다.
 
 틀린 예:
 
@@ -3488,6 +3499,8 @@ static int gs_is_running = 1;
 - 단독 상수는 `#define`으로 정의한다.
 - 타입이 중요한 상수는 `static const` 객체로 정의한다.
 
+enum의 첫 enumeration constant에는 반드시 값을 명시한다. 첫 값은 생략해도 0이 되지만(C99 §6.7.2.2 ¶3), 0에서 시작한다는 의도를 선언에 드러내기 위해서이다.
+
 틀린 예:
 
 ```c
@@ -3505,11 +3518,21 @@ static long long convert_days_to_ms(int days)
 
 `MILLISECONDS_PER_DAY`는 `int`이므로 `days * MILLISECONDS_PER_DAY`도 `int`로 계산된다. 따라서 `days`가 25 이상이면 결과를 `long long`으로 바꾸기 전에 `int`의 범위를 넘는다.
 
-올바른 예:
+틀린 예(enum의 첫 값을 생략한 경우):
 
 ```c
 enum color {
     COLOR_RED,
+    COLOR_GREEN,
+    COLOR_BLUE,
+};
+```
+
+올바른 예:
+
+```c
+enum color {
+    COLOR_RED = 0,
     COLOR_GREEN,
     COLOR_BLUE,
 };
@@ -3593,7 +3616,7 @@ static int read_result(int *const mut_value)
 올바른 예:
 
 ```c
-static pthread_mutex_t gs_result_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t gs_result_lock;
 static int gs_result;
 static int gs_has_result;
 
@@ -3710,7 +3733,7 @@ static inline int read_hardware_random(uint64_t *const mut_value)
 
 ### 7.10. VLA
 
-VLA(variable length array)를 쓰지 않는다. 실행 중에 크기가 정해지면 동적 할당을 쓴다.
+VLA(variable length array)를 쓰지 않는다. 실행 중에 크기가 정해지면 동적 할당을 쓰거나, 호출하는 쪽에서 미리 마련한 배열을 매개변수로 받는다.
 
 틀린 예:
 
@@ -3752,6 +3775,25 @@ static int print_histogram(const unsigned char *const values, size_t count, size
 
     free(buckets);
     buckets = NULL;
+    return 0;
+}
+```
+
+올바른 예(배열을 매개변수로 받는 경우):
+
+```c
+static int print_histogram(const unsigned char *const values, size_t count,
+                           unsigned int *const mut_buckets, size_t bucket_count)
+{
+    memset(mut_buckets, 0, bucket_count * sizeof(*mut_buckets));
+    for (size_t i = 0; i < count; ++i) {
+        ++mut_buckets[values[i] % bucket_count];
+    }
+
+    for (size_t i = 0; i < bucket_count; ++i) {
+        printf("%zu: %u\n", i, mut_buckets[i]);
+    }
+
     return 0;
 }
 ```
@@ -3912,12 +3954,12 @@ static const double gs_timeout_s = 2.0;
 
 ### 8.2. 증감 연산자
 
-증감 연산자는 기본적으로 전위형(`++i`)을 쓴다. 후위형은 이전 값이 꼭 필요할 때만 쓴다. 특별한 이유가 없는 한, 배열 인덱스, 함수 인자, 다른 연산자의 피연산자 안에서는 증감 연산자를 쓰지 않고 별도 문장으로 뺀다. 한 식에서 같은 객체를 두 번 이상 수정하지 않는다.
+증감 연산자는 기본적으로 전위형(`++i`)을 쓴다. 후위형은 이전 값이 꼭 필요할 때만 쓴다. 특별한 이유가 없는 한, 배열 인덱스, 함수 인자, 다른 연산자의 피연산자 안에서는 증감 연산자를 쓰지 않고 별도 문장으로 뺀다. 한 식에서 같은 객체를 두 번 이상 수정하지 않는다. 역참조한 대상을 하나 늘리거나 줄일 때는 증감 연산자 대신 `*p += 1`, `*p -= 1`로 쓴다. 대상과 연산이 분명히 나뉘고, `*p++`와 헷갈릴 여지가 없기 때문이다.
 
 틀린 예:
 
 ```c
-static size_t copy_positive(int *const mut_dst, const int *const src, size_t count)
+static size_t copy_positive_values(int *const mut_dst, const int *const src, size_t count)
 {
     size_t copied = 0;
 
@@ -3945,7 +3987,7 @@ static int read_pair_sum(const int *const values, size_t *const mut_index)
 올바른 예:
 
 ```c
-static size_t copy_positive(int *const mut_dst, const int *const src, size_t count)
+static size_t copy_positive_values(int *const mut_dst, const int *const src, size_t count)
 {
     size_t copied = 0;
 
@@ -3978,6 +4020,28 @@ static void print_reversed(const int *const values, size_t count)
 {
     for (size_t i = count; i-- > 0;) {
         printf("%d\n", values[i]);
+    }
+}
+```
+
+틀린 예(역참조한 대상에 증감 연산자를 쓴 경우):
+
+```c
+static void skip_spaces(const char **const mut_cursor)
+{
+    while (**mut_cursor == ' ') {
+        ++*mut_cursor;
+    }
+}
+```
+
+올바른 예(역참조한 대상을 하나 늘리는 경우):
+
+```c
+static void skip_spaces(const char **const mut_cursor)
+{
+    while (**mut_cursor == ' ') {
+        *mut_cursor += 1;
     }
 }
 ```
@@ -4145,7 +4209,7 @@ static uint64_t convert_buffer_address(const unsigned char *const buffer, size_t
 
 - `(uint32_t)pixels[2]`는 `pixels[2]`를 먼저 읽는다. 첨자 `2`는 바이트 2개이므로, 첫 픽셀의 파랑 값 하나를 `uint32_t`로 바꾼다.
 - `((const uint32_t *)pixels)[2]`는 포인터를 먼저 바꾼다. 첨자 `2`는 `uint32_t` 2개, 곧 8바이트이므로, 세 번째 픽셀의 4바이트를 한꺼번에 읽는다. 바이트 버퍼를 이렇게 읽으면 strict aliasing 규칙을 어긴다. 주소가 `uint32_t`의 정렬 단위에 맞지 않으면 정렬 요구도 어긴다.
-- `(uint32_t)pixels[3] << 24`는 알파 값을 `uint32_t`로 바꾼 뒤 시프트한다. 반면 `(uint32_t)(pixels[3] << 24)`는 `int`로 승격된 값을 먼저 시프트한다. 그래서 알파 값이 `0x80` 이상이면 결과가 `int`의 범위를 넘어 undefined behavior이다.
+- `(uint32_t)pixels[3] << 24`는 알파 값을 `uint32_t`로 바꾼 뒤 시프트한다. 반면 `(uint32_t)(pixels[3] << 24)`는 `int`로 승격된 값을 먼저 시프트한다. 따라서, 알파 값이 `0x80` 이상이면 결과가 `int`의 범위를 넘어 undefined behavior이다.
 
 틀린 예:
 
@@ -4514,7 +4578,7 @@ static void clear_range(struct range *const mut_range)
 ```c
 static void add_sample(long *const mut_total, int *const mut_count, int value)
 {
-    *mut_total += value, ++*mut_count;
+    *mut_total += value, *mut_count += 1;
 }
 ```
 
@@ -4536,7 +4600,7 @@ static void reset_cursor(struct cursor *const mut_cursor)
 static void add_sample(long *const mut_total, int *const mut_count, int value)
 {
     *mut_total += value;
-    ++*mut_count;
+    *mut_count += 1;
 }
 ```
 
@@ -4593,7 +4657,7 @@ static void copy_to_free_slots(int *const mut_slots, size_t capacity, const int 
 
 ```c
 enum shape {
-    SHAPE_TRIANGLE,
+    SHAPE_TRIANGLE = 0,
     SHAPE_SQUARE,
     SHAPE_PENTAGON,
 };
@@ -4640,7 +4704,7 @@ static unsigned int grant_rights(char role)
 
 ```c
 enum shape {
-    SHAPE_TRIANGLE,
+    SHAPE_TRIANGLE = 0,
     SHAPE_SQUARE,
     SHAPE_PENTAGON,
 };
@@ -4691,6 +4755,8 @@ static unsigned int grant_rights(char role)
 
 본문이 빈 반복문은 되도록 피한다. 조건 안에 넣은 대입, 증감 같은 연산과 함수 호출은 본문이나 `for` 문의 초기식과 증감식으로 옮긴다. 다만 그 작업이 반드시 조건 안에 있어야 하면 그대로 둔다.
 
+본문을 비워 둔 반복문은 중괄호 안에 `;`만 있는 줄을 하나 둔다. 본문을 일부러 비웠음을 드러내기 위해서이다.
+
 틀린 예:
 
 ```c
@@ -4699,6 +4765,7 @@ static size_t measure_text(const char *const text)
     const char *cursor = text;
 
     while (*cursor++ != '\0') {
+        ;
     }
 
     return (size_t)(cursor - text - 1);
@@ -4711,6 +4778,20 @@ static void echo_line(FILE *const mut_input, FILE *const mut_output)
     int c;
 
     while ((c = fgetc(mut_input)) != EOF && fputc(c, mut_output) != '\n') {
+        ;
+    }
+}
+```
+
+틀린 예(빈 본문에 `;`를 넣지 않은 경우):
+
+```c
+#define ADC_STATUS (*(volatile const uint32_t *)0x40012000UL)
+#define ADC_CONVERSION_DONE 0x2U
+
+static void wait_for_conversion(void)
+{
+    while ((ADC_STATUS & ADC_CONVERSION_DONE) == 0) {
     }
 }
 ```
@@ -4751,6 +4832,7 @@ static void echo_line(FILE *const mut_input, FILE *const mut_output)
 static void wait_for_conversion(void)
 {
     while ((ADC_STATUS & ADC_CONVERSION_DONE) == 0) {
+        ;
     }
 }
 ```
@@ -4932,9 +5014,9 @@ int set_volume(int volume)
 
 ### 10.2. 매개변수 순서
 
-결과를 써 넣을 출력 매개변수는 앞에 둔다. `memcpy`와 같은 순서이다.
+결과를 써 넣을 출력 매개변수는 가능하면 앞에 두는 것을 지향한다. `memcpy`와 같은 순서이다.
 
-틀린 예:
+지양하는 예:
 
 ```c
 struct date {
@@ -4968,9 +5050,9 @@ static int format_date(char *const mut_buffer, size_t buffer_size, const struct 
 
 포인터 매개변수는 다음 규칙을 따른다.
 
-- 포인터 매개변수 자체는 함수 안에서 바꾸지 않는다. 그래서 포인터 매개변수는 모두 `*const`로 선언한다. 넘겨받은 주소와 다른 주소가 필요하면 첨자 연산이나 지역 포인터 변수처럼 매개변수가 아닌 다른 수단으로 얻는다.
-- 함수가 대상을 바꾸지 않으면 대상에도 `const`를 붙인다(`const T *const name`).
-- 함수가 대상을 바꾸면 대상에 `const`를 붙이지 않고, 이름을 `mut_`으로 시작한다(`T *const mut_name`).
+- 포인터 매개변수 자체는 함수 안에서 바꾸지 않는다. 따라서, 포인터 매개변수는 모두 `*const`로 선언한다. 넘겨받은 주소와 다른 주소가 필요하면 첨자 연산이나 지역 포인터 변수처럼 매개변수가 아닌 다른 수단으로 얻는다.
+- 함수가 대상을 바꾸지 않으면 `const T *const name`으로 선언한다.
+- 함수가 대상을 바꾸면 `T *const mut_name`으로 선언한다. 이름은 `mut_`으로 시작한다.
 - 인자로 `NULL`을 받아도 되는 매개변수는 이름을 `_nullable`로 끝낸다(`const T *const name_nullable`, `T *const mut_name_nullable`). `NULL`을 받으면 안 되는 매개변수에는 붙이지 않는다.
 - 대상이 다른 포인터 매개변수의 대상과 겹치지 않는다고 약속할 때는 `restrict`를 더할 수 있다(`const T *const restrict name`). C89를 고른 프로젝트에는 `restrict`가 없다.
 - `main`의 매개변수는 표준이 정한 형태를 그대로 쓴다.
@@ -5085,7 +5167,7 @@ static void print_label(const char *const label_nullable)
 
 ### 10.4. 반환값 규약
 
-- 일을 하고 성공 여부만 알리는 함수는 성공하면 `0`, 실패하면 음수를 돌려주는 것을 우선한다. 다만 이 규약은 그 함수를 부르는 상위 API의 구성에 따라 달라질 수 있으므로, 상위 API가 정한 규약이 있으면 그 규약을 따른다.
+- 일을 하고 성공 여부만 알리는 함수는 성공하면 `0`, 실패하면 음수를 돌려주는 것을 우선한다. 다만 이 규약은 그 함수를 부르는 상위 API의 구성에 따라 달라질 수 있으므로, 상위 API가 정한 규약이 있으면 그 규약에 맞춘다.
 - 실패할 수 없는 함수는 `void`를 돌려준다.
 - 참 거짓을 돌려주는 함수는 `int`나 `bool`을 돌려준다.
 - 값을 계산해 돌려주는 함수는 범위 밖 값(`NULL`, `-1`)으로 실패를 알린다.
@@ -5297,9 +5379,9 @@ static double parse_sum(const char **const mut_cursor);
 static double parse_factor(const char **const mut_cursor)
 {
     if (**mut_cursor == '(') {
-        ++*mut_cursor;
+        *mut_cursor += 1;
         double value = parse_sum(mut_cursor);
-        ++*mut_cursor;
+        *mut_cursor += 1;
         return value;
     }
 
@@ -5315,7 +5397,7 @@ static double parse_sum(const char **const mut_cursor)
     double sum = parse_factor(mut_cursor);
 
     while (**mut_cursor == '+') {
-        ++*mut_cursor;
+        *mut_cursor += 1;
         sum += parse_factor(mut_cursor);
     }
 
@@ -6212,7 +6294,7 @@ out_close_file:
 
 ### 13.5. 동적 메모리
 
-- 할당받은 포인터로 직접 순회하지 않는다. 순회에는 별도 포인터를 쓴다.
+- 할당받은 포인터의 base 값을 수정하는 시도는 구조적으로 어쩔 수 없는 경우가 아닌 한 최대한 지양한다. 순회에는 별도 포인터를 쓴다.
 - `free` 뒤에는 그 포인터에 `NULL`을 대입한다. 특별한 이유가 없는 한, 그 포인터를 다시 쓰지 않더라도 대입한다. `fclose`처럼 대상을 해제하는 다른 함수를 부른 뒤에도 같다.
 
 틀린 예:
@@ -6322,7 +6404,9 @@ static long sum_squares(const int *const values, size_t count)
 
 ### 13.6. assert
 
-`assert`는 내부 불변식 검사에만 쓴다. 내부 불변식은 프로그램이 옳다면 깨지지 않는 조건이다. 외부 입력, 파일, 시스템 호출의 실패는 `assert`로 검사하지 않는다. Release 빌드는 `-DNDEBUG`로 `assert`를 끈다.
+`assert`는 내부 불변식 검사에만 쓴다. 내부 불변식은 프로그램이 옳다면 깨지지 않는 조건이다. 외부 입력, 파일, 시스템 호출의 실패는 `assert`로 검사하지 않는다.
+
+`assert`는 반드시 디버그 빌드에서만 동작하게 하고, 배포하는 release 빌드에는 들어가지 않게 한다. release 빌드에서 `assert`를 빼는 일은 소스 파일이 아니라 빌드 구조가 맡는다. 빌드 시스템은 모든 release 구성에서 `NDEBUG`를 정의한다. 같은 이유로 `assert`의 조건식에는 side effect를 두지 않는다. release 빌드에서 `assert`가 빠지면 그 side effect도 함께 사라지기 때문이다.
 
 틀린 예:
 
@@ -6407,7 +6491,7 @@ static void check_record_layout(void)
 
 ```c
 enum job_state {
-    JOB_STATE_IDLE,
+    JOB_STATE_IDLE = 0,
     JOB_STATE_RUNNING,
     JOB_STATE_DONE,
 };
@@ -6455,7 +6539,7 @@ int main(int argc, char *argv[])
 
 ```c
 enum job_state {
-    JOB_STATE_IDLE,
+    JOB_STATE_IDLE = 0,
     JOB_STATE_RUNNING,
     JOB_STATE_DONE,
 };
@@ -6711,6 +6795,7 @@ trim_trailing_whitespace = true
 - C99 §6.3.2.3: N1256의 [PDF 59쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=59) ([8.5절](#85-우선순위-괄호), [8.7절](#87-널-포인터와-참-거짓-판정))
 - C99 §6.5: N1256의 [PDF 79쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=79), [PDF 80쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=80) ([8.2절](#82-증감-연산자), [8.5절](#85-우선순위-괄호))
 - C99 §6.5.7: N1256의 [PDF 97쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=97) ([8.5절](#85-우선순위-괄호))
+- C99 §6.7.2.2: N1256의 [PDF 117쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=117) ([7.7절](#77-상수))
 - C99 §6.7.3.1: N1256의 [PDF 122쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=122) ([10.3절](#103-포인터-매개변수))
 - C99 §6.7.4: N1256의 [PDF 124쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=124) ([10.6절](#106-inline))
 - C99 §6.7.8: N1256의 [PDF 137쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=137), [PDF 139쪽](https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1256.pdf#page=139) ([7.11절](#711-초기화))
