@@ -1,6 +1,6 @@
 # C 코딩 스타일
 
-영문판: [coding-style.md](coding-style.md)
+영문판: [coding-style.en.md](coding-style.en.md)
 
 목차
 

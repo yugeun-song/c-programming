@@ -150,7 +150,7 @@ Visual Studio 2022+: "Open a local folder" on the root, choose `x86_64-windows-m
 
 ## Conventions
 
-The sources follow the C coding style in [`docs/coding-style.md`](docs/coding-style.md) (Korean edition: [`docs/coding-style.ko.md`](docs/coding-style.ko.md)). `.clang-format` holds the formatting part of that style, as listed in its clang-format section; naming, declarations, pointer parameters and the other rules are kept by hand. `.editorconfig` and `.gitattributes` keep UTF-8 without BOM, LF, 4-space indent, hard tabs only in Makefiles, and a final newline only in C sources and headers.
+The sources follow the C coding style in [`docs/coding-style.en.md`](docs/coding-style.en.md) (Korean edition: [`docs/coding-style.ko.md`](docs/coding-style.ko.md)). `.clang-format` holds the formatting part of that style, as listed in its clang-format section; naming, declarations, pointer parameters and the other rules are kept by hand. `.editorconfig` and `.gitattributes` keep UTF-8 without BOM, LF, 4-space indent, hard tabs only in Makefiles, and a final newline only in C sources and headers.
 
 Include guards spell the path from the project root in uppercase, without a leading underscore, and repeat the name after `#endif`:
 
