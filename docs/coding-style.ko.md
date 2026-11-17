@@ -1,7 +1,7 @@
 # C 코딩 스타일
 
 한글 원문: [coding-style.ko.md](coding-style.ko.md)\
-영문판: [coding-style.en.md](coding-style.en.md)
+영문 원문: [coding-style.en.md](coding-style.en.md)
 
 목차
 

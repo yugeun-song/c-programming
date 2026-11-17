@@ -1,7 +1,7 @@
 # C Coding Style
 
 Korean original: [coding-style.ko.md](coding-style.ko.md)\
-English edition: [coding-style.en.md](coding-style.en.md)
+English original: [coding-style.en.md](coding-style.en.md)
 
 Contents
 
