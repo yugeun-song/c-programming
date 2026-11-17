@@ -273,7 +273,7 @@ Each line does only one of reading, comparing, assigning, or incrementing, so it
 - Take the element count as `size_t`. Declare the loop variable `i` in the init clause of the `for` statement, and change it only in the increment expression. Do not change values in the condition, as `n--` does.
 - Unfold the comma operator and the nested conditional operators into `if` and `else if`, so that each line does only one thing.
 - Split the chained assignment `sum = *clipped = 0` into a declaration with an initializer for each variable.
-- Count the clipped elements in the local variable `clipped`, and write the count to `*mut_clipped` only once, at the end. The name of a pointer parameter whose target the function modifies starts with `mut_`.
+- Count the clipped elements in the local variable `clipped`, and write the count to `*mut_clipped` only once, at the end. When a value has to be modified through a parameter, start its name with `mut_`.
 - Wrap the body of the `for` statement in braces.
 - Use names that convey their meaning (`samples`, `low`, `high`) instead of abbreviated names (`v`, `lo`, `hi`).
 

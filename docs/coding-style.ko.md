@@ -273,7 +273,7 @@ static long sum_clamped(size_t *const mut_clipped, const int *const samples, siz
 - 원소 수는 `size_t`로 받는다. 반복 변수 `i`는 `for` 문의 초기식에서 선언하고 증감식에서만 바꾼다. 조건식에서는 `n--`처럼 값을 바꾸지 않는다.
 - 쉼표 연산자와 중첩된 삼항 연산자를 `if`와 `else if`로 풀어, 한 줄에서 한 가지 일만 한다.
 - 연쇄 대입 `sum = *clipped = 0`을 변수마다 선언과 초기화로 나눈다.
-- 잘린 원소의 수는 지역 변수 `clipped`에 세고, 끝에서 한 번만 `*mut_clipped`에 쓴다. 대상을 바꾸는 포인터 매개변수의 이름은 `mut_`으로 시작한다.
+- 잘린 원소의 수는 지역 변수 `clipped`에 세고, 끝에서 한 번만 `*mut_clipped`에 쓴다. 매개변수를 이용해서 값을 수정해야 하는 경우에는 이름을 `mut_`으로 시작한다.
 - `for` 문의 본문을 중괄호로 감싼다.
 - 줄인 이름(`v`, `lo`, `hi`) 대신 뜻이 드러나는 이름(`samples`, `low`, `high`)을 쓴다.
 
