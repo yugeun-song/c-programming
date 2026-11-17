@@ -3594,8 +3594,11 @@ static long long convert_days_to_ms(int days)
 
 ### 7.8. const
 
-- 기본 타입 변수를 포함한 일반 변수와 값 매개변수에는 `const`를 강제하지 않는다.
-- 문자열 리터럴을 가리키는 포인터는 `const char *`로 선언한다.
+- 기본 타입 변수를 포함해 포인터가 아닌 변수와 값 매개변수에는 `const`를 강제하지 않는다.
+- 포인터 변수는 `const T *const name` 형식을 기본으로 한다. 이 형식을 지키기 어려울 때만 `const`를 하나씩 뺀다. 대상을 바꿔야 하면 앞의 `const`를 빼고(`T *const name`), 포인터 자체를 바꿔야 하면 뒤의 `const`를 뺀다(`const T *name`). `free`나 `fclose`를 부른 뒤 `NULL`을 할당하는 포인터도 포인터 자체를 바꾸는 경우이다.
+- 뒤의 `const`는 선언과 초기화가 동시에 이뤄질 때만 쓸 수 있다. 포인터에 값을 할당하는 시기가 선언과 다르면 뒤의 `const`를 뺀다. 다만 선언하면서 초기화할 수 있는 구조가 있으면 그 구조를 골라 `*const` 형식을 최대한 유지한다.
+- typedef로 정의한 포인터 타입은 이름만 보면 포인터가 아닌 것 같아도 포인터로 다룬다. 이런 타입의 변수와 매개변수는 `const`를 타입 앞에 붙여 선언한다(`const HANDLE file`, `const sample_callback on_samples`). 이 `const`는 포인터 자체에 붙으므로 뒤의 `const`와 같다.
+- 문자열 리터럴을 가리키는 포인터는 대상을 바꿀 수 없으므로 앞의 `const`를 빼지 않는다.
 - 값으로 돌려주는 반환형에는 `const`를 붙이지 않는다.
 
 틀린 예:
@@ -3620,6 +3623,99 @@ static double convert_to_inches(double centimeters)
     double inches = centimeters / 2.54;
 
     return inches;
+}
+```
+
+틀린 예(바꾸지 않는 포인터 변수):
+
+```c
+static void print_extension(const char *const path)
+{
+    char *dot = strrchr(path, '.');
+
+    if (dot != NULL) {
+        printf("extension: %s\n", dot + 1);
+    }
+}
+```
+
+올바른 예(바꾸지 않는 포인터 변수):
+
+```c
+static void print_extension(const char *const path)
+{
+    const char *const dot = strrchr(path, '.');
+
+    if (dot != NULL) {
+        printf("extension: %s\n", dot + 1);
+    }
+}
+```
+
+지양하는 예(선언한 뒤 분기마다 할당하는 경우):
+
+```c
+static void print_item_count(size_t count)
+{
+    const char *noun;
+
+    if (count == 1) {
+        noun = "item";
+    } else {
+        noun = "items";
+    }
+
+    printf("%zu %s\n", count, noun);
+}
+```
+
+올바른 예(선언하면서 초기화하는 경우):
+
+```c
+static void print_item_count(size_t count)
+{
+    const char *const noun = (count == 1) ? "item" : "items";
+
+    printf("%zu %s\n", count, noun);
+}
+```
+
+올바른 예(선언과 초기화를 함께 할 수 없는 경우):
+
+```c
+static int parse_percent(long *const mut_percent, const char *const text)
+{
+    char *end;
+    long value = strtol(text, &end, 10);
+
+    if (end == text || *end != '\0' || value < 0 || value > 100) {
+        return -1;
+    }
+
+    *mut_percent = value;
+    return 0;
+}
+```
+
+틀린 예(typedef로 정의한 포인터 타입):
+
+```c
+typedef int (*compare_callback)(const void *const left, const void *const right);
+
+static void sort_scores(int *const mut_scores, size_t count, compare_callback compare)
+{
+    qsort(mut_scores, count, sizeof(*mut_scores), compare);
+}
+```
+
+올바른 예(typedef로 정의한 포인터 타입):
+
+```c
+typedef int (*compare_callback)(const void *const left, const void *const right);
+
+static void sort_scores(int *const mut_scores, size_t count, const compare_callback compare)
+{
+    qsort(mut_scores, count, sizeof(*mut_scores), compare);
 }
 ```
 
@@ -5100,7 +5196,7 @@ static int format_date(char *const mut_buffer, size_t buffer_size, const struct 
 
 포인터 매개변수는 다음 규칙을 따른다.
 
-- 포인터 매개변수 자체는 함수 안에서 바꾸지 않는다. 따라서, 포인터 매개변수는 모두 `*const`로 선언한다. 넘겨받은 주소와 다른 주소가 필요하면 첨자 연산이나 지역 포인터 변수처럼 매개변수를 바꾸지 않는 수단으로 얻는다.
+- 포인터 매개변수 자체는 함수 안에서 바꾸지 않는다. 따라서, 포인터 매개변수는 모두 `*const`로 선언한다. typedef로 정의한 포인터 타입이면 `const`를 타입 앞에 붙인다(`const HANDLE file`). 넘겨받은 주소와 다른 주소가 필요하면 첨자 연산이나 지역 포인터 변수처럼 매개변수를 바꾸지 않는 수단으로 얻는다.
 - 함수가 대상을 바꾸지 않으면 `const T *const name`으로 선언한다.
 - 함수가 대상을 바꾸면 `T *const mut_name`으로 선언한다. 이름은 `mut_`으로 시작한다.
 - 인자로 `NULL`을 받아도 되는 매개변수는 이름을 `_nullable`로 끝낸다(`const T *const name_nullable`, `T *const mut_name_nullable`). `NULL`을 받으면 안 되는 매개변수에는 이 접미어를 붙이지 않는다.

@@ -3594,8 +3594,11 @@ static long long convert_days_to_ms(int days)
 
 ### 7.8. const
 
-- `const` is not required on ordinary variables, including variables of basic types, or on value parameters.
-- Declare a pointer to a string literal as `const char *`.
+- `const` is not required on variables that are not pointers, including variables of basic types, or on value parameters.
+- Declare pointer variables as `const T *const name` by default. Drop a `const` only when this form is hard to keep. Drop the leading `const` when the target must change (`T *const name`), and the trailing `const` when the pointer itself must change (`const T *name`). A pointer that is set to `NULL` after `free` or `fclose` is also a pointer that changes itself.
+- The trailing `const` works only when the declaration also initializes the pointer. If the pointer gets its value later than its declaration, drop the trailing `const`. Still, when a structure that initializes the pointer in its declaration is available, choose it and keep the `*const` form as far as possible.
+- Treat a pointer type defined with typedef as a pointer, even when its name does not look like one. Declare variables and parameters of such a type with `const` before the type (`const HANDLE file`, `const sample_callback on_samples`). This `const` applies to the pointer itself, so it is the trailing `const`.
+- A pointer to a string literal keeps the leading `const`, since its target cannot be changed.
 - Do not add `const` to a return type returned by value.
 
 Incorrect:
@@ -3620,6 +3623,99 @@ static double convert_to_inches(double centimeters)
     double inches = centimeters / 2.54;
 
     return inches;
+}
+```
+
+Incorrect (a pointer variable that does not change):
+
+```c
+static void print_extension(const char *const path)
+{
+    char *dot = strrchr(path, '.');
+
+    if (dot != NULL) {
+        printf("extension: %s\n", dot + 1);
+    }
+}
+```
+
+Correct (a pointer variable that does not change):
+
+```c
+static void print_extension(const char *const path)
+{
+    const char *const dot = strrchr(path, '.');
+
+    if (dot != NULL) {
+        printf("extension: %s\n", dot + 1);
+    }
+}
+```
+
+Discouraged (assigned in each branch after the declaration):
+
+```c
+static void print_item_count(size_t count)
+{
+    const char *noun;
+
+    if (count == 1) {
+        noun = "item";
+    } else {
+        noun = "items";
+    }
+
+    printf("%zu %s\n", count, noun);
+}
+```
+
+Correct (initialized in the declaration):
+
+```c
+static void print_item_count(size_t count)
+{
+    const char *const noun = (count == 1) ? "item" : "items";
+
+    printf("%zu %s\n", count, noun);
+}
+```
+
+Correct (declaration and initialization cannot happen together):
+
+```c
+static int parse_percent(long *const mut_percent, const char *const text)
+{
+    char *end;
+    long value = strtol(text, &end, 10);
+
+    if (end == text || *end != '\0' || value < 0 || value > 100) {
+        return -1;
+    }
+
+    *mut_percent = value;
+    return 0;
+}
+```
+
+Incorrect (a pointer type defined with typedef):
+
+```c
+typedef int (*compare_callback)(const void *const left, const void *const right);
+
+static void sort_scores(int *const mut_scores, size_t count, compare_callback compare)
+{
+    qsort(mut_scores, count, sizeof(*mut_scores), compare);
+}
+```
+
+Correct (a pointer type defined with typedef):
+
+```c
+typedef int (*compare_callback)(const void *const left, const void *const right);
+
+static void sort_scores(int *const mut_scores, size_t count, const compare_callback compare)
+{
+    qsort(mut_scores, count, sizeof(*mut_scores), compare);
 }
 ```
 
@@ -5100,7 +5196,7 @@ static int format_date(char *const mut_buffer, size_t buffer_size, const struct 
 
 Pointer parameters follow these rules.
 
-- Do not modify a pointer parameter itself inside the function. Therefore, declare every pointer parameter `*const`. When an address other than the one passed in is needed, obtain it by means that leave the parameter unchanged, such as subscripting or a local pointer variable.
+- Do not modify a pointer parameter itself inside the function. Therefore, declare every pointer parameter `*const`. For a pointer type defined with typedef, put `const` before the type (`const HANDLE file`). When an address other than the one passed in is needed, obtain it by means that leave the parameter unchanged, such as subscripting or a local pointer variable.
 - If the function does not modify the target, declare the parameter as `const T *const name`.
 - If the function modifies the target, declare the parameter as `T *const mut_name`. The name starts with `mut_`.
 - End the name of a parameter that may receive `NULL` as an argument with `_nullable` (`const T *const name_nullable`, `T *const mut_name_nullable`). Do not add this suffix to a parameter that must not receive `NULL`.
