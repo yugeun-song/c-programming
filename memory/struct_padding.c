@@ -205,14 +205,16 @@ int main(void)
            "    uint8_t " ANSI_COLOR_RED "a" ANSI_COLOR_RESET ";\n"
            "    uint32_t " ANSI_COLOR_GREEN "b" ANSI_COLOR_RESET ";\n"
            "};\n");
-    print_mem_info(&inter_pad_struct, sizeof(inter_pad_struct), inter_members, ARRAY_SIZE(inter_members));
+    print_mem_info(&inter_pad_struct, sizeof(inter_pad_struct), inter_members,
+                   ARRAY_SIZE(inter_members));
 
     printf("-------------------------------------------------------------------------------\n"
            "struct trailing_padding {\n"
            "    uint32_t " ANSI_COLOR_RED "a" ANSI_COLOR_RESET ";\n"
            "    uint8_t " ANSI_COLOR_GREEN "b" ANSI_COLOR_RESET ";\n"
            "};\n");
-    print_mem_info(&trail_pad_struct, sizeof(trail_pad_struct), trail_members, ARRAY_SIZE(trail_members));
+    print_mem_info(&trail_pad_struct, sizeof(trail_pad_struct), trail_members,
+                   ARRAY_SIZE(trail_members));
 
     printf("-------------------------------------------------------------------------------\n"
            "struct well_optimized_order {\n"
@@ -220,7 +222,8 @@ int main(void)
            "    uint16_t " ANSI_COLOR_GREEN "b" ANSI_COLOR_RESET ";\n"
            "    uint8_t " ANSI_COLOR_BLUE "c" ANSI_COLOR_RESET ";\n"
            "};\n");
-    print_mem_info(&well_order_struct, sizeof(well_order_struct), well_members, ARRAY_SIZE(well_members));
+    print_mem_info(&well_order_struct, sizeof(well_order_struct), well_members,
+                   ARRAY_SIZE(well_members));
 
     printf("-------------------------------------------------------------------------------\n"
            "struct bad_optimized_order {\n"
@@ -228,7 +231,8 @@ int main(void)
            "    uint32_t " ANSI_COLOR_GREEN "b" ANSI_COLOR_RESET ";\n"
            "    uint16_t " ANSI_COLOR_BLUE "c" ANSI_COLOR_RESET ";\n"
            "};\n");
-    print_mem_info(&bad_order_struct, sizeof(bad_order_struct), bad_members, ARRAY_SIZE(bad_members));
+    print_mem_info(&bad_order_struct, sizeof(bad_order_struct), bad_members,
+                   ARRAY_SIZE(bad_members));
 
     printf("-------------------------------------------------------------------------------\n"
            "struct nested_type_member {\n"
@@ -255,7 +259,8 @@ int main(void)
            "    uint32_t " ANSI_COLOR_GREEN "b" ANSI_COLOR_RESET "[3];\n"
            "    uint8_t " ANSI_COLOR_BLUE "c" ANSI_COLOR_RESET "[3];\n"
            "};\n");
-    print_mem_info(&array_logic_struct, sizeof(array_logic_struct), array_members, ARRAY_SIZE(array_members));
+    print_mem_info(&array_logic_struct, sizeof(array_logic_struct), array_members,
+                   ARRAY_SIZE(array_members));
 
     printf("-------------------------------------------------------------------------------\n"
            "struct union_in_struct {\n"
