@@ -11,10 +11,5 @@ indent_size = 4
 [*.{c,h}]
 insert_final_newline = true
 
-[{Makefile,*.mk}]
-indent_style = tab
-indent_size = tab
-tab_width = 8
-
 [*.{json,yml,yaml,md}]
 indent_size = 2

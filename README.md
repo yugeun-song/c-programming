@@ -24,7 +24,7 @@ Directories name the topic, not the platform; one appears with its first file.
 | `cmake/platform.cmake` | compiler, OS, architecture and libc checks |
 | `cmake/flags.cmake` | flag lists, probing, options |
 | `CMakePresets.json` | one configure preset per target |
-| `build.cmake` | build command; `build.sh`, `build.ps1` and the `Makefile` forward to it |
+| `build.cmake` | build command; `build.sh` and `build.ps1` forward to it |
 | `cmake/presets.cmake` | preset lookup and availability for `build.cmake` |
 
 Programs go to `bin/<arch>-<os>-<compiler>-<config>/<dir>/`, with `.exe` and `.pdb` on Windows.
@@ -121,7 +121,6 @@ Every argument must parse: a path other than `<topic>/<name>.c`, an unknown, rep
 ## Build and run
 
 ```bash
-make [command ...] [PRESET=<preset>] [CC=gcc|clang] [PROFILE=debug|release] [SANITIZE=<list>]   # Linux
 ./build.sh [command ...] [preset] [PROFILE=debug|release] [SANITIZE=<list>]                       # Linux
 ./build.ps1 [command ...] [preset] [PROFILE=debug|release] [SANITIZE=<list>]                      # Windows
 cmake -P build.cmake -- [command ...] [preset] [PROFILE=debug|release] [SANITIZE=<list>]          # either
@@ -144,13 +143,13 @@ qemu-aarch64 -L /usr/aarch64-linux-gnu ./bin/aarch64-linux-gcc-release/<dir>/<na
 | `clangd-check` | clangd parses every source and header and prints its errors |
 | `help`, `-h` | the commands, the variables and the presets the host can build |
 
-All four entry points parse the same arguments, from any working directory: commands in any case run in the order given, and the preset, `PROFILE` and the `SANITIZE` list come once. Anything else, or a preset the host cannot build, stops before any work. No command means `all`, and no preset means the host default, `<arch>-linux-gcc` on Linux or `x86_64-windows-clang` on Windows. The `Makefile` runs its goals one at a time and maps `CC=gcc`, `CC=clang` and the cross gcc names to their presets; `PRESET=` names any preset. Each command ends with a `=>` line that names what it produced, and configure reports the probed flags in the same form whenever they change.
+All three entry points parse the same arguments, from any working directory: commands in any case run in the order given, and the preset, `PROFILE` and the `SANITIZE` list come once. Anything else, or a preset the host cannot build, stops before any work. No command means `all`, and no preset means the host default, `<arch>-linux-gcc` on Linux or `x86_64-windows-clang` on Windows. Each command ends with a `=>` line that names what it produced, and configure reports the probed flags in the same form whenever they change.
 
 Visual Studio 2022+: "Open a local folder" on the root, choose `x86_64-windows-msvc` or `x86_64-windows-clang` from the preset list, pick a program from **Select Startup Item**, F5. Breakpoints, Memory View and `.pdb` work without a `.sln`.
 
 ## Conventions
 
-The sources follow the C coding style in [`docs/coding-style.en.md`](docs/coding-style.en.md) (Korean edition: [`docs/coding-style.ko.md`](docs/coding-style.ko.md)). `.clang-format` holds the formatting part of that style, as listed in its clang-format section; naming, declarations, pointer parameters and the other rules are kept by hand. `.editorconfig` and `.gitattributes` keep UTF-8 without BOM, LF, 4-space indent, hard tabs only in Makefiles, and a final newline only in C sources and headers.
+The sources follow the C coding style in [`docs/coding-style.en.md`](docs/coding-style.en.md) (Korean edition: [`docs/coding-style.ko.md`](docs/coding-style.ko.md)). `.clang-format` holds the formatting part of that style, as listed in its clang-format section; naming, declarations, pointer parameters and the other rules are kept by hand. `.editorconfig` and `.gitattributes` keep UTF-8 without BOM, LF, 4-space indent, and a final newline only in C sources and headers.
 
 Include guards spell the path from the project root in uppercase, without a leading underscore, and repeat the name after `#endif`:
 
