@@ -30,7 +30,7 @@ int main(void)
     double dst[5] = { 0 };
 
     int x = 0;
-    int *ptr_aliased = &x;
+    int *const ptr_aliased = &x;
     *ptr_aliased = 100;
 
     scale(dst, src, 10.0, ARRAY_SIZE(src));

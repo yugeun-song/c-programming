@@ -58,7 +58,7 @@ static void report(const char *const tag)
 
 static struct node *push_node(struct node **const mut_head, size_t size)
 {
-    struct node *node = malloc(size);
+    struct node *const node = malloc(size);
     if (node != NULL) {
         memset(node, 1, size);
         node->next = *mut_head;

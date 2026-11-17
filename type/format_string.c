@@ -34,7 +34,7 @@ int main(void)
     double d = 2.718282;
     long double ld = 1.618034L;
 
-    const char *str = "Hello, Architecture!";
+    const char *const str = "Hello, Architecture!";
     size_t pointer_size = sizeof(void *);
 
 #if defined(_WIN32) || defined(_WIN64)

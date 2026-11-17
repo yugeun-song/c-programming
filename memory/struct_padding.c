@@ -79,7 +79,7 @@ static const char *const gs_colors[] = {
 static void print_mem_info(const void *const memory, size_t size,
                            const struct member_info *const members, size_t member_count)
 {
-    const uint8_t *bytes = memory;
+    const uint8_t *const bytes = memory;
 
     printf("Total Size: %zu bytes\n", size);
     printf("Memory Layout (base: %p)\n ", memory);
