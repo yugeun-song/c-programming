@@ -613,7 +613,7 @@ struct field_job {
 
 static void *count_fields(void *const mut_arg)
 {
-    struct field_job *job = mut_arg;
+    struct field_job *const job = mut_arg;
 
     for (char *field = strtok(job->line, ","); field != NULL; field = strtok(NULL, ",")) {
         ++job->field_count;
@@ -651,13 +651,13 @@ struct field_job {
 
 static char *take_field(char **const mut_cursor)
 {
-    char *field = *mut_cursor;
+    char *const field = *mut_cursor;
 
     if (field == NULL) {
         return NULL;
     }
 
-    char *comma = strchr(field, ',');
+    char *const comma = strchr(field, ',');
     if (comma != NULL) {
         *comma = '\0';
         *mut_cursor = comma + 1;
@@ -670,7 +670,7 @@ static char *take_field(char **const mut_cursor)
 
 static void *count_fields(void *const mut_arg)
 {
-    struct field_job *job = mut_arg;
+    struct field_job *const job = mut_arg;
     char *cursor = job->line;
 
     for (char *field = take_field(&cursor); field != NULL; field = take_field(&cursor)) {
@@ -985,7 +985,7 @@ static int add_player(const char *const name, int score)
         return -1;
     }
 
-    struct player *player = &gs_players[gs_player_count];
+    struct player *const player = &gs_players[gs_player_count];
     size_t length = strnlen(name, MAX_NAME_LEN - 1);
 
     memcpy(player->name, name, length);
@@ -1184,7 +1184,7 @@ static int parse_date(struct tm *const mut_date, const char *const text)
 
 static int grow_scores(int **const mut_scores, size_t count)
 {
-    int *scores = reallocarray(*mut_scores, count, sizeof(**mut_scores));
+    int *const scores = reallocarray(*mut_scores, count, sizeof(**mut_scores));
     if (scores == NULL) {
         return -1;
     }
@@ -1425,7 +1425,7 @@ int add_item(const char *const name, size_t quantity)
         return -1;
     }
 
-    struct item *item = &gs_items[gs_item_count];
+    struct item *const item = &gs_items[gs_item_count];
 
     memcpy(item->name, name, length + 1);
     item->quantity = quantity;
@@ -2246,7 +2246,7 @@ static int sum_distances(const struct point *const points, size_t count, bool is
     }
 
     if(! is_closed && count>0) {
-        const struct point *last = & points[count - 1];
+        const struct point *const last = & points[count - 1];
 
         total -= abs(last -> x - points[0].x);
     }
@@ -2286,7 +2286,7 @@ static int sum_distances(const struct point *const points, size_t count, bool is
     }
 
     if (!is_closed && count > 0) {
-        const struct point *last = &points[count - 1];
+        const struct point *const last = &points[count - 1];
 
         total -= abs(last->x - points[0].x);
     }
@@ -3030,7 +3030,7 @@ static enum fan_speed gs_fan_speed = FAN_SPEED_HIGH;
 typedef struct audio_device audio_device;
 typedef void (*sample_callback)(const float *const samples, size_t count);
 
-audio_device *open_audio_device(const char *const name, sample_callback on_samples);
+audio_device *open_audio_device(const char *const name, const sample_callback on_samples);
 ```
 
 ### 6.10. 예약된 식별자
@@ -3110,7 +3110,7 @@ static log_handle OpenLogFileW(const wchar_t *const pszPath)
                        FILE_ATTRIBUTE_NORMAL, NULL);
 }
 
-static void CloseLogFile(log_handle hFile)
+static void CloseLogFile(const log_handle hFile)
 {
     close_log(hFile);
 }
@@ -3127,7 +3127,7 @@ static HANDLE open_log_file(const wchar_t *const path)
                        FILE_ATTRIBUTE_NORMAL, NULL);
 }
 
-static void close_log_file(HANDLE file)
+static void close_log_file(const HANDLE file)
 {
     CloseHandle(file);
 }
@@ -3144,7 +3144,7 @@ static void close_log_file(HANDLE file)
 ```c
 static void print_space_positions(const char *const text)
 {
-    const char *first_space = strchr(text, ' '), *last_space = strrchr(text, ' ');
+    const char *const first_space = strchr(text, ' '), *const last_space = strrchr(text, ' ');
     size_t first_index = 0, last_index = 0;
 
     if (first_space != NULL) {
@@ -3161,8 +3161,8 @@ static void print_space_positions(const char *const text)
 ```c
 static void print_space_positions(const char *const text)
 {
-    const char *first_space = strchr(text, ' ');
-    const char *last_space = strrchr(text, ' ');
+    const char *const first_space = strchr(text, ' ');
+    const char *const last_space = strrchr(text, ' ');
     size_t first_index = 0;
     size_t last_index = 0;
 
@@ -3218,7 +3218,7 @@ static long sum_unpaid(const struct order *const orders, size_t count)
     long total = 0;
 
     for (size_t i = 0; i < count; ++i) {
-        const struct order *order = &orders[i];
+        const struct order *const order = &orders[i];
 
         if (order->is_paid == 0) {
             total += order->amount_cents;
@@ -3245,7 +3245,7 @@ static long sum_unpaid(const struct order *const orders, size_t count)
     size_t i;
 
     for (i = 0; i < count; ++i) {
-        const struct order *order = &orders[i];
+        const struct order *const order = &orders[i];
 
         if (order->is_paid == 0) {
             total += order->amount_cents;
@@ -3604,7 +3604,7 @@ static long long convert_days_to_ms(int days)
 틀린 예:
 
 ```c
-static char *gs_default_unit = "cm";
+static char *const gs_default_unit = "cm";
 
 const double compute_ratio(double part, double whole);
 ```
@@ -3612,7 +3612,7 @@ const double compute_ratio(double part, double whole);
 올바른 예:
 
 ```c
-static const char *gs_default_unit = "cm";
+static const char *const gs_default_unit = "cm";
 
 double compute_ratio(double part, double whole);
 ```
@@ -4210,7 +4210,7 @@ static const char *const gs_status_names[] = {
 
 static struct order *create_order(const char *const customer)
 {
-    struct order *order = malloc(sizeof(struct order));
+    struct order *const order = malloc(sizeof(struct order));
     if (order == NULL) {
         return NULL;
     }
@@ -4253,7 +4253,7 @@ static const char *const gs_status_names[] = {
 
 static struct order *create_order(const char *const customer)
 {
-    struct order *order = malloc(sizeof(*order));
+    struct order *const order = malloc(sizeof(*order));
     if (order == NULL) {
         return NULL;
     }
@@ -4289,7 +4289,7 @@ static void print_names(const char *const *const names, size_t count)
 ```c
 static int32_t *create_samples(size_t count)
 {
-    int32_t *samples = (int32_t *)malloc(count * sizeof(*samples));
+    int32_t *const samples = (int32_t *)malloc(count * sizeof(*samples));
 
     return samples;
 }
@@ -4317,7 +4317,7 @@ static uint64_t convert_buffer_address(const unsigned char *const buffer, size_t
 ```c
 static int32_t *create_samples(size_t count)
 {
-    int32_t *samples = malloc(count * sizeof(*samples));
+    int32_t *const samples = malloc(count * sizeof(*samples));
 
     return samples;
 }
@@ -4583,9 +4583,9 @@ static void print_summary(bool is_verbose)
 ```c
 static const char *describe_copy(size_t file_count)
 {
-    const char *summary = (file_count == 0)
-                              ? "no files were copied"
-                              : ((file_count == 1) ? "one file was copied" : "several files were copied");
+    const char *const summary = (file_count == 0)
+                                    ? "no files were copied"
+                                    : ((file_count == 1) ? "one file was copied" : "several files were copied");
 
     return summary;
 }
@@ -4630,8 +4630,8 @@ static void print_summary(bool is_verbose)
 ```c
 static const char *describe_copy(size_t file_count)
 {
-    const char *copied = (file_count == 1) ? "one file was copied" : "several files were copied";
-    const char *summary = (file_count == 0) ? "no files were copied" : copied;
+    const char *const copied = (file_count == 1) ? "one file was copied" : "several files were copied";
+    const char *const summary = (file_count == 0) ? "no files were copied" : copied;
 
     return summary;
 }
@@ -5358,8 +5358,8 @@ struct task {
 
 static int compare_priority(const void *const left, const void *const right)
 {
-    const struct task *first = left;
-    const struct task *second = right;
+    const struct task *const first = left;
+    const struct task *const second = right;
 
     if (first->priority < second->priority) {
         return -1;
@@ -6530,7 +6530,7 @@ static int fill_history(struct history *const mut_history, size_t count, int ini
         return -1;
     }
 
-    int *end = mut_history->entries + count;
+    const int *const end = mut_history->entries + count;
 
     for (int *entry = mut_history->entries; entry < end; ++entry) {
         *entry = initial;
@@ -6580,7 +6580,7 @@ static long sum_squares(const int *const values, size_t count)
 ```c
 static FILE *open_settings(const char *const path)
 {
-    FILE *file = fopen(path, "r");
+    FILE *const file = fopen(path, "r");
 
     assert(file != NULL);
     return file;
@@ -6592,7 +6592,7 @@ static FILE *open_settings(const char *const path)
 ```c
 static FILE *open_settings(const char *const path)
 {
-    FILE *file = fopen(path, "r");
+    FILE *const file = fopen(path, "r");
     if (file == NULL) {
         fprintf(stderr, "cannot open %s\n", path);
         return NULL;
